@@ -1,3 +1,4 @@
+
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -5,18 +6,18 @@ import {
   MODULE_KEYS,
 } from "../utils/progress";
 
+import {
+  getStudentData,
+  saveStudentData,
+  removeStudentData,
+} from "../utils/studentStorage";
+
 const getData = (key, fallback = {}) => {
   try {
-    const data = localStorage.getItem(key);
+    const data = getStudentData(key, fallback);
 
-    if (!data) {
-      return fallback;
-    }
-
-    const parsed = JSON.parse(data);
-
-    if (parsed && typeof parsed === "object") {
-      return parsed;
+    if (data && typeof data === "object") {
+      return data;
     }
 
     return fallback;
@@ -1240,14 +1241,14 @@ function JobPreparation() {
       preparationPriority: preparationPriority.level,
     };
 
-    localStorage.setItem(
+    saveStudentData(
       "jobPreparation",
-      JSON.stringify(result)
+      result
     );
 
-    localStorage.setItem(
+    saveStudentData(
       "jobPreparationResult",
-      JSON.stringify(result)
+      result
     );
 
     try {
@@ -1269,8 +1270,8 @@ function JobPreparation() {
     setSubmitted(false);
     setScore(0);
 
-    localStorage.removeItem("jobPreparation");
-    localStorage.removeItem("jobPreparationResult");
+    removeStudentData("jobPreparation");
+    removeStudentData("jobPreparationResult");
 
     window.dispatchEvent(
       new Event("jobPreparationUpdated")
@@ -3050,3 +3051,4 @@ const styles = {
 };
 
 export default JobPreparation;
+

@@ -5,14 +5,28 @@ import React, {
   useState,
 } from "react";
 import { useNavigate } from "react-router-dom";
+
 import {
   completeModule,
   MODULE_KEYS,
 } from "../utils/progress";
 
+import {
+  getStudentData,
+  saveStudentData,
+} from "../utils/studentStorage";
+
 function Resume() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
+
+  // =====================================================
+  // API URL
+  // =====================================================
+
+  const API_BASE_URL =
+    import.meta.env.VITE_API_URL ||
+    "http://localhost:5000";
 
   // =====================================================
   // REFRESH WHEN OTHER MODULES UPDATE
@@ -35,10 +49,16 @@ function Resume() {
     ];
 
     events.forEach((eventName) => {
-      window.addEventListener(eventName, refreshPage);
+      window.addEventListener(
+        eventName,
+        refreshPage
+      );
     });
 
-    window.addEventListener("storage", refreshPage);
+    window.addEventListener(
+      "storage",
+      refreshPage
+    );
 
     return () => {
       events.forEach((eventName) => {
@@ -48,7 +68,10 @@ function Resume() {
         );
       });
 
-      window.removeEventListener("storage", refreshPage);
+      window.removeEventListener(
+        "storage",
+        refreshPage
+      );
     };
   }, []);
 
@@ -58,36 +81,39 @@ function Resume() {
   // HELPERS
   // =====================================================
 
-  const getStorageData = (key) => {
+  const getStorageData = (
+    key,
+    defaultValue = {}
+  ) => {
     try {
-      const data = localStorage.getItem(key);
-
-      if (!data) {
-        return {};
-      }
-
-      const parsed = JSON.parse(data);
+      const data = getStudentData(
+        key,
+        defaultValue
+      );
 
       if (
-        parsed &&
-        typeof parsed === "object" &&
-        !Array.isArray(parsed)
+        data &&
+        typeof data === "object" &&
+        !Array.isArray(data)
       ) {
-        return parsed;
+        return data;
       }
 
-      return {};
+      return defaultValue;
     } catch (error) {
       console.error(
         `Error reading ${key}:`,
         error
       );
 
-      return {};
+      return defaultValue;
     }
   };
 
-  const toNumber = (value, fallback = 0) => {
+  const toNumber = (
+    value,
+    fallback = 0
+  ) => {
     const number = Number(value);
 
     return Number.isFinite(number)
@@ -98,7 +124,10 @@ function Resume() {
   const clampScore = (value) => {
     return Math.min(
       100,
-      Math.max(0, toNumber(value))
+      Math.max(
+        0,
+        toNumber(value)
+      )
     );
   };
 
@@ -141,51 +170,79 @@ function Resume() {
   };
 
   // =====================================================
-  // LOAD PROJECT DATA
+  // LOAD PROJECT DATA - STUDENT WISE
   // =====================================================
 
   const profile = useMemo(
-    () => getStorageData("studentProfile"),
+    () =>
+      getStorageData(
+        "studentProfile"
+      ),
     [refreshKey]
   );
 
   const skillAssessment = useMemo(
-    () => getStorageData("skillAssessment"),
+    () =>
+      getStorageData(
+        "skillAssessment"
+      ),
     [refreshKey]
   );
 
   const interestAssessment = useMemo(
-    () => getStorageData("interestAssessment"),
+    () =>
+      getStorageData(
+        "interestAssessment"
+      ),
     [refreshKey]
   );
 
-  const careerRecommendation = useMemo(
-    () => getStorageData("careerRecommendation"),
-    [refreshKey]
-  );
+  const careerRecommendation =
+    useMemo(
+      () =>
+        getStorageData(
+          "careerRecommendation"
+        ),
+      [refreshKey]
+    );
 
   const careerAnalysis = useMemo(
-    () => getStorageData("careerAnalysis"),
+    () =>
+      getStorageData(
+        "careerAnalysis"
+      ),
     [refreshKey]
   );
 
   const skillGap = useMemo(
-    () => getStorageData("skillGap"),
+    () =>
+      getStorageData(
+        "skillGap"
+      ),
     [refreshKey]
   );
 
   const careerReadiness = useMemo(
-    () => getStorageData("careerReadiness"),
+    () =>
+      getStorageData(
+        "careerReadiness"
+      ),
     [refreshKey]
   );
 
   const readiness = useMemo(
-    () => getStorageData("readiness"),
+    () =>
+      getStorageData(
+        "readiness"
+      ),
     [refreshKey]
   );
 
   const mockInterview = useMemo(
-    () => getStorageData("mockInterview"),
+    () =>
+      getStorageData(
+        "mockInterview"
+      ),
     [refreshKey]
   );
 
@@ -279,59 +336,87 @@ function Resume() {
 
   const mockReport =
     mockInterview?.report &&
-    typeof mockInterview.report === "object"
+    typeof mockInterview.report ===
+      "object"
       ? mockInterview.report
       : {};
 
-  const mockInterviewScore = useMemo(() => {
-    return clampScore(
-      getFirstValue(
-        mockInterview?.percentage,
-        mockInterview?.score,
-        mockInterview?.scorePercentage,
-        mockInterview?.overallScore,
-        mockReport?.overallScore
-      )
-    );
-  }, [mockInterview, mockReport]);
+  const mockInterviewScore =
+    useMemo(() => {
+      return clampScore(
+        getFirstValue(
+          mockInterview?.percentage,
+          mockInterview?.score,
+          mockInterview?.scorePercentage,
+          mockInterview?.overallScore,
+          mockReport?.overallScore
+        )
+      );
+    }, [
+      mockInterview,
+      mockReport,
+    ]);
 
-  const technicalKnowledge = useMemo(() => {
-    return clampScore(
-      getFirstValue(
-        mockInterview?.technicalKnowledge,
-        mockReport?.technicalKnowledge
-      )
-    );
-  }, [mockInterview, mockReport]);
+  const technicalKnowledge =
+    useMemo(() => {
+      return clampScore(
+        getFirstValue(
+          mockInterview?.technicalKnowledge,
+          mockReport?.technicalKnowledge
+        )
+      );
+    }, [
+      mockInterview,
+      mockReport,
+    ]);
 
-  const communication = useMemo(() => {
-    return clampScore(
-      getFirstValue(
-        mockInterview?.communication,
-        mockReport?.communication
-      )
-    );
-  }, [mockInterview, mockReport]);
+  const communication =
+    useMemo(() => {
+      return clampScore(
+        getFirstValue(
+          mockInterview?.communication,
+          mockReport?.communication
+        )
+      );
+    }, [
+      mockInterview,
+      mockReport,
+    ]);
 
-  const problemSolving = useMemo(() => {
-    return clampScore(
-      getFirstValue(
-        mockInterview?.problemSolving,
-        mockReport?.problemSolving
-      )
-    );
-  }, [mockInterview, mockReport]);
+  const problemSolving =
+    useMemo(() => {
+      return clampScore(
+        getFirstValue(
+          mockInterview?.problemSolving,
+          mockReport?.problemSolving
+        )
+      );
+    }, [
+      mockInterview,
+      mockReport,
+    ]);
 
-  const mockInterviewCompleted = useMemo(() => {
-    return (
-      mockInterview?.completed === true ||
-      Number(mockInterview?.answeredQuestions) > 0 ||
-      Number(mockInterview?.totalQuestions) > 0 ||
-      mockReport?.overallScore !== undefined ||
-      mockInterview?.percentage !== undefined ||
-      mockInterview?.score !== undefined
-    );
-  }, [mockInterview, mockReport]);
+  const mockInterviewCompleted =
+    useMemo(() => {
+      return (
+        mockInterview?.completed === true ||
+        Number(
+          mockInterview?.answeredQuestions
+        ) > 0 ||
+        Number(
+          mockInterview?.totalQuestions
+        ) > 0 ||
+        mockReport?.overallScore !==
+          undefined ||
+        mockInterview?.percentage !==
+          undefined ||
+        mockInterview?.score !==
+          undefined
+      );
+    }, [
+      mockInterview,
+      mockReport,
+    ]);
 
   // =====================================================
   // SKILL GAP
@@ -367,27 +452,42 @@ function Resume() {
   // RESUME STATE
   // =====================================================
 
-  const [resumeFile, setResumeFile] = useState(null);
-  const [analyzing, setAnalyzing] = useState(false);
-  const [analysis, setAnalysis] = useState(null);
-  const [analyzed, setAnalyzed] = useState(false);
-  const [error, setError] = useState("");
+  const [resumeFile, setResumeFile] =
+    useState(null);
+
+  const [analyzing, setAnalyzing] =
+    useState(false);
+
+  const [analysis, setAnalysis] =
+    useState(null);
+
+  const [analyzed, setAnalyzed] =
+    useState(false);
+
+  const [error, setError] =
+    useState("");
 
   // =====================================================
-  // LOAD SAVED ANALYSIS
+  // LOAD SAVED ANALYSIS - STUDENT WISE
   // =====================================================
 
   useEffect(() => {
-    const savedResume = getStorageData(
-      "resumeAnalysis"
-    );
+    const savedResume =
+      getStorageData(
+        "resumeAnalysis",
+        {}
+      );
 
     if (
       savedResume &&
-      Object.keys(savedResume).length > 0
+      Object.keys(savedResume)
+        .length > 0
     ) {
       setAnalysis(savedResume);
       setAnalyzed(true);
+    } else {
+      setAnalysis(null);
+      setAnalyzed(false);
     }
   }, [refreshKey]);
 
@@ -395,8 +495,11 @@ function Resume() {
   // FILE VALIDATION
   // =====================================================
 
-  const handleFileChange = (event) => {
-    const file = event.target.files?.[0];
+  const handleFileChange = (
+    event
+  ) => {
+    const file =
+      event.target.files?.[0];
 
     setError("");
 
@@ -405,13 +508,17 @@ function Resume() {
     }
 
     // 10 MB maximum
-    if (file.size > 10 * 1024 * 1024) {
+    if (
+      file.size >
+      10 * 1024 * 1024
+    ) {
       setError(
         "File size must be less than or equal to 10 MB."
       );
 
       event.target.value = "";
       setResumeFile(null);
+
       return;
     }
 
@@ -421,7 +528,8 @@ function Resume() {
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     ];
 
-    const fileName = file.name.toLowerCase();
+    const fileName =
+      file.name.toLowerCase();
 
     const validExtension =
       fileName.endsWith(".pdf") ||
@@ -429,7 +537,9 @@ function Resume() {
       fileName.endsWith(".docx");
 
     if (
-      !allowedTypes.includes(file.type) &&
+      !allowedTypes.includes(
+        file.type
+      ) &&
       !validExtension
     ) {
       setError(
@@ -438,6 +548,7 @@ function Resume() {
 
       event.target.value = "";
       setResumeFile(null);
+
       return;
     }
 
@@ -450,192 +561,224 @@ function Resume() {
   // ANALYZE RESUME
   // =====================================================
 
-  const handleAnalyzeResume = async () => {
-    if (!resumeFile) {
-      setError(
-        "Please select your resume first."
-      );
-      return;
-    }
+  const handleAnalyzeResume =
+    async () => {
+      if (!resumeFile) {
+        setError(
+          "Please select your resume first."
+        );
 
-    setAnalyzing(true);
-    setError("");
+        return;
+      }
 
-    try {
-      const formData = new FormData();
-
-      formData.append(
-        "resume",
-        resumeFile
-      );
-
-      const response = await fetch(
-        "http://localhost:5000/api/resume/analyze",
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
-
-      let data;
+      setAnalyzing(true);
+      setError("");
 
       try {
-        data = await response.json();
-      } catch {
-        throw new Error(
-          "Invalid response received from backend."
+        const formData =
+          new FormData();
+
+        formData.append(
+          "resume",
+          resumeFile
         );
-      }
 
-      if (!response.ok) {
-        throw new Error(
-          data?.message ||
-            data?.error ||
-            "Resume analysis failed."
-        );
-      }
+        const response =
+          await fetch(
+            `${API_BASE_URL}/api/resume/analyze`,
+            {
+              method: "POST",
+              body: formData,
+            }
+          );
 
-      if (
-        !data ||
-        !data.analysis
-      ) {
-        throw new Error(
-          "Resume analysis result was not received from backend."
-        );
-      }
+        let data;
 
-      // =================================================
-      // SAVE COMPLETE RESULT
-      // =================================================
+        try {
+          data =
+            await response.json();
+        } catch {
+          throw new Error(
+            "Invalid response received from backend."
+          );
+        }
 
-      const resumeResult = {
-        ...data.analysis,
+        if (!response.ok) {
+          throw new Error(
+            data?.message ||
+              data?.error ||
+              "Resume analysis failed."
+          );
+        }
 
-        resumeName: resumeFile.name,
+        if (
+          !data ||
+          !data.analysis
+        ) {
+          throw new Error(
+            "Resume analysis result was not received from backend."
+          );
+        }
 
-        targetCareer,
+        // =================================================
+        // SAVE COMPLETE RESULT
+        // =================================================
 
-        targetCareerMatch,
+        const resumeResult = {
+          ...data.analysis,
 
-        careerMatch:
-          data.analysis?.careerMatch ??
+          resumeName:
+            resumeFile.name,
+
+          targetCareer,
+
           targetCareerMatch,
 
-        careerReadiness:
+          careerMatch:
+            data.analysis
+              ?.careerMatch ??
+            targetCareerMatch,
+
+          careerReadiness:
+            readinessScore,
+
           readinessScore,
 
-        readinessScore,
+          mockInterviewScore,
 
-        mockInterviewScore,
+          mockInterviewCompleted,
 
-        mockInterviewCompleted,
+          technicalKnowledge,
 
-        technicalKnowledge,
+          communication,
 
-        communication,
+          problemSolving,
 
-        problemSolving,
+          missingSkills,
 
-        missingSkills,
+          learnedSkills,
 
-        learnedSkills,
+          analyzedAt:
+            new Date().toISOString(),
+        };
 
-        analyzedAt:
-          new Date().toISOString(),
-      };
+        // =================================================
+        // STUDENT-WISE SAVE
+        // =================================================
 
-      localStorage.setItem(
-        "resumeAnalysis",
-        JSON.stringify(resumeResult)
-      );
+        saveStudentData(
+          "resumeAnalysis",
+          resumeResult
+        );
 
-      // Compatibility key
-      localStorage.setItem(
-        "resume",
-        JSON.stringify(resumeResult)
-      );
+        // Compatibility key
+        saveStudentData(
+          "resume",
+          resumeResult
+        );
 
-      setAnalysis(resumeResult);
-      setAnalyzed(true);
+        setAnalysis(
+          resumeResult
+        );
 
-      // Mark Resume module complete
-      completeModule(
-        MODULE_KEYS.RESUME
-      );
+        setAnalyzed(true);
 
-      // Notify application
-      window.dispatchEvent(
-        new Event("resumeUpdated")
-      );
+        // =================================================
+        // MARK RESUME MODULE COMPLETE
+        // =================================================
 
-    } catch (err) {
-      console.error(
-        "Resume analysis error:",
-        err
-      );
+        completeModule(
+          MODULE_KEYS.RESUME
+        );
 
-      setError(
-        err?.message ||
-          "Something went wrong while analyzing the resume."
-      );
-    } finally {
-      setAnalyzing(false);
-    }
-  };
+        // =================================================
+        // NOTIFY APPLICATION
+        // =================================================
+
+        window.dispatchEvent(
+          new Event(
+            "resumeUpdated"
+          )
+        );
+
+      } catch (err) {
+        console.error(
+          "Resume analysis error:",
+          err
+        );
+
+        setError(
+          err?.message ||
+            "Something went wrong while analyzing the resume."
+        );
+      } finally {
+        setAnalyzing(false);
+      }
+    };
 
   // =====================================================
   // ANALYZE ANOTHER RESUME
   // =====================================================
 
-  const handleAnalyzeAnother = () => {
-    setResumeFile(null);
-    setAnalysis(null);
-    setAnalyzed(false);
-    setError("");
+  const handleAnalyzeAnother =
+    () => {
+      setResumeFile(null);
+      setAnalysis(null);
+      setAnalyzed(false);
+      setError("");
 
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-      fileInputRef.current.click();
-    }
-  };
+      if (
+        fileInputRef.current
+      ) {
+        fileInputRef.current.value =
+          "";
+
+        fileInputRef.current.click();
+      }
+    };
 
   // =====================================================
   // DISPLAY DATA
   // =====================================================
 
-  const atsScore = clampScore(
-    getFirstValue(
-      analysis?.atsScore,
-      analysis?.ATSScore,
-      analysis?.ats_score
+  const atsScore =
+    clampScore(
+      getFirstValue(
+        analysis?.atsScore,
+        analysis?.ATSScore,
+        analysis?.ats_score
+      )
+    );
+
+  const careerRelevance =
+    clampScore(
+      getFirstValue(
+        analysis?.careerRelevance,
+        analysis?.careerRelevanceScore,
+        analysis?.relevanceScore
+      )
+    );
+
+  const resumeSkills =
+    Array.isArray(
+      analysis?.skills
     )
-  );
+      ? analysis.skills
+      : [];
 
-  const careerRelevance = clampScore(
-    getFirstValue(
-      analysis?.careerRelevance,
-      analysis?.careerRelevanceScore,
-      analysis?.relevanceScore
+  const resumeStrengths =
+    Array.isArray(
+      analysis?.strengths
     )
-  );
+      ? analysis.strengths
+      : [];
 
-  const resumeSkills = Array.isArray(
-    analysis?.skills
-  )
-    ? analysis.skills
-    : [];
-
-  const resumeStrengths = Array.isArray(
-    analysis?.strengths
-  )
-    ? analysis.strengths
-    : [];
-
-  const resumeWeaknesses = Array.isArray(
-    analysis?.weaknesses
-  )
-    ? analysis.weaknesses
-    : [];
+  const resumeWeaknesses =
+    Array.isArray(
+      analysis?.weaknesses
+    )
+      ? analysis.weaknesses
+      : [];
 
   const resumeMissingSkills =
     Array.isArray(
@@ -666,8 +809,10 @@ function Resume() {
   );
 
   const backendCareerMatch =
-    analysis?.careerMatch !== undefined &&
-    analysis?.careerMatch !== null
+    analysis?.careerMatch !==
+      undefined &&
+    analysis?.careerMatch !==
+      null
       ? analysis.careerMatch
       : targetCareerMatch;
 
@@ -712,7 +857,8 @@ function Resume() {
     marginBottom: "22px",
     boxShadow:
       "0 10px 30px rgba(15, 23, 42, 0.08)",
-    border: "1px solid #e5e7eb",
+    border:
+      "1px solid #e5e7eb",
   };
 
   const sectionTitleStyle = {
@@ -733,7 +879,8 @@ function Resume() {
     background: "#f8fafc",
     borderRadius: "14px",
     padding: "20px",
-    border: "1px solid #e5e7eb",
+    border:
+      "1px solid #e5e7eb",
     textAlign: "center",
   };
 
@@ -764,7 +911,8 @@ function Resume() {
   const secondaryButtonStyle = {
     background: "#ffffff",
     color: "#4f46e5",
-    border: "1px solid #c7d2fe",
+    border:
+      "1px solid #c7d2fe",
     borderRadius: "12px",
     padding: "13px 22px",
     fontSize: "15px",
@@ -806,9 +954,10 @@ function Resume() {
           </h1>
 
           <p style={subtitleStyle}>
-            Upload your resume and let AI analyze it
-            against your career goal, skills, readiness,
-            and interview performance.
+            Upload your resume and let AI
+            analyze it against your career
+            goal, skills, readiness, and
+            interview performance.
           </p>
         </div>
 
@@ -826,7 +975,8 @@ function Resume() {
                 style={{
                   fontSize: "14px",
                   color: "#6b7280",
-                  marginBottom: "8px",
+                  marginBottom:
+                    "8px",
                 }}
               >
                 Target Career
@@ -849,13 +999,18 @@ function Resume() {
                 style={{
                   fontSize: "14px",
                   color: "#6b7280",
-                  marginBottom: "8px",
+                  marginBottom:
+                    "8px",
                 }}
               >
                 Career Match
               </div>
 
-              <div style={scoreNumberStyle}>
+              <div
+                style={
+                  scoreNumberStyle
+                }
+              >
                 {targetCareerMatch}%
               </div>
             </div>
@@ -865,13 +1020,18 @@ function Resume() {
                 style={{
                   fontSize: "14px",
                   color: "#6b7280",
-                  marginBottom: "8px",
+                  marginBottom:
+                    "8px",
                 }}
               >
                 Career Readiness
               </div>
 
-              <div style={scoreNumberStyle}>
+              <div
+                style={
+                  scoreNumberStyle
+                }
+              >
                 {readinessScore}%
               </div>
             </div>
@@ -881,13 +1041,18 @@ function Resume() {
                 style={{
                   fontSize: "14px",
                   color: "#6b7280",
-                  marginBottom: "8px",
+                  marginBottom:
+                    "8px",
                 }}
               >
                 Mock Interview
               </div>
 
-              <div style={scoreNumberStyle}>
+              <div
+                style={
+                  scoreNumberStyle
+                }
+              >
                 {mockInterviewCompleted
                   ? `${mockInterviewScore}%`
                   : "Not Done"}
@@ -909,40 +1074,54 @@ function Resume() {
             <p
               style={{
                 color: "#6b7280",
-                marginBottom: "18px",
+                marginBottom:
+                  "18px",
                 lineHeight: "1.6",
               }}
             >
-              Supported formats: PDF, DOC, DOCX.
-              Maximum file size: 10 MB.
+              Supported formats:
+              PDF, DOC, DOCX.
+              Maximum file size:
+              10 MB.
             </p>
 
             <input
               ref={fileInputRef}
               type="file"
               accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-              onChange={handleFileChange}
+              onChange={
+                handleFileChange
+              }
               style={{
                 width: "100%",
                 padding: "14px",
-                border: "2px dashed #c7d2fe",
+                border:
+                  "2px dashed #c7d2fe",
                 borderRadius: "12px",
-                background: "#f8fafc",
-                marginBottom: "16px",
-                boxSizing: "border-box",
+                background:
+                  "#f8fafc",
+                marginBottom:
+                  "16px",
+                boxSizing:
+                  "border-box",
               }}
             />
 
             {resumeFile && (
               <div
                 style={{
-                  background: "#f0fdf4",
+                  background:
+                    "#f0fdf4",
                   border:
                     "1px solid #bbf7d0",
-                  borderRadius: "10px",
-                  padding: "12px 14px",
-                  marginBottom: "16px",
-                  color: "#166534",
+                  borderRadius:
+                    "10px",
+                  padding:
+                    "12px 14px",
+                  marginBottom:
+                    "16px",
+                  color:
+                    "#166534",
                 }}
               >
                 <strong>
@@ -955,13 +1134,18 @@ function Resume() {
             {error && (
               <div
                 style={{
-                  background: "#fef2f2",
+                  background:
+                    "#fef2f2",
                   border:
                     "1px solid #fecaca",
-                  color: "#b91c1c",
-                  borderRadius: "10px",
-                  padding: "12px 14px",
-                  marginBottom: "16px",
+                  color:
+                    "#b91c1c",
+                  borderRadius:
+                    "10px",
+                  padding:
+                    "12px 14px",
+                  marginBottom:
+                    "16px",
                 }}
               >
                 ⚠️ {error}
@@ -969,18 +1153,23 @@ function Resume() {
             )}
 
             <button
-              onClick={handleAnalyzeResume}
+              onClick={
+                handleAnalyzeResume
+              }
               disabled={
-                !resumeFile || analyzing
+                !resumeFile ||
+                analyzing
               }
               style={{
                 ...buttonStyle,
                 opacity:
-                  !resumeFile || analyzing
+                  !resumeFile ||
+                  analyzing
                     ? 0.6
                     : 1,
                 cursor:
-                  !resumeFile || analyzing
+                  !resumeFile ||
+                  analyzing
                     ? "not-allowed"
                     : "pointer",
               }}
@@ -999,7 +1188,8 @@ function Resume() {
           <div
             style={{
               ...cardStyle,
-              background: "#fef2f2",
+              background:
+                "#fef2f2",
               border:
                 "1px solid #fecaca",
               color: "#b91c1c",
@@ -1011,582 +1201,878 @@ function Resume() {
 
         {/* ANALYSIS RESULTS */}
 
-        {analyzed && analysis && (
-          <>
+        {analyzed &&
+          analysis && (
+            <>
 
-            {/* RESUME SCORE */}
+              {/* RESUME SCORE */}
 
-            <div style={cardStyle}>
-              <h2 style={sectionTitleStyle}>
-                📊 Resume Score
-              </h2>
-
-              <div style={scoreGridStyle}>
-
-                <div style={scoreCardStyle}>
-                  <div style={scoreNumberStyle}>
-                    {atsScore}%
-                  </div>
-
-                  <div style={scoreLabelStyle}>
-                    ATS Score
-                  </div>
-                </div>
-
-                <div style={scoreCardStyle}>
-                  <div style={scoreNumberStyle}>
-                    {careerRelevance}%
-                  </div>
-
-                  <div style={scoreLabelStyle}>
-                    Career Relevance
-                  </div>
-                </div>
-
-                <div style={scoreCardStyle}>
-                  <div style={scoreNumberStyle}>
-                    {targetCareerMatch}%
-                  </div>
-
-                  <div style={scoreLabelStyle}>
-                    Career Match
-                  </div>
-                </div>
-
-                <div style={scoreCardStyle}>
-                  <div style={scoreNumberStyle}>
-                    {readinessScore}%
-                  </div>
-
-                  <div style={scoreLabelStyle}>
-                    Career Readiness
-                  </div>
-                </div>
-
-              </div>
-            </div>
-
-            {/* RESUME INFORMATION */}
-
-            <div style={cardStyle}>
-              <h2 style={sectionTitleStyle}>
-                📄 Resume Information
-              </h2>
-
-              <p
-                style={{
-                  color: "#374151",
-                  marginBottom: "8px",
-                }}
+              <div
+                style={cardStyle}
               >
-                <strong>
-                  File:
-                </strong>{" "}
-                {analysis.resumeName ||
-                  resumeFile?.name ||
-                  "Saved Resume"}
-              </p>
-
-              {targetCareer && (
-                <p
-                  style={{
-                    color: "#374151",
-                  }}
+                <h2
+                  style={
+                    sectionTitleStyle
+                  }
                 >
-                  <strong>
-                    Target Career:
-                  </strong>{" "}
-                  {targetCareer}
-                </p>
-              )}
-            </div>
+                  📊 Resume Score
+                </h2>
 
-            {/* SKILLS */}
+                <div
+                  style={
+                    scoreGridStyle
+                  }>
 
-            <div style={cardStyle}>
-              <h2 style={sectionTitleStyle}>
-                🛠️ Resume Skills
-              </h2>
+                  <div
+                    style={
+                      scoreCardStyle
+                    }
+                  >
+                    <div
+                      style={
+                        scoreNumberStyle
+                      }
+                    >
+                      {atsScore}%
+                    </div>
 
-              {resumeSkills.length > 0 ? (
-                <div>
-                  {resumeSkills.map(
-                    (skill, index) => (
-                      <span
-                        key={index}
-                        style={tagStyle}
-                      >
-                        {formatItem(skill)}
-                      </span>
-                    )
-                  )}
+                    <div
+                      style={
+                        scoreLabelStyle
+                      }
+                    >
+                      ATS Score
+                    </div>
+                  </div>
+
+                  <div
+                    style={
+                      scoreCardStyle
+                    }
+                  >
+                    <div
+                      style={
+                        scoreNumberStyle
+                      }
+                    >
+                      {careerRelevance}%
+                    </div>
+
+                    <div
+                      style={
+                        scoreLabelStyle
+                      }
+                    >
+                      Career Relevance
+                    </div>
+                  </div>
+
+                  <div
+                    style={
+                      scoreCardStyle
+                    }
+                  >
+                    <div
+                      style={
+                        scoreNumberStyle
+                      }
+                    >
+                      {targetCareerMatch}%
+                    </div>
+
+                    <div
+                      style={
+                        scoreLabelStyle
+                      }
+                    >
+                      Career Match
+                    </div>
+                  </div>
+
+                  <div
+                    style={
+                      scoreCardStyle
+                    }
+                  >
+                    <div
+                      style={
+                        scoreNumberStyle
+                      }
+                    >
+                      {readinessScore}%
+                    </div>
+
+                    <div
+                      style={
+                        scoreLabelStyle
+                      }
+                    >
+                      Career Readiness
+                    </div>
+                  </div>
+
                 </div>
-              ) : (
-                <p
-                  style={{
-                    color: "#6b7280",
-                  }}
+              </div>
+
+              {/* RESUME INFORMATION */}
+
+              <div
+                style={cardStyle}
+              >
+                <h2
+                  style={
+                    sectionTitleStyle
+                  }
                 >
-                  No skills were detected.
-                </p>
-              )}
-            </div>
-
-            {/* STRENGTHS */}
-
-            <div style={cardStyle}>
-              <h2 style={sectionTitleStyle}>
-                💪 Strengths
-              </h2>
-
-              {resumeStrengths.length > 0 ? (
-                <ul style={listStyle}>
-                  {resumeStrengths.map(
-                    (strength, index) => (
-                      <li key={index}>
-                        {formatItem(
-                          strength
-                        )}
-                      </li>
-                    )
-                  )}
-                </ul>
-              ) : (
-                <p
-                  style={{
-                    color: "#6b7280",
-                  }}
-                >
-                  No specific strengths were
-                  returned.
-                </p>
-              )}
-            </div>
-
-            {/* WEAKNESSES */}
-
-            <div style={cardStyle}>
-              <h2 style={sectionTitleStyle}>
-                ⚠️ Weaknesses
-              </h2>
-
-              {resumeWeaknesses.length > 0 ? (
-                <ul style={listStyle}>
-                  {resumeWeaknesses.map(
-                    (weakness, index) => (
-                      <li key={index}>
-                        {formatItem(
-                          weakness
-                        )}
-                      </li>
-                    )
-                  )}
-                </ul>
-              ) : (
-                <p
-                  style={{
-                    color: "#6b7280",
-                  }}
-                >
-                  No major weaknesses were
-                  returned.
-                </p>
-              )}
-            </div>
-
-            {/* MISSING SKILLS */}
-
-            <div style={cardStyle}>
-              <h2 style={sectionTitleStyle}>
-                🔍 Missing Skills
-              </h2>
-
-              {resumeMissingSkills.length >
-              0 ? (
-                <ul style={listStyle}>
-                  {resumeMissingSkills.map(
-                    (skill, index) => (
-                      <li key={index}>
-                        {formatItem(skill)}
-                      </li>
-                    )
-                  )}
-                </ul>
-              ) : missingSkills.length > 0 ? (
-                <ul style={listStyle}>
-                  {missingSkills.map(
-                    (skill, index) => (
-                      <li key={index}>
-                        {formatItem(skill)}
-                      </li>
-                    )
-                  )}
-                </ul>
-              ) : (
-                <p
-                  style={{
-                    color: "#6b7280",
-                  }}
-                >
-                  No missing skills were
-                  identified.
-                </p>
-              )}
-            </div>
-
-            {/* IMPROVEMENTS */}
-
-            <div style={cardStyle}>
-              <h2 style={sectionTitleStyle}>
-                🚀 Recommended Improvements
-              </h2>
-
-              {improvements.length > 0 ? (
-                <ul style={listStyle}>
-                  {improvements.map(
-                    (item, index) => (
-                      <li key={index}>
-                        {formatItem(item)}
-                      </li>
-                    )
-                  )}
-                </ul>
-              ) : (
-                <p
-                  style={{
-                    color: "#6b7280",
-                  }}
-                >
-                  No additional improvements
-                  were returned.
-                </p>
-              )}
-            </div>
-
-            {/* RECOMMENDED SECTIONS */}
-
-            <div style={cardStyle}>
-              <h2 style={sectionTitleStyle}>
-                📝 Recommended Resume Sections
-              </h2>
-
-              {recommendedSections.length >
-              0 ? (
-                <ul style={listStyle}>
-                  {recommendedSections.map(
-                    (section, index) => (
-                      <li key={index}>
-                        {formatItem(
-                          section
-                        )}
-                      </li>
-                    )
-                  )}
-                </ul>
-              ) : (
-                <p
-                  style={{
-                    color: "#6b7280",
-                  }}
-                >
-                  No additional sections were
-                  recommended.
-                </p>
-              )}
-            </div>
-
-            {/* SUMMARY */}
-
-            {summary && (
-              <div style={cardStyle}>
-                <h2 style={sectionTitleStyle}>
-                  💡 AI Summary
+                  📄 Resume Information
                 </h2>
 
                 <p
                   style={{
-                    color: "#374151",
-                    lineHeight: "1.8",
-                    margin: 0,
-                  }}
-                >
-                  {typeof summary === "string"
-                    ? summary
-                    : formatItem(summary)}
-                </p>
-              </div>
-            )}
-
-            {/* MOCK INTERVIEW */}
-
-            <div style={cardStyle}>
-              <h2 style={sectionTitleStyle}>
-                🎤 Mock Interview Performance
-              </h2>
-
-              {mockInterviewCompleted ? (
-                <div style={scoreGridStyle}>
-
-                  <div style={scoreCardStyle}>
-                    <div
-                      style={
-                        scoreNumberStyle
-                      }
-                    >
-                      {mockInterviewScore}%
-                    </div>
-
-                    <div
-                      style={
-                        scoreLabelStyle
-                      }
-                    >
-                      Overall Interview
-                    </div>
-                  </div>
-
-                  <div style={scoreCardStyle}>
-                    <div
-                      style={
-                        scoreNumberStyle
-                      }
-                    >
-                      {technicalKnowledge}%
-                    </div>
-
-                    <div
-                      style={
-                        scoreLabelStyle
-                      }
-                    >
-                      Technical Knowledge
-                    </div>
-                  </div>
-
-                  <div style={scoreCardStyle}>
-                    <div
-                      style={
-                        scoreNumberStyle
-                      }
-                    >
-                      {communication}%
-                    </div>
-
-                    <div
-                      style={
-                        scoreLabelStyle
-                      }
-                    >
-                      Communication
-                    </div>
-                  </div>
-
-                  <div style={scoreCardStyle}>
-                    <div
-                      style={
-                        scoreNumberStyle
-                      }
-                    >
-                      {problemSolving}%
-                    </div>
-
-                    <div
-                      style={
-                        scoreLabelStyle
-                      }
-                    >
-                      Problem Solving
-                    </div>
-                  </div>
-
-                </div>
-              ) : (
-                <p
-                  style={{
-                    color: "#6b7280",
-                    lineHeight: "1.6",
-                  }}
-                >
-                  Mock Interview has not been
-                  completed yet. Complete it later
-                  to strengthen your overall career
-                  profile.
-                </p>
-              )}
-            </div>
-
-            {/* SKILL GAP */}
-
-            <div style={cardStyle}>
-              <h2 style={sectionTitleStyle}>
-                📚 Skill Gap Connection
-              </h2>
-
-              <p
-                style={{
-                  color: "#374151",
-                  marginBottom: "12px",
-                }}
-              >
-                <strong>
-                  Missing Skills:
-                </strong>{" "}
-                {missingSkills.length}
-              </p>
-
-              <p
-                style={{
-                  color: "#374151",
-                }}
-              >
-                <strong>
-                  Learned / Existing Skills:
-                </strong>{" "}
-                {learnedSkills.length}
-              </p>
-            </div>
-
-            {/* CAREER RELEVANCE */}
-
-            <div style={cardStyle}>
-              <h2 style={sectionTitleStyle}>
-                🎯 AI Career Relevance
-              </h2>
-
-              <p
-                style={{
-                  color: "#374151",
-                  lineHeight: "1.7",
-                }}
-              >
-                Your resume has been analyzed
-                against your current career
-                direction.
-              </p>
-
-              <div
-                style={{
-                  background: "#f8fafc",
-                  borderRadius: "12px",
-                  padding: "16px",
-                  marginTop: "14px",
-                }}
-              >
-                <strong>
-                  Career:
-                </strong>{" "}
-                {targetCareer ||
-                  "Not available"}
-
-                <br />
-
-                <strong>
-                  Match:
-                </strong>{" "}
-                {clampScore(
-                  backendCareerMatch
-                )}
-                %
-              </div>
-            </div>
-
-            {/* PROFILE CONNECTION */}
-
-            <div style={cardStyle}>
-              <h2 style={sectionTitleStyle}>
-                👤 Profile Connection
-              </h2>
-
-              <p
-                style={{
-                  color: "#374151",
-                  lineHeight: "1.7",
-                }}
-              >
-                Your resume analysis uses your
-                current career direction and
-                previously completed career
-                analysis data.
-              </p>
-
-              {profile?.name && (
-                <p
-                  style={{
-                    color: "#374151",
+                    color:
+                      "#374151",
+                    marginBottom:
+                      "8px",
                   }}
                 >
                   <strong>
-                    Student:
+                    File:
                   </strong>{" "}
-                  {profile.name}
+                  {analysis.resumeName ||
+                    resumeFile?.name ||
+                    "Saved Resume"}
                 </p>
+
+                {targetCareer && (
+                  <p
+                    style={{
+                      color:
+                        "#374151",
+                    }}
+                  >
+                    <strong>
+                      Target Career:
+                    </strong>{" "}
+                    {targetCareer}
+                  </p>
+                )}
+              </div>
+
+              {/* SKILLS */}
+
+              <div
+                style={cardStyle}
+              >
+                <h2
+                  style={
+                    sectionTitleStyle
+                  }
+                >
+                  🛠️ Resume Skills
+                </h2>
+
+                {resumeSkills.length >
+                0 ? (
+                  <div>
+                    {resumeSkills.map(
+                      (
+                        skill,
+                        index
+                      ) => (
+                        <span
+                          key={
+                            index
+                          }
+                          style={
+                            tagStyle
+                          }
+                        >
+                          {formatItem(
+                            skill
+                          )}
+                        </span>
+                      )
+                    )}
+                  </div>
+                ) : (
+                  <p
+                    style={{
+                      color:
+                        "#6b7280",
+                    }}
+                  >
+                    No skills were
+                    detected.
+                  </p>
+                )}
+              </div>
+
+              {/* STRENGTHS */}
+
+              <div
+                style={cardStyle}
+              >
+                <h2
+                  style={
+                    sectionTitleStyle
+                  }
+                >
+                  💪 Strengths
+                </h2>
+
+                {resumeStrengths.length >
+                0 ? (
+                  <ul
+                    style={
+                      listStyle
+                    }
+                  >
+                    {resumeStrengths.map(
+                      (
+                        strength,
+                        index
+                      ) => (
+                        <li
+                          key={
+                            index
+                          }
+                        >
+                          {formatItem(
+                            strength
+                          )}
+                        </li>
+                      )
+                    )}
+                  </ul>
+                ) : (
+                  <p
+                    style={{
+                      color:
+                        "#6b7280",
+                    }}
+                  >
+                    No specific
+                    strengths were
+                    returned.
+                  </p>
+                )}
+              </div>
+
+              {/* WEAKNESSES */}
+
+              <div
+                style={cardStyle}
+              >
+                <h2
+                  style={
+                    sectionTitleStyle
+                  }
+                >
+                  ⚠️ Weaknesses
+                </h2>
+
+                {resumeWeaknesses.length >
+                0 ? (
+                  <ul
+                    style={
+                      listStyle
+                    }
+                  >
+                    {resumeWeaknesses.map(
+                      (
+                        weakness,
+                        index
+                      ) => (
+                        <li
+                          key={
+                            index
+                          }
+                        >
+                          {formatItem(
+                            weakness
+                          )}
+                        </li>
+                      )
+                    )}
+                  </ul>
+                ) : (
+                  <p
+                    style={{
+                      color:
+                        "#6b7280",
+                    }}
+                  >
+                    No major
+                    weaknesses were
+                    returned.
+                  </p>
+                )}
+              </div>
+
+              {/* MISSING SKILLS */}
+
+              <div
+                style={cardStyle}
+              >
+                <h2
+                  style={
+                    sectionTitleStyle
+                  }
+                >
+                  🔍 Missing Skills
+                </h2>
+
+                {resumeMissingSkills.length >
+                0 ? (
+                  <ul
+                    style={
+                      listStyle
+                    }
+                  >
+                    {resumeMissingSkills.map(
+                      (
+                        skill,
+                        index
+                      ) => (
+                        <li
+                          key={
+                            index
+                          }
+                        >
+                          {formatItem(
+                            skill
+                          )}
+                        </li>
+                      )
+                    )}
+                  </ul>
+                ) : missingSkills.length >
+                  0 ? (
+                  <ul
+                    style={
+                      listStyle
+                    }
+                  >
+                    {missingSkills.map(
+                      (
+                        skill,
+                        index
+                      ) => (
+                        <li
+                          key={
+                            index
+                          }
+                        >
+                          {formatItem(
+                            skill
+                          )}
+                        </li>
+                      )
+                    )}
+                  </ul>
+                ) : (
+                  <p
+                    style={{
+                      color:
+                        "#6b7280",
+                    }}
+                  >
+                    No missing skills
+                    were identified.
+                  </p>
+                )}
+              </div>
+
+              {/* IMPROVEMENTS */}
+
+              <div
+                style={cardStyle}
+              >
+                <h2
+                  style={
+                    sectionTitleStyle
+                  }
+                >
+                  🚀 Recommended
+                  Improvements
+                </h2>
+
+                {improvements.length >
+                0 ? (
+                  <ul
+                    style={
+                      listStyle
+                    }
+                  >
+                    {improvements.map(
+                      (
+                        item,
+                        index
+                      ) => (
+                        <li
+                          key={
+                            index
+                          }
+                        >
+                          {formatItem(
+                            item
+                          )}
+                        </li>
+                      )
+                    )}
+                  </ul>
+                ) : (
+                  <p
+                    style={{
+                      color:
+                        "#6b7280",
+                    }}
+                  >
+                    No additional
+                    improvements were
+                    returned.
+                  </p>
+                )}
+              </div>
+
+              {/* RECOMMENDED SECTIONS */}
+
+              <div
+                style={cardStyle}
+              >
+                <h2
+                  style={
+                    sectionTitleStyle
+                  }
+                >
+                  📝 Recommended Resume
+                  Sections
+                </h2>
+
+                {recommendedSections.length >
+                0 ? (
+                  <ul
+                    style={
+                      listStyle
+                    }
+                  >
+                    {recommendedSections.map(
+                      (
+                        section,
+                        index
+                      ) => (
+                        <li
+                          key={
+                            index
+                          }
+                        >
+                          {formatItem(
+                            section
+                          )}
+                        </li>
+                      )
+                    )}
+                  </ul>
+                ) : (
+                  <p
+                    style={{
+                      color:
+                        "#6b7280",
+                    }}
+                  >
+                    No additional
+                    sections were
+                    recommended.
+                  </p>
+                )}
+              </div>
+
+              {/* SUMMARY */}
+
+              {summary && (
+                <div
+                  style={
+                    cardStyle
+                  }
+                >
+                  <h2
+                    style={
+                      sectionTitleStyle
+                    }
+                  >
+                    💡 AI Summary
+                  </h2>
+
+                  <p
+                    style={{
+                      color:
+                        "#374151",
+                      lineHeight:
+                        "1.8",
+                      margin: 0,
+                    }}
+                  >
+                    {typeof summary ===
+                    "string"
+                      ? summary
+                      : formatItem(
+                          summary
+                        )}
+                  </p>
+                </div>
               )}
 
-              {skillAssessment &&
-                Object.keys(
-                  skillAssessment
-                ).length > 0 && (
+              {/* MOCK INTERVIEW */}
+
+              <div
+                style={cardStyle}
+              >
+                <h2
+                  style={
+                    sectionTitleStyle
+                  }
+                >
+                  🎤 Mock Interview
+                  Performance
+                </h2>
+
+                {mockInterviewCompleted ? (
+                  <div
+                    style={
+                      scoreGridStyle
+                    }>
+
+                    <div
+                      style={
+                        scoreCardStyle
+                      }
+                    >
+                      <div
+                        style={
+                          scoreNumberStyle
+                        }
+                      >
+                        {
+                          mockInterviewScore
+                        }%
+                      </div>
+
+                      <div
+                        style={
+                          scoreLabelStyle
+                        }
+                      >
+                        Overall Interview
+                      </div>
+                    </div>
+
+                    <div
+                      style={
+                        scoreCardStyle
+                      }
+                    >
+                      <div
+                        style={
+                          scoreNumberStyle
+                        }
+                      >
+                        {
+                          technicalKnowledge
+                        }%
+                      </div>
+
+                      <div
+                        style={
+                          scoreLabelStyle
+                        }
+                      >
+                        Technical Knowledge
+                      </div>
+                    </div>
+
+                    <div
+                      style={
+                        scoreCardStyle
+                      }
+                    >
+                      <div
+                        style={
+                          scoreNumberStyle
+                        }
+                      >
+                        {
+                          communication
+                        }%
+                      </div>
+
+                      <div
+                        style={
+                          scoreLabelStyle
+                        }
+                      >
+                        Communication
+                      </div>
+                    </div>
+
+                    <div
+                      style={
+                        scoreCardStyle
+                      }
+                    >
+                      <div
+                        style={
+                          scoreNumberStyle
+                        }
+                      >
+                        {
+                          problemSolving
+                        }%
+                      </div>
+
+                      <div
+                        style={
+                          scoreLabelStyle
+                        }
+                      >
+                        Problem Solving
+                      </div>
+                    </div>
+
+                  </div>
+                ) : (
                   <p
                     style={{
-                      color: "#374151",
+                      color:
+                        "#6b7280",
+                      lineHeight:
+                        "1.6",
                     }}
                   >
-                    ✅ Skill assessment data
-                    available
+                    Mock Interview has
+                    not been completed
+                    yet. Complete it
+                    later to strengthen
+                    your overall career
+                    profile.
+                  </p>
+                )}
+              </div>
+
+              {/* SKILL GAP */}
+
+              <div
+                style={cardStyle}
+              >
+                <h2
+                  style={
+                    sectionTitleStyle
+                  }
+                >
+                  📚 Skill Gap Connection
+                </h2>
+
+                <p
+                  style={{
+                    color:
+                      "#374151",
+                    marginBottom:
+                      "12px",
+                  }}
+                >
+                  <strong>
+                    Missing Skills:
+                  </strong>{" "}
+                  {missingSkills.length}
+                </p>
+
+                <p
+                  style={{
+                    color:
+                      "#374151",
+                  }}
+                >
+                  <strong>
+                    Learned / Existing
+                    Skills:
+                  </strong>{" "}
+                  {learnedSkills.length}
+                </p>
+              </div>
+
+              {/* CAREER RELEVANCE */}
+
+              <div
+                style={cardStyle}
+              >
+                <h2
+                  style={
+                    sectionTitleStyle
+                  }
+                >
+                  🎯 AI Career Relevance
+                </h2>
+
+                <p
+                  style={{
+                    color:
+                      "#374151",
+                    lineHeight:
+                      "1.7",
+                  }}
+                >
+                  Your resume has
+                  been analyzed
+                  against your current
+                  career direction.
+                </p>
+
+                <div
+                  style={{
+                    background:
+                      "#f8fafc",
+                    borderRadius:
+                      "12px",
+                    padding:
+                      "16px",
+                    marginTop:
+                      "14px",
+                  }}
+                >
+                  <strong>
+                    Career:
+                  </strong>{" "}
+                  {targetCareer ||
+                    "Not available"}
+
+                  <br />
+
+                  <strong>
+                    Match:
+                  </strong>{" "}
+                  {clampScore(
+                    backendCareerMatch
+                  )}
+                  %
+                </div>
+              </div>
+
+              {/* PROFILE CONNECTION */}
+
+              <div
+                style={cardStyle}
+              >
+                <h2
+                  style={
+                    sectionTitleStyle
+                  }
+                >
+                  👤 Profile Connection
+                </h2>
+
+                <p
+                  style={{
+                    color:
+                      "#374151",
+                    lineHeight:
+                      "1.7",
+                  }}
+                >
+                  Your resume analysis
+                  uses your current
+                  career direction and
+                  previously completed
+                  career analysis data.
+                </p>
+
+                {(profile?.name ||
+                  profile?.fullName) && (
+                  <p
+                    style={{
+                      color:
+                        "#374151",
+                    }}
+                  >
+                    <strong>
+                      Student:
+                    </strong>{" "}
+                    {profile?.name ||
+                      profile?.fullName}
                   </p>
                 )}
 
-              {interestAssessment &&
-                Object.keys(
-                  interestAssessment
-                ).length > 0 && (
-                  <p
-                    style={{
-                      color: "#374151",
-                    }}
-                  >
-                    ✅ Interest assessment data
-                    available
-                  </p>
-                )}
-            </div>
+                {skillAssessment &&
+                  Object.keys(
+                    skillAssessment
+                  ).length > 0 && (
+                    <p
+                      style={{
+                        color:
+                          "#374151",
+                      }}
+                    >
+                      ✅ Skill assessment
+                      data available
+                    </p>
+                  )}
 
-            {/* ACTIONS */}
+                {interestAssessment &&
+                  Object.keys(
+                    interestAssessment
+                  ).length > 0 && (
+                    <p
+                      style={{
+                        color:
+                          "#374151",
+                      }}
+                    >
+                      ✅ Interest assessment
+                      data available
+                    </p>
+                  )}
+              </div>
 
-            <div
-              style={{
-                ...cardStyle,
-                display: "flex",
-                gap: "12px",
-                flexWrap: "wrap",
-                alignItems: "center",
-              }}
-            >
-              <button
-                onClick={
-                  handleAnalyzeAnother
-                }
-                style={
-                  secondaryButtonStyle
-                }
+              {/* ACTIONS */}
+
+              <div
+                style={{
+                  ...cardStyle,
+                  display: "flex",
+                  gap: "12px",
+                  flexWrap:
+                    "wrap",
+                  alignItems:
+                    "center",
+                }}
               >
-                🔄 Analyze Another Resume
-              </button>
+                <button
+                  onClick={
+                    handleAnalyzeAnother
+                  }
+                  style={
+                    secondaryButtonStyle
+                  }
+                >
+                  🔄 Analyze Another
+                  Resume
+                </button>
 
-              <button
-                onClick={() =>
-                  navigate(
-                    "/job-preparation"
-                  )
-                }
-                style={buttonStyle}
-              >
-                🎯 Continue to Job Preparation →
-              </button>
-            </div>
+                <button
+                  onClick={() =>
+                    navigate(
+                      "/job-preparation"
+                    )
+                  }
+                  style={
+                    buttonStyle
+                  }
+                >
+                  🎯 Continue to Job
+                  Preparation →
+                </button>
+              </div>
 
-          </>
-        )}
+            </>
+          )}
 
       </div>
     </div>

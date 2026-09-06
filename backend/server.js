@@ -1,8 +1,13 @@
+
 const express = require("express");
 const cors = require("cors");
 const OpenAI = require("openai");
 const multer = require("multer");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 require("dotenv").config();
+
+const db = require("./database");
 
 const app = express();
 
@@ -78,14 +83,173 @@ app.get("/", (req, res) => {
   });
 });
 
+app.post("/api/auth/register", async (req, res) => {
+  try {
+    const { name, email, password } = req.body || {};
+
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Name, email and password are required.",
+      });
+    }
+
+    if (String(password).length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: "Password must be at least 6 characters.",
+      });
+    }
+
+    const normalizedEmail = String(email).trim().toLowerCase();
+    const normalizedName = String(name).trim();
+
+    if (!normalizedName || !normalizedEmail) {
+      return res.status(400).json({
+        success: false,
+        message: "Name and email are required.",
+      });
+    }
+
+    const existingStudent = db
+      .prepare("SELECT id FROM students WHERE email = ?")
+      .get(normalizedEmail);
+
+    if (existingStudent) {
+      return res.status(409).json({
+        success: false,
+        message: "An account with this email already exists.",
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(
+      String(password),
+      10
+    );
+
+    const result = db
+      .prepare(
+        "INSERT INTO students (name, email, password) VALUES (?, ?, ?)"
+      )
+      .run(
+        normalizedName,
+        normalizedEmail,
+        hashedPassword
+      );
+
+    const studentId = Number(result.lastInsertRowid);
+
+    const token = jwt.sign(
+      {
+        id: studentId,
+        email: normalizedEmail,
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "7d",
+      }
+    );
+
+    return res.status(201).json({
+      success: true,
+      message: "Registration successful.",
+      token,
+      student: {
+        id: studentId,
+        name: normalizedName,
+        email: normalizedEmail,
+      },
+    });
+  } catch (error) {
+    console.error("Register Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Registration failed.",
+      error: error.message,
+    });
+  }
+});
+
+app.post("/api/auth/login", async (req, res) => {
+  try {
+    const { email, password } = req.body || {};
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and password are required.",
+      });
+    }
+
+    const normalizedEmail = String(email)
+      .trim()
+      .toLowerCase();
+
+    const student = db
+      .prepare(
+        "SELECT id, name, email, password FROM students WHERE email = ?"
+      )
+      .get(normalizedEmail);
+
+    if (!student) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid email or password.",
+      });
+    }
+
+    const passwordMatch = await bcrypt.compare(
+      String(password),
+      student.password
+    );
+
+    if (!passwordMatch) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid email or password.",
+      });
+    }
+
+    const token = jwt.sign(
+      {
+        id: student.id,
+        email: student.email,
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "7d",
+      }
+    );
+
+    return res.json({
+      success: true,
+      message: "Login successful.",
+      token,
+      student: {
+        id: student.id,
+        name: student.name,
+        email: student.email,
+      },
+    });
+  } catch (error) {
+    console.error("Login Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Login failed.",
+      error: error.message,
+    });
+  }
+});
+
 app.get("/api/interest-questions", (req, res) => {
   res.json({
     success: true,
     questions: [
       {
         id: 1,
-        question:
-          "Which activity do you enjoy the most?",
+        question: "Which activity do you enjoy the most?",
         options: [
           "Building software",
           "Analyzing data",
@@ -95,8 +259,7 @@ app.get("/api/interest-questions", (req, res) => {
       },
       {
         id: 2,
-        question:
-          "Which type of problem do you prefer?",
+        question: "Which type of problem do you prefer?",
         options: [
           "Logical programming problems",
           "Data and statistics problems",
@@ -106,8 +269,7 @@ app.get("/api/interest-questions", (req, res) => {
       },
       {
         id: 3,
-        question:
-          "Which technology interests you most?",
+        question: "Which technology interests you most?",
         options: [
           "Artificial Intelligence",
           "Databases and Analytics",
@@ -117,8 +279,7 @@ app.get("/api/interest-questions", (req, res) => {
       },
       {
         id: 4,
-        question:
-          "What would you like to build?",
+        question: "What would you like to build?",
         options: [
           "AI applications",
           "Data analysis systems",
@@ -128,8 +289,7 @@ app.get("/api/interest-questions", (req, res) => {
       },
       {
         id: 5,
-        question:
-          "Which skill would you like to improve?",
+        question: "Which skill would you like to improve?",
         options: [
           "Machine Learning",
           "Data Analysis",
@@ -312,7 +472,11 @@ app.post("/api/skill-gap/questions", async (req, res) => {
       completed = 0,
     } = req.body || {};
 
-    if (!skill || typeof skill !== "string" || !skill.trim()) {
+    if (
+      !skill ||
+      typeof skill !== "string" ||
+      !skill.trim()
+    ) {
       return res.status(400).json({
         success: false,
         message: "Skill is required.",
@@ -758,3 +922,4 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+

@@ -9,29 +9,43 @@ import {
   MODULE_KEYS,
 } from "../utils/progress";
 
+import {
+  getStudentData,
+  saveStudentData,
+} from "../utils/studentStorage";
+
 function Readiness() {
   const navigate = useNavigate();
 
   // =====================================================
-  // SAFE LOCAL STORAGE READER
+  // SAFE STUDENT STORAGE READER
   // =====================================================
 
-  const getStorageData = (key) => {
+  const getStorageData = (
+    key,
+    defaultValue = {}
+  ) => {
     try {
-      const data = localStorage.getItem(key);
+      const data = getStudentData(
+        key,
+        defaultValue
+      );
 
-      if (!data) {
-        return {};
+      if (
+        !data ||
+        typeof data !== "object"
+      ) {
+        return defaultValue;
       }
 
-      const parsed = JSON.parse(data);
-
-      return parsed && typeof parsed === "object"
-        ? parsed
-        : {};
+      return data;
     } catch (error) {
-      console.error(`Error reading ${key}:`, error);
-      return {};
+      console.error(
+        `Error reading ${key}:`,
+        error
+      );
+
+      return defaultValue;
     }
   };
 
@@ -39,7 +53,8 @@ function Readiness() {
   // REFRESH VERSION
   // =====================================================
 
-  const [dataVersion, setDataVersion] = useState(0);
+  const [dataVersion, setDataVersion] =
+    useState(0);
 
   // =====================================================
   // LISTEN FOR UPDATES
@@ -47,7 +62,9 @@ function Readiness() {
 
   useEffect(() => {
     const refreshReadiness = () => {
-      setDataVersion((version) => version + 1);
+      setDataVersion(
+        (version) => version + 1
+      );
     };
 
     window.addEventListener(
@@ -88,85 +105,140 @@ function Readiness() {
   // =====================================================
 
   const profile = useMemo(
-    () => getStorageData("studentProfile"),
+    () =>
+      getStorageData(
+        "studentProfile",
+        {}
+      ),
     [dataVersion]
   );
 
-  const careerRecommendation = useMemo(
-    () =>
-      getStorageData("careerRecommendation"),
-    [dataVersion]
-  );
+  const careerRecommendation =
+    useMemo(
+      () =>
+        getStorageData(
+          "careerRecommendation",
+          {}
+        ),
+      [dataVersion]
+    );
 
   const careerAnalysis = useMemo(
-    () => getStorageData("careerAnalysis"),
+    () =>
+      getStorageData(
+        "careerAnalysis",
+        {}
+      ),
+    [dataVersion]
+  );
+
+  const aiCareerAnalysis = useMemo(
+    () =>
+      getStorageData(
+        "aiCareerAnalysis",
+        {}
+      ),
     [dataVersion]
   );
 
   const skillGap = useMemo(
-    () => getStorageData("skillGap"),
+    () =>
+      getStorageData(
+        "skillGap",
+        {}
+      ),
     [dataVersion]
   );
 
   const assessment = useMemo(
-    () => getStorageData("skillAssessment"),
+    () =>
+      getStorageData(
+        "skillAssessment",
+        {}
+      ),
     [dataVersion]
   );
 
   const projects = useMemo(() => {
     const projectRecommendations =
       getStorageData(
-        "projectRecommendations"
+        "projectRecommendations",
+        {}
       );
 
     if (
       projectRecommendations &&
-      typeof projectRecommendations === "object" &&
-      Object.keys(projectRecommendations).length > 0
+      typeof projectRecommendations ===
+        "object" &&
+      Object.keys(
+        projectRecommendations
+      ).length > 0
     ) {
       return projectRecommendations;
     }
 
-    return getStorageData("projects");
+    return getStorageData(
+      "projects",
+      {}
+    );
   }, [dataVersion]);
 
   const roadmap = useMemo(() => {
     const savedRoadmap =
-      getStorageData("careerRoadmap");
+      getStorageData(
+        "careerRoadmap",
+        {}
+      );
 
     if (
       savedRoadmap &&
-      typeof savedRoadmap === "object" &&
-      Object.keys(savedRoadmap).length > 0
+      typeof savedRoadmap ===
+        "object" &&
+      Object.keys(savedRoadmap).length >
+        0
     ) {
       return savedRoadmap;
     }
 
-    return getStorageData("roadmap");
+    return getStorageData(
+      "roadmap",
+      {}
+    );
   }, [dataVersion]);
 
   const mockInterview = useMemo(
-    () => getStorageData("mockInterview"),
+    () =>
+      getStorageData(
+        "mockInterview",
+        {}
+      ),
     [dataVersion]
   );
 
-  const savedCareerReadiness = useMemo(
-    () => {
+  const savedCareerReadiness =
+    useMemo(() => {
       const careerReadiness =
-        getStorageData("careerReadiness");
+        getStorageData(
+          "careerReadiness",
+          {}
+        );
 
       if (
         careerReadiness &&
-        typeof careerReadiness === "object" &&
-        Object.keys(careerReadiness).length > 0
+        typeof careerReadiness ===
+          "object" &&
+        Object.keys(
+          careerReadiness
+        ).length > 0
       ) {
         return careerReadiness;
       }
 
-      return getStorageData("readiness");
-    },
-    [dataVersion]
-  );
+      return getStorageData(
+        "readiness",
+        {}
+      );
+    }, [dataVersion]);
 
   // =====================================================
   // CAREER
@@ -179,6 +251,9 @@ function Readiness() {
     careerAnalysis.career ||
     careerAnalysis.recommendedCareer ||
     careerAnalysis.recommendedCareerName ||
+    aiCareerAnalysis.career ||
+    aiCareerAnalysis.recommendedCareer ||
+    aiCareerAnalysis.recommendedCareerName ||
     skillGap.career ||
     projects.career ||
     roadmap.career ||
@@ -197,6 +272,8 @@ function Readiness() {
           careerRecommendation.careerMatch ??
           careerAnalysis.matchPercentage ??
           careerAnalysis.careerMatch ??
+          aiCareerAnalysis.matchPercentage ??
+          aiCareerAnalysis.careerMatch ??
           skillGap.careerMatch ??
           projects.careerMatch ??
           roadmap.careerMatch ??
@@ -227,17 +304,18 @@ function Readiness() {
     )
   );
 
-  const assessmentPercentage = Math.min(
-    100,
-    Math.max(
-      0,
-      Math.round(
-        assessmentScore /
-          assessmentTotal *
-          100
+  const assessmentPercentage =
+    Math.min(
+      100,
+      Math.max(
+        0,
+        Math.round(
+          (assessmentScore /
+            assessmentTotal) *
+            100
+        )
       )
-    )
-  );
+    );
 
   // =====================================================
   // SKILLS
@@ -260,7 +338,11 @@ function Readiness() {
       return skillGap.skillGaps;
     }
 
-    if (Array.isArray(skillGap.gaps)) {
+    if (
+      Array.isArray(
+        skillGap.gaps
+      )
+    ) {
       return skillGap.gaps;
     }
 
@@ -288,8 +370,8 @@ function Readiness() {
       ? Math.min(
           100,
           Math.round(
-            learnedSkills.length /
-              totalSkills *
+            (learnedSkills.length /
+              totalSkills) *
               100
           )
         )
@@ -319,7 +401,8 @@ function Readiness() {
     if (
       projects.projectPercentage !==
         undefined &&
-      projects.projectPercentage !== null
+      projects.projectPercentage !==
+        null
     ) {
       return Math.min(
         100,
@@ -338,8 +421,8 @@ function Readiness() {
       return Math.min(
         100,
         Math.round(
-          completedProjects.length /
-            recommendedProjects.length *
+          (completedProjects.length /
+            recommendedProjects.length) *
             100
         )
       );
@@ -358,7 +441,8 @@ function Readiness() {
 
   const mockReport =
     mockInterview &&
-    typeof mockInterview.report === "object"
+    typeof mockInterview.report ===
+      "object"
       ? mockInterview.report
       : {};
 
@@ -370,67 +454,71 @@ function Readiness() {
     mockInterview.completed === true ||
     Boolean(mockInterview.report);
 
-  const mockInterviewScore = Math.min(
-    100,
-    Math.max(
-      0,
-      Number(
-        mockInterview.percentage ??
-          mockInterview.score ??
-          mockInterview.overallScore ??
-          mockReport.overallScore ??
-          0
+  const mockInterviewScore =
+    Math.min(
+      100,
+      Math.max(
+        0,
+        Number(
+          mockInterview.percentage ??
+            mockInterview.score ??
+            mockInterview.overallScore ??
+            mockReport.overallScore ??
+            0
+        )
       )
-    )
-  );
+    );
 
   // =====================================================
   // TECHNICAL KNOWLEDGE
   // =====================================================
 
-  const technicalKnowledge = Math.min(
-    100,
-    Math.max(
-      0,
-      Number(
-        mockReport.technicalKnowledge ??
-          mockInterview.technicalKnowledge ??
-          0
+  const technicalKnowledge =
+    Math.min(
+      100,
+      Math.max(
+        0,
+        Number(
+          mockReport.technicalKnowledge ??
+            mockInterview.technicalKnowledge ??
+            0
+        )
       )
-    )
-  );
+    );
 
   // =====================================================
   // COMMUNICATION
   // =====================================================
 
-  const communicationScore = Math.min(
-    100,
-    Math.max(
-      0,
-      Number(
-        mockReport.communication ??
-          mockInterview.communication ??
-          0
+  const communicationScore =
+    Math.min(
+      100,
+      Math.max(
+        0,
+        Number(
+          mockReport.communication ??
+            mockInterview.communication ??
+            0
+        )
       )
-    )
-  );
+    );
 
   // =====================================================
   // PROBLEM SOLVING
   // =====================================================
 
-  const problemSolvingScore = Math.min(
-    100,
-    Math.max(
-      0,
-      Number(
-        mockReport.problemSolving ??
-          mockInterview.problemSolving ??
-          0
+  const problemSolvingScore =
+    Math.min(
+      100,
+      Math.max(
+        0,
+        Number(
+          mockReport.problemSolving ??
+            mockInterview.problemSolving ??
+            0
+        )
       )
-    )
-  );
+    );
 
   // =====================================================
   // MOCK READINESS LEVEL
@@ -496,22 +584,20 @@ function Readiness() {
       Math.max(
         0,
         Math.round(
-          assessmentPercentage * 0.25 +
-          skillScore * 0.25 +
-          projectScore * 0.20 +
-          careerMatch * 0.10 +
-          mockInterviewScore * 0.20
+          assessmentPercentage *
+            0.25 +
+            skillScore * 0.25 +
+            projectScore * 0.2 +
+            careerMatch * 0.1 +
+            mockInterviewScore * 0.2
         )
       )
     );
 
   /*
-    IMPORTANT:
-
-    We calculate the score from current data
-    instead of using an old saved score.
-
-    This prevents stale readiness results.
+    We calculate the score from current
+    student-specific data instead of using
+    an old saved score.
   */
 
   const readinessScore =
@@ -618,7 +704,8 @@ function Readiness() {
       .slice(0, 3)
       .forEach((strength) => {
         if (
-          typeof strength === "string" &&
+          typeof strength ===
+            "string" &&
           !result.includes(strength)
         ) {
           result.push(strength);
@@ -732,7 +819,8 @@ function Readiness() {
       .slice(0, 3)
       .forEach((weakness) => {
         if (
-          typeof weakness === "string" &&
+          typeof weakness ===
+            "string" &&
           !result.includes(weakness)
         ) {
           result.push(weakness);
@@ -755,7 +843,7 @@ function Readiness() {
   ]);
 
   // =====================================================
-  // SAVE READINESS
+  // SAVE STUDENT-WISE READINESS
   // =====================================================
 
   useEffect(() => {
@@ -825,20 +913,23 @@ function Readiness() {
       source: "readiness",
     };
 
-    localStorage.setItem(
+    // ---------------------------------------------------
+    // SAVE FOR CURRENT LOGGED-IN STUDENT
+    // ---------------------------------------------------
+
+    saveStudentData(
       "careerReadiness",
-      JSON.stringify(readinessResult)
+      readinessResult
     );
 
-    localStorage.setItem(
+    saveStudentData(
       "readiness",
-      JSON.stringify(readinessResult)
+      readinessResult
     );
 
-    /*
-      Readiness should be considered complete
-      once this analysis has been generated.
-    */
+    // ---------------------------------------------------
+    // MARK MODULE COMPLETE
+    // ---------------------------------------------------
 
     try {
       completeModule(
@@ -850,6 +941,10 @@ function Readiness() {
         error
       );
     }
+
+    // ---------------------------------------------------
+    // REFRESH OTHER COMPONENTS
+    // ---------------------------------------------------
 
     window.dispatchEvent(
       new Event("readinessUpdated")
@@ -968,7 +1063,9 @@ function Readiness() {
           <div
             style={{
               ...styles.mainScore,
-              ...getScoreStyle(readinessScore),
+              ...getScoreStyle(
+                readinessScore
+              ),
             }}
           >
             {readinessScore}%
@@ -978,7 +1075,11 @@ function Readiness() {
             {readinessLevel.label}
           </h2>
 
-          <p style={styles.readinessDescription}>
+          <p
+            style={
+              styles.readinessDescription
+            }
+          >
             {readinessLevel.description}
           </p>
 
@@ -997,9 +1098,11 @@ function Readiness() {
 
           <div style={styles.progressText}>
             <span>0%</span>
+
             <strong>
               {readinessScore}%
             </strong>
+
             <span>100%</span>
           </div>
         </div>
@@ -1020,13 +1123,19 @@ function Readiness() {
             <div
               style={{
                 ...styles.cardScore,
-                ...getScoreStyle(skillScore),
+                ...getScoreStyle(
+                  skillScore
+                ),
               }}
             >
               {skillScore}%
             </div>
 
-            <p style={styles.cardDescription}>
+            <p
+              style={
+                styles.cardDescription
+              }
+            >
               Based on your current skills
               compared with required skills.
             </p>
@@ -1065,7 +1174,11 @@ function Readiness() {
               {assessmentPercentage}%
             </div>
 
-            <p style={styles.cardDescription}>
+            <p
+              style={
+                styles.cardDescription
+              }
+            >
               Your performance in the skill
               assessment.
             </p>
@@ -1101,13 +1214,19 @@ function Readiness() {
             <div
               style={{
                 ...styles.cardScore,
-                ...getScoreStyle(projectScore),
+                ...getScoreStyle(
+                  projectScore
+                ),
               }}
             >
               {projectScore}%
             </div>
 
-            <p style={styles.cardDescription}>
+            <p
+              style={
+                styles.cardDescription
+              }
+            >
               Based on your completed practical
               projects.
             </p>
@@ -1144,13 +1263,19 @@ function Readiness() {
             <div
               style={{
                 ...styles.cardScore,
-                ...getScoreStyle(careerMatch),
+                ...getScoreStyle(
+                  careerMatch
+                ),
               }}
             >
               {careerMatch}%
             </div>
 
-            <p style={styles.cardDescription}>
+            <p
+              style={
+                styles.cardDescription
+              }
+            >
               Compatibility with your
               recommended career.
             </p>
@@ -1191,7 +1316,11 @@ function Readiness() {
                 : "Not completed"}
             </div>
 
-            <p style={styles.cardDescription}>
+            <p
+              style={
+                styles.cardDescription
+              }
+            >
               Based on your AI mock interview
               performance.
             </p>
@@ -1230,7 +1359,11 @@ function Readiness() {
               </div>
 
               <div>
-                <h2 style={styles.sectionTitle}>
+                <h2
+                  style={
+                    styles.sectionTitle
+                  }
+                >
                   Mock Interview Performance
                 </h2>
 
@@ -1246,10 +1379,14 @@ function Readiness() {
               </div>
             </div>
 
-            <div style={styles.interviewGrid}>
+            <div
+              style={styles.interviewGrid}
+            >
 
               <div
-                style={styles.interviewMetric}
+                style={
+                  styles.interviewMetric
+                }
               >
                 <span
                   style={
@@ -1277,7 +1414,9 @@ function Readiness() {
               </div>
 
               <div
-                style={styles.interviewMetric}
+                style={
+                  styles.interviewMetric
+                }
               >
                 <span
                   style={
@@ -1305,7 +1444,9 @@ function Readiness() {
               </div>
 
               <div
-                style={styles.interviewMetric}
+                style={
+                  styles.interviewMetric
+                }
               >
                 <span
                   style={
@@ -1333,7 +1474,9 @@ function Readiness() {
               </div>
 
               <div
-                style={styles.interviewMetric}
+                style={
+                  styles.interviewMetric
+                }
               >
                 <span
                   style={
@@ -1364,7 +1507,9 @@ function Readiness() {
 
             {mockReadinessLevel && (
               <div
-                style={styles.interviewStatus}
+                style={
+                  styles.interviewStatus
+                }
               >
                 <strong>
                   AI Interview Readiness:
@@ -1373,7 +1518,8 @@ function Readiness() {
               </div>
             )}
 
-            {mockRecommendations.length > 0 && (
+            {mockRecommendations.length >
+              0 && (
               <div
                 style={
                   styles.interviewRecommendations
@@ -1403,9 +1549,13 @@ function Readiness() {
             <button
               type="button"
               onClick={() =>
-                navigate("/mock-interview")
+                navigate(
+                  "/mock-interview"
+                )
               }
-              style={styles.interviewButton}
+              style={
+                styles.interviewButton
+              }
             >
               🎤 Practice Mock Interview Again →
             </button>
@@ -1421,7 +1571,11 @@ function Readiness() {
             </div>
 
             <div>
-              <h2 style={styles.sectionTitle}>
+              <h2
+                style={
+                  styles.sectionTitle
+                }
+              >
                 Your Strengths
               </h2>
 
@@ -1453,7 +1607,9 @@ function Readiness() {
                     ✓
                   </span>
 
-                  <span>{strength}</span>
+                  <span>
+                    {strength}
+                  </span>
                 </div>
               )
             )}
@@ -1469,7 +1625,11 @@ function Readiness() {
             </div>
 
             <div>
-              <h2 style={styles.sectionTitle}>
+              <h2
+                style={
+                  styles.sectionTitle
+                }
+              >
                 Areas to Improve
               </h2>
 
@@ -1485,7 +1645,9 @@ function Readiness() {
           </div>
 
           {weaknesses.length > 0 ? (
-            <div style={styles.weaknessList}>
+            <div
+              style={styles.weaknessList}
+            >
               {weaknesses.map(
                 (weakness, index) => (
                   <div
@@ -1502,13 +1664,17 @@ function Readiness() {
                       !
                     </span>
 
-                    <span>{weakness}</span>
+                    <span>
+                      {weakness}
+                    </span>
                   </div>
                 )
               )}
             </div>
           ) : (
-            <div style={styles.noWeakness}>
+            <div
+              style={styles.noWeakness}
+            >
               🎉 Excellent! No major
               weaknesses identified.
             </div>
@@ -1527,8 +1693,12 @@ function Readiness() {
               styles.skillSummaryGrid
             }
           >
-            <div style={styles.summaryGreen}>
-              <div style={styles.summaryIcon}>
+            <div
+              style={styles.summaryGreen}
+            >
+              <div
+                style={styles.summaryIcon}
+              >
                 ✅
               </div>
 
@@ -1539,8 +1709,12 @@ function Readiness() {
               <p>Skills You Have</p>
             </div>
 
-            <div style={styles.summaryRed}>
-              <div style={styles.summaryIcon}>
+            <div
+              style={styles.summaryRed}
+            >
+              <div
+                style={styles.summaryIcon}
+              >
                 📚
               </div>
 
@@ -1551,8 +1725,12 @@ function Readiness() {
               <p>Skills to Develop</p>
             </div>
 
-            <div style={styles.summaryBlue}>
-              <div style={styles.summaryIcon}>
+            <div
+              style={styles.summaryBlue}
+            >
+              <div
+                style={styles.summaryIcon}
+              >
                 💻
               </div>
 
@@ -1572,14 +1750,22 @@ function Readiness() {
             📊 Readiness Score Breakdown
           </h2>
 
-          <p style={styles.sectionSubtitle}>
+          <p
+            style={
+              styles.sectionSubtitle
+            }
+          >
             Your overall score is calculated
             from five important areas.
           </p>
 
-          <div style={styles.breakdownList}>
+          <div
+            style={styles.breakdownList}
+          >
 
-            <div style={styles.breakdownItem}>
+            <div
+              style={styles.breakdownItem}
+            >
               <div>
                 <strong>
                   📝 Assessment
@@ -1595,7 +1781,9 @@ function Readiness() {
               </strong>
             </div>
 
-            <div style={styles.breakdownItem}>
+            <div
+              style={styles.breakdownItem}
+            >
               <div>
                 <strong>
                   🧠 Skills
@@ -1611,7 +1799,9 @@ function Readiness() {
               </strong>
             </div>
 
-            <div style={styles.breakdownItem}>
+            <div
+              style={styles.breakdownItem}
+            >
               <div>
                 <strong>
                   💻 Projects
@@ -1627,7 +1817,9 @@ function Readiness() {
               </strong>
             </div>
 
-            <div style={styles.breakdownItem}>
+            <div
+              style={styles.breakdownItem}
+            >
               <div>
                 <strong>
                   🎯 Career Match
@@ -1643,7 +1835,9 @@ function Readiness() {
               </strong>
             </div>
 
-            <div style={styles.breakdownItem}>
+            <div
+              style={styles.breakdownItem}
+            >
               <div>
                 <strong>
                   🎤 Mock Interview
@@ -1689,8 +1883,12 @@ function Readiness() {
 
         {/* COMPLETED */}
 
-        <div style={styles.completedBox}>
-          <div style={styles.completedIcon}>
+        <div
+          style={styles.completedBox}
+        >
+          <div
+            style={styles.completedIcon}
+          >
             🎯
           </div>
 

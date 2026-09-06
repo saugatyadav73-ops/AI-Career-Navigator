@@ -1,28 +1,32 @@
 import React, { useState } from "react";
 import { completeModule, MODULE_KEYS } from "../utils/progress";
 import ModuleCompleteButton from "../components/ModuleCompleteButton";
+import {
+  getStudentData,
+  saveStudentData,
+} from "../utils/studentStorage";
 
 function Profile() {
-  const savedProfile = localStorage.getItem("studentProfile");
+  const savedProfile = getStudentData("studentProfile", null);
 
   const [profile, setProfile] = useState(
-    savedProfile
-      ? JSON.parse(savedProfile)
-      : {
-          fullName: "",
-          email: "",
-          phone: "",
-          college: "",
-          education: "",
-          skills: "",
-          interests: "",
-          careerInterest: "",
-          projects: "",
-          experience: "",
-        }
+    savedProfile || {
+      fullName: "",
+      email: "",
+      phone: "",
+      college: "",
+      education: "",
+      skills: "",
+      interests: "",
+      careerInterest: "",
+      projects: "",
+      experience: "",
+    }
   );
 
-  const [profileSaved, setProfileSaved] = useState(!!savedProfile);
+  const [profileSaved, setProfileSaved] = useState(
+    !!savedProfile
+  );
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -38,10 +42,7 @@ function Profile() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    localStorage.setItem(
-      "studentProfile",
-      JSON.stringify(profile)
-    );
+    saveStudentData("studentProfile", profile);
 
     completeModule(MODULE_KEYS.PROFILE);
 
@@ -65,6 +66,7 @@ function Profile() {
             <h2>Personal Information</h2>
 
             <label style={styles.label}>Full Name</label>
+
             <input
               style={styles.input}
               type="text"
@@ -76,6 +78,7 @@ function Profile() {
             />
 
             <label style={styles.label}>Email</label>
+
             <input
               style={styles.input}
               type="email"
@@ -86,7 +89,10 @@ function Profile() {
               required
             />
 
-            <label style={styles.label}>Phone Number</label>
+            <label style={styles.label}>
+              Phone Number
+            </label>
+
             <input
               style={styles.input}
               type="tel"
@@ -126,6 +132,7 @@ function Profile() {
               <option value="">
                 Select education level
               </option>
+
               <option value="Diploma">Diploma</option>
               <option value="Bachelor">Bachelor</option>
               <option value="Master">Master</option>
@@ -179,24 +186,31 @@ function Profile() {
               <option value="">
                 Select career interest
               </option>
+
               <option value="AI/ML Engineer">
                 AI/ML Engineer
               </option>
+
               <option value="Software Developer">
                 Software Developer
               </option>
+
               <option value="Web Developer">
                 Web Developer
               </option>
+
               <option value="Data Scientist">
                 Data Scientist
               </option>
+
               <option value="Cyber Security Engineer">
                 Cyber Security Engineer
               </option>
+
               <option value="Cloud Engineer">
                 Cloud Engineer
               </option>
+
               <option value="UI/UX Designer">
                 UI/UX Designer
               </option>
@@ -206,7 +220,9 @@ function Profile() {
           <div style={styles.section}>
             <h2>Projects & Experience</h2>
 
-            <label style={styles.label}>Projects</label>
+            <label style={styles.label}>
+              Projects
+            </label>
 
             <textarea
               style={styles.textarea}
@@ -230,16 +246,26 @@ function Profile() {
               <option value="">
                 Select level
               </option>
-              <option value="Beginner">Beginner</option>
+
+              <option value="Beginner">
+                Beginner
+              </option>
+
               <option value="Intermediate">
                 Intermediate
               </option>
-              <option value="Advanced">Advanced</option>
+
+              <option value="Advanced">
+                Advanced
+              </option>
             </select>
           </div>
 
           {!profileSaved && (
-            <button type="submit" style={styles.button}>
+            <button
+              type="submit"
+              style={styles.button}
+            >
               Save Profile
             </button>
           )}

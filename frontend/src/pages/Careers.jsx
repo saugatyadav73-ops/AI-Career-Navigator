@@ -11,29 +11,35 @@ import {
   MODULE_KEYS,
 } from "../utils/progress";
 
+import {
+  getStudentData,
+  saveStudentData,
+} from "../utils/studentStorage";
+
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ||
+  "http://localhost:5000";
+
 function Careers() {
   const navigate = useNavigate();
 
   // =====================================================
-  // LOCAL STORAGE HELPER
+  // STUDENT-WISE STORAGE HELPER
   // =====================================================
 
-  const getData = (key) => {
+  const getData = (key, defaultValue = {}) => {
     try {
-      const data = localStorage.getItem(key);
-
-      if (!data) {
-        return {};
-      }
-
-      return JSON.parse(data);
+      return getStudentData(
+        key,
+        defaultValue
+      );
     } catch (error) {
       console.error(
         `Error reading ${key}:`,
         error
       );
 
-      return {};
+      return defaultValue;
     }
   };
 
@@ -53,23 +59,30 @@ function Careers() {
   const [aiError, setAiError] = useState("");
 
   // =====================================================
-  // LOAD DATA
+  // LOAD STUDENT DATA
   // =====================================================
 
   useEffect(() => {
     const savedProfile =
-      getData("studentProfile");
+      getData("studentProfile", {});
 
     const savedSkillAssessment =
-      getData("skillAssessment");
+      getData("skillAssessment", {});
 
     const savedInterestAssessment =
-      getData("interestAssessment");
+      getData(
+        "interestAssessment",
+        {}
+      );
 
     const savedAIAnalysis =
-      localStorage.getItem("aiCareerAnalysis");
+      getData(
+        "aiCareerAnalysis",
+        ""
+      );
 
     setProfile(savedProfile);
+
     setSkillAssessment(
       savedSkillAssessment
     );
@@ -175,16 +188,6 @@ function Careers() {
 
   // =====================================================
   // INTEREST ASSESSMENT QUESTIONS
-  //
-  // IMPORTANT:
-  // Interests.jsx stores answers as indexes:
-  // 0 = first option
-  // 1 = second option
-  // 2 = third option
-  // 3 = fourth option
-  //
-  // These questions match the backend
-  // /api/interest-questions endpoint.
   // =====================================================
 
   const interestQuestions = [
@@ -345,10 +348,6 @@ function Careers() {
             answerIndex
           ].toLowerCase();
 
-        // ---------------------------------------------
-        // SOFTWARE
-        // ---------------------------------------------
-
         if (
           answerText.includes("software") ||
           answerText.includes("programming") ||
@@ -359,10 +358,6 @@ function Careers() {
         ) {
           scores.software += 1;
         }
-
-        // ---------------------------------------------
-        // WEB
-        // ---------------------------------------------
 
         if (
           answerText.includes("website") ||
@@ -377,10 +372,6 @@ function Careers() {
           scores.web += 1;
         }
 
-        // ---------------------------------------------
-        // CYBERSECURITY
-        // ---------------------------------------------
-
         if (
           answerText.includes("security") ||
           answerText.includes("cyber") ||
@@ -391,10 +382,6 @@ function Careers() {
         ) {
           scores.cybersecurity += 1;
         }
-
-        // ---------------------------------------------
-        // AI
-        // ---------------------------------------------
 
         if (
           answerText.includes("ai") ||
@@ -546,10 +533,6 @@ function Careers() {
       .map((career) => {
         let match = 20;
 
-        // ---------------------------------------------
-        // SKILL MATCH
-        // ---------------------------------------------
-
         const matchedSkills =
           career.skills.filter(
             (careerSkill) =>
@@ -565,10 +548,6 @@ function Careers() {
               30
           );
         }
-
-        // ---------------------------------------------
-        // KEYWORD MATCH
-        // ---------------------------------------------
 
         const keywordMatches =
           career.keywords.filter(
@@ -588,17 +567,9 @@ function Careers() {
           );
         }
 
-        // ---------------------------------------------
-        // SKILL ASSESSMENT
-        // ---------------------------------------------
-
         match += Math.round(
           skillPercentage * 0.15
         );
-
-        // ---------------------------------------------
-        // INTEREST MATCH
-        // ---------------------------------------------
 
         const interestScore =
           interestScores[
@@ -607,10 +578,6 @@ function Careers() {
 
         match += interestScore * 4;
 
-        // ---------------------------------------------
-        // STRONGEST INTEREST BONUS
-        // ---------------------------------------------
-
         if (
           strongestInterest ===
           career.interestKey
@@ -618,16 +585,11 @@ function Careers() {
           match += 10;
         }
 
-        // ---------------------------------------------
-        // CAREER INTEREST BONUS
-        // ---------------------------------------------
-
         if (
           careerInterest &&
           (
             careerInterest.includes(
-              career.title
-                .toLowerCase()
+              career.title.toLowerCase()
             ) ||
             career.keywords.some(
               (keyword) =>
@@ -640,7 +602,6 @@ function Careers() {
           match += 10;
         }
 
-        // Keep between 0 and 99
         match = Math.max(
           0,
           Math.min(99, match)
@@ -673,7 +634,7 @@ function Careers() {
     careerResults[0] || careers[0];
 
   // =====================================================
-  // SAVE LOCAL CAREER RECOMMENDATION
+  // SAVE STUDENT-WISE CAREER RECOMMENDATION
   // =====================================================
 
   useEffect(() => {
@@ -695,11 +656,9 @@ function Careers() {
         new Date().toISOString(),
     };
 
-    localStorage.setItem(
+    saveStudentData(
       "careerRecommendation",
-      JSON.stringify(
-        recommendation
-      )
+      recommendation
     );
   }, [
     bestCareer,
@@ -717,41 +676,49 @@ function Careers() {
     try {
       const dataToSend = {
         profile: getData(
-          "studentProfile"
+          "studentProfile",
+          {}
         ),
 
         skillAssessment: getData(
-          "skillAssessment"
+          "skillAssessment",
+          {}
         ),
 
         interestAssessment:
           getData(
-            "interestAssessment"
+            "interestAssessment",
+            {}
           ),
 
         skillGap: getData(
-          "skillGap"
+          "skillGap",
+          {}
         ),
 
         roadmap: getData(
-          "roadmap"
+          "roadmap",
+          {}
         ),
 
         projects: getData(
-          "projects"
+          "projects",
+          {}
         ),
 
         readiness: getData(
-          "careerReadiness"
+          "careerReadiness",
+          {}
         ),
 
         resume: getData(
-          "resume"
+          "resume",
+          {}
         ),
       };
 
       const response = await fetch(
-        "http://localhost:5000/api/career-analysis",
+        `${API_BASE_URL}/api/career-analysis`,
         {
           method: "POST",
 
@@ -795,15 +762,11 @@ function Careers() {
 
       setAiResult(result);
 
-      localStorage.setItem(
+      // Student-wise save
+      saveStudentData(
         "aiCareerAnalysis",
         result
       );
-
-      // ---------------------------------------------
-      // CAREER MODULE COMPLETED ONLY AFTER
-      // SUCCESSFUL AI ANALYSIS
-      // ---------------------------------------------
 
       if (MODULE_KEYS?.CAREER) {
         completeModule(
@@ -841,8 +804,7 @@ function Careers() {
           <p
             key={index}
             style={{
-              margin:
-                "8px 0",
+              margin: "8px 0",
               lineHeight: 1.6,
             }}
           >
@@ -864,10 +826,6 @@ function Careers() {
         margin: "0 auto",
       }}
     >
-      {/* =================================================
-          HEADER
-      ================================================= */}
-
       <div
         style={{
           marginBottom: "30px",
@@ -893,9 +851,9 @@ function Careers() {
         </p>
       </div>
 
-      {/* =================================================
+      {/* =====================================================
           STUDENT ANALYSIS
-      ================================================= */}
+      ===================================================== */}
 
       <div
         style={{
@@ -903,8 +861,7 @@ function Careers() {
           padding: "22px",
           borderRadius: "12px",
           marginBottom: "25px",
-          border:
-            "1px solid #e5e7eb",
+          border: "1px solid #e5e7eb",
         }}
       >
         <h2
@@ -978,9 +935,9 @@ function Careers() {
         </div>
       </div>
 
-      {/* =================================================
-          BEST CAREER MATCH
-      ================================================= */}
+      {/* =====================================================
+          BEST CAREER
+      ===================================================== */}
 
       <div
         style={{
@@ -989,8 +946,7 @@ function Careers() {
           padding: "25px",
           borderRadius: "14px",
           marginBottom: "25px",
-          border:
-            "1px solid #dbeafe",
+          border: "1px solid #dbeafe",
         }}
       >
         <div
@@ -1015,8 +971,7 @@ function Careers() {
 
             <h2
               style={{
-                margin:
-                  "8px 0",
+                margin: "8px 0",
               }}
             >
               {bestCareer.title}
@@ -1039,8 +994,7 @@ function Careers() {
               padding: "18px",
               borderRadius: "12px",
               background: "#fff",
-              border:
-                "1px solid #ddd",
+              border: "1px solid #ddd",
             }}
           >
             <div
@@ -1084,14 +1038,10 @@ function Careers() {
                 <span
                   key={skill}
                   style={{
-                    padding:
-                      "7px 12px",
-                    background:
-                      "#fff",
-                    borderRadius:
-                      "20px",
-                    border:
-                      "1px solid #ddd",
+                    padding: "7px 12px",
+                    background: "#fff",
+                    borderRadius: "20px",
+                    border: "1px solid #ddd",
                   }}
                 >
                   {skill}
@@ -1102,9 +1052,9 @@ function Careers() {
         </div>
       </div>
 
-      {/* =================================================
-          ALL CAREER RESULTS
-      ================================================= */}
+      {/* =====================================================
+          CAREER MATCH RESULTS
+      ===================================================== */}
 
       <div
         style={{
@@ -1130,12 +1080,9 @@ function Careers() {
                 key={career.id}
                 style={{
                   padding: "20px",
-                  border:
-                    "1px solid #ddd",
-                  borderRadius:
-                    "12px",
-                  background:
-                    "#fff",
+                  border: "1px solid #ddd",
+                  borderRadius: "12px",
+                  background: "#fff",
                 }}
               >
                 <h3>
@@ -1145,8 +1092,7 @@ function Careers() {
                 <p
                   style={{
                     color: "#666",
-                    minHeight:
-                      "60px",
+                    minHeight: "60px",
                   }}
                 >
                   {career.description}
@@ -1154,12 +1100,9 @@ function Careers() {
 
                 <div
                   style={{
-                    fontSize:
-                      "26px",
-                    fontWeight:
-                      "700",
-                    margin:
-                      "12px 0",
+                    fontSize: "26px",
+                    fontWeight: "700",
+                    margin: "12px 0",
                   }}
                 >
                   {career.match}%
@@ -1168,22 +1111,17 @@ function Careers() {
                 <div
                   style={{
                     height: "8px",
-                    background:
-                      "#eee",
-                    borderRadius:
-                      "10px",
-                    overflow:
-                      "hidden",
+                    background: "#eee",
+                    borderRadius: "10px",
+                    overflow: "hidden",
                   }}
                 >
                   <div
                     style={{
                       width: `${career.match}%`,
                       height: "100%",
-                      background:
-                        "#4f46e5",
-                      borderRadius:
-                        "10px",
+                      background: "#4f46e5",
+                      borderRadius: "10px",
                     }}
                   />
                 </div>
@@ -1192,12 +1130,9 @@ function Careers() {
                   .length > 0 && (
                   <p
                     style={{
-                      marginTop:
-                        "12px",
-                      fontSize:
-                        "14px",
-                      color:
-                        "#555",
+                      marginTop: "12px",
+                      fontSize: "14px",
+                      color: "#555",
                     }}
                   >
                     Matched skills:{" "}
@@ -1212,17 +1147,16 @@ function Careers() {
         </div>
       </div>
 
-      {/* =================================================
+      {/* =====================================================
           AI CAREER ANALYSIS
-      ================================================= */}
+      ===================================================== */}
 
       <div
         style={{
           padding: "25px",
           borderRadius: "14px",
           background: "#fff",
-          border:
-            "1px solid #ddd",
+          border: "1px solid #ddd",
           marginBottom: "30px",
         }}
       >
@@ -1262,11 +1196,9 @@ function Careers() {
             }
             disabled={aiLoading}
             style={{
-              padding:
-                "12px 20px",
+              padding: "12px 20px",
               border: "none",
-              borderRadius:
-                "8px",
+              borderRadius: "8px",
               background:
                 aiLoading
                   ? "#aaa"
@@ -1276,10 +1208,8 @@ function Careers() {
                 aiLoading
                   ? "not-allowed"
                   : "pointer",
-              fontSize:
-                "15px",
-              fontWeight:
-                "600",
+              fontSize: "15px",
+              fontWeight: "600",
             }}
           >
             {aiLoading
@@ -1288,19 +1218,14 @@ function Careers() {
           </button>
         </div>
 
-        {/* AI ERROR */}
-
         {aiError && (
           <div
             style={{
               marginTop: "20px",
               padding: "15px",
-              borderRadius:
-                "8px",
-              background:
-                "#fef2f2",
-              border:
-                "1px solid #fecaca",
+              borderRadius: "8px",
+              background: "#fef2f2",
+              border: "1px solid #fecaca",
               color: "#b91c1c",
             }}
           >
@@ -1310,8 +1235,7 @@ function Careers() {
 
             <div
               style={{
-                marginTop:
-                  "5px",
+                marginTop: "5px",
               }}
             >
               {aiError}
@@ -1319,19 +1243,14 @@ function Careers() {
           </div>
         )}
 
-        {/* AI RESULT */}
-
         {aiResult && !aiError && (
           <div
             style={{
               marginTop: "25px",
               padding: "20px",
-              borderRadius:
-                "10px",
-              background:
-                "#f8fafc",
-              border:
-                "1px solid #e2e8f0",
+              borderRadius: "10px",
+              background: "#f8fafc",
+              border: "1px solid #e2e8f0",
             }}
           >
             <h3>
@@ -1347,9 +1266,9 @@ function Careers() {
         )}
       </div>
 
-      {/* =================================================
-          NEXT STEP
-      ================================================= */}
+      {/* =====================================================
+          NAVIGATION
+      ===================================================== */}
 
       <div
         style={{
@@ -1362,21 +1281,14 @@ function Careers() {
       >
         <button
           onClick={() =>
-            navigate(
-              "/interests"
-            )
+            navigate("/interests")
           }
           style={{
-            padding:
-              "12px 20px",
-            border:
-              "1px solid #ccc",
-            borderRadius:
-              "8px",
-            background:
-              "#fff",
-            cursor:
-              "pointer",
+            padding: "12px 20px",
+            border: "1px solid #ccc",
+            borderRadius: "8px",
+            background: "#fff",
+            cursor: "pointer",
           }}
         >
           ← Review Interests
@@ -1384,23 +1296,16 @@ function Careers() {
 
         <button
           onClick={() =>
-            navigate(
-              "/skill-gap"
-            )
+            navigate("/skill-gap")
           }
           style={{
-            padding:
-              "12px 22px",
+            padding: "12px 22px",
             border: "none",
-            borderRadius:
-              "8px",
-            background:
-              "#111827",
+            borderRadius: "8px",
+            background: "#111827",
             color: "#fff",
-            cursor:
-              "pointer",
-            fontWeight:
-              "600",
+            cursor: "pointer",
+            fontWeight: "600",
           }}
         >
           Continue to Skill Gap →

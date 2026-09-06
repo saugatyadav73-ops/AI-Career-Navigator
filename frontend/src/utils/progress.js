@@ -1,5 +1,10 @@
 // src/utils/progress.js
 
+import {
+  getStudentData,
+  saveStudentData,
+} from "./studentStorage";
+
 // ------------------------------------
 // Module Keys
 // ------------------------------------
@@ -97,20 +102,24 @@ const DEFAULT_PROGRESS = {
 
 export const getProgress = () => {
   try {
-    const savedProgress = localStorage.getItem("moduleProgress");
+    const savedProgress = getStudentData(
+      "moduleProgress",
+      null
+    );
 
     if (!savedProgress) {
       return { ...DEFAULT_PROGRESS };
     }
 
-    const parsedProgress = JSON.parse(savedProgress);
-
     return {
       ...DEFAULT_PROGRESS,
-      ...parsedProgress,
+      ...savedProgress,
     };
   } catch (error) {
-    console.error("Error reading module progress:", error);
+    console.error(
+      "Error reading module progress:",
+      error
+    );
 
     return { ...DEFAULT_PROGRESS };
   }
@@ -122,16 +131,19 @@ export const getProgress = () => {
 
 export const saveProgress = (progress) => {
   try {
-    localStorage.setItem(
+    saveStudentData(
       "moduleProgress",
-      JSON.stringify(progress)
+      progress
     );
 
     window.dispatchEvent(
       new Event("careerProgressUpdated")
     );
   } catch (error) {
-    console.error("Error saving module progress:", error);
+    console.error(
+      "Error saving module progress:",
+      error
+    );
   }
 };
 
@@ -168,14 +180,22 @@ export const isModuleUnlocked = (moduleKey) => {
     (module) => module.key === moduleKey
   );
 
+  // Invalid module
+  if (moduleIndex === -1) {
+    return false;
+  }
+
   // First module is always unlocked
   if (moduleIndex === 0) {
     return true;
   }
 
-  const previousModule = MODULES[moduleIndex - 1];
+  const previousModule =
+    MODULES[moduleIndex - 1];
 
-  return isModuleCompleted(previousModule.key);
+  return isModuleCompleted(
+    previousModule.key
+  );
 };
 
 // ------------------------------------
@@ -186,7 +206,8 @@ export const getCompletedModules = () => {
   const progress = getProgress();
 
   return MODULES.filter(
-    (module) => progress[module.key] === true
+    (module) =>
+      progress[module.key] === true
   );
 };
 
@@ -195,10 +216,13 @@ export const getCompletedModules = () => {
 // ------------------------------------
 
 export const getProgressPercentage = () => {
-  const completedModules = getCompletedModules();
+  const completedModules =
+    getCompletedModules();
 
   const percentage =
-    (completedModules.length / MODULES.length) * 100;
+    (completedModules.length /
+      MODULES.length) *
+    100;
 
   return Math.round(percentage);
 };
@@ -208,5 +232,7 @@ export const getProgressPercentage = () => {
 // ------------------------------------
 
 export const resetProgress = () => {
-  saveProgress({ ...DEFAULT_PROGRESS });
+  saveProgress({
+    ...DEFAULT_PROGRESS,
+  });
 };

@@ -1,41 +1,82 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { useNavigate } from "react-router-dom";
-import { completeModule, MODULE_KEYS } from "../utils/progress";
+import {
+  completeModule,
+  MODULE_KEYS,
+} from "../utils/progress";
+
+import {
+  getStudentData,
+  removeStudentData,
+  saveStudentData,
+} from "../utils/studentStorage";
 
 function Interests() {
   const navigate = useNavigate();
 
-  const API_URL = "http://localhost:5000/api/interest-questions";
+  const API_BASE_URL =
+    import.meta.env.VITE_API_URL ||
+    "http://localhost:5000";
+
+  const API_URL =
+    `${API_BASE_URL}/api/interest-questions`;
 
   // =====================================================
   // STATES
   // =====================================================
 
   const [questions, setQuestions] = useState([]);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [currentQuestion, setCurrentQuestion] =
+    useState(0);
   const [answers, setAnswers] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [completed, setCompleted] = useState(false);
 
   // =====================================================
-  // LOAD QUESTIONS
+  // LOAD QUESTIONS + CURRENT STUDENT DATA
   // =====================================================
 
   useEffect(() => {
+    const savedAssessment = getStudentData(
+      "interestAssessment",
+      null
+    );
+
+    if (savedAssessment) {
+      setAnswers(savedAssessment.answers || {});
+      setCompleted(
+        savedAssessment.completed === true
+      );
+    }
+
     loadQuestions();
   }, []);
+
+  // =====================================================
+  // LOAD QUESTIONS
+  // =====================================================
 
   const loadQuestions = async () => {
     try {
       setLoading(true);
       setError("");
 
-      console.log("Fetching Interest Questions from:", API_URL);
+      console.log(
+        "Fetching Interest Questions from:",
+        API_URL
+      );
 
       const response = await fetch(API_URL);
 
-      console.log("Interest API Status:", response.status);
+      console.log(
+        "Interest API Status:",
+        response.status
+      );
 
       if (!response.ok) {
         throw new Error(
@@ -45,19 +86,27 @@ function Interests() {
 
       const data = await response.json();
 
-      console.log("Interest API Data:", data);
+      console.log(
+        "Interest API Data:",
+        data
+      );
 
       if (
         data.success !== true ||
         !Array.isArray(data.questions) ||
         data.questions.length === 0
       ) {
-        throw new Error("Invalid question data received.");
+        throw new Error(
+          "Invalid question data received."
+        );
       }
 
       setQuestions(data.questions);
     } catch (err) {
-      console.error("Interest API Error:", err);
+      console.error(
+        "Interest API Error:",
+        err
+      );
 
       setError(
         "Questions load हुन सकेन। Backend server check गर्नुहोस्।"
@@ -72,7 +121,8 @@ function Interests() {
   // =====================================================
 
   const handleAnswer = (optionIndex) => {
-    const question = questions[currentQuestion];
+    const question =
+      questions[currentQuestion];
 
     if (!question) return;
 
@@ -87,8 +137,13 @@ function Interests() {
   // =====================================================
 
   const handleNext = () => {
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion((previous) => previous + 1);
+    if (
+      currentQuestion <
+      questions.length - 1
+    ) {
+      setCurrentQuestion(
+        (previous) => previous + 1
+      );
     } else {
       finishAssessment();
     }
@@ -100,7 +155,9 @@ function Interests() {
 
   const handlePrevious = () => {
     if (currentQuestion > 0) {
-      setCurrentQuestion((previous) => previous - 1);
+      setCurrentQuestion(
+        (previous) => previous - 1
+      );
     }
   };
 
@@ -109,25 +166,35 @@ function Interests() {
   // =====================================================
 
   const finishAssessment = () => {
-    const answeredCount = Object.keys(answers).length;
+    const answeredCount =
+      Object.keys(answers).length;
 
-    if (answeredCount !== questions.length) {
-      alert("Please answer all questions before submitting.");
+    if (
+      answeredCount !==
+      questions.length
+    ) {
+      alert(
+        "Please answer all questions before submitting."
+      );
+
       return;
     }
 
     const assessmentResult = {
       answers,
-      totalQuestions: questions.length,
-      answeredQuestions: answeredCount,
+      totalQuestions:
+        questions.length,
+      answeredQuestions:
+        answeredCount,
       completed: true,
-      completedAt: new Date().toISOString(),
+      completedAt:
+        new Date().toISOString(),
     };
 
-    // Save result
-    localStorage.setItem(
+    // Save only for current student
+    saveStudentData(
       "interestAssessment",
-      JSON.stringify(assessmentResult)
+      assessmentResult
     );
 
     // Mark module completed
@@ -136,7 +203,9 @@ function Interests() {
         MODULE_KEYS &&
         MODULE_KEYS.INTEREST
       ) {
-        completeModule(MODULE_KEYS.INTEREST);
+        completeModule(
+          MODULE_KEYS.INTEREST
+        );
       }
     } catch (err) {
       console.log(
@@ -165,7 +234,10 @@ function Interests() {
     setCurrentQuestion(0);
     setCompleted(false);
 
-    localStorage.removeItem("interestAssessment");
+    // Remove only current student's data
+    removeStudentData(
+      "interestAssessment"
+    );
   };
 
   // =====================================================
@@ -173,7 +245,9 @@ function Interests() {
   // =====================================================
 
   const progress = useMemo(() => {
-    if (questions.length === 0) return 0;
+    if (questions.length === 0) {
+      return 0;
+    }
 
     return Math.round(
       (Object.keys(answers).length /
@@ -186,7 +260,8 @@ function Interests() {
   // CURRENT QUESTION
   // =====================================================
 
-  const question = questions[currentQuestion];
+  const question =
+    questions[currentQuestion];
 
   // =====================================================
   // LOADING SCREEN
@@ -196,14 +271,17 @@ function Interests() {
     return (
       <div style={styles.page}>
         <div style={styles.card}>
-          <div style={styles.loader}>⏳</div>
+          <div style={styles.loader}>
+            ⏳
+          </div>
 
           <h2 style={styles.title}>
             Loading Interest Assessment
           </h2>
 
           <p style={styles.subtitle}>
-            Please wait while we prepare your questions...
+            Please wait while we prepare
+            your questions...
           </p>
         </div>
       </div>
@@ -218,7 +296,9 @@ function Interests() {
     return (
       <div style={styles.page}>
         <div style={styles.card}>
-          <div style={styles.errorIcon}>⚠️</div>
+          <div style={styles.errorIcon}>
+            ⚠️
+          </div>
 
           <h2 style={styles.title}>
             Unable to Load Questions
@@ -229,8 +309,12 @@ function Interests() {
           </p>
 
           <div style={styles.endpointBox}>
-            <strong>Backend API:</strong>
+            <strong>
+              Backend API:
+            </strong>
+
             <br />
+
             {API_URL}
           </div>
 
@@ -242,8 +326,12 @@ function Interests() {
           </button>
 
           <button
-            onClick={() => navigate("/dashboard")}
-            style={styles.secondaryButton}
+            onClick={() =>
+              navigate("/dashboard")
+            }
+            style={
+              styles.secondaryButton
+            }
           >
             ← Back to Dashboard
           </button>
@@ -260,20 +348,23 @@ function Interests() {
     return (
       <div style={styles.page}>
         <div style={styles.resultCard}>
-          <div style={styles.successIcon}>🎉</div>
+          <div style={styles.successIcon}>
+            🎉
+          </div>
 
           <h1 style={styles.resultTitle}>
             Interest Assessment Completed!
           </h1>
 
           <p style={styles.resultText}>
-            Great job! Your interests have been successfully
-            saved.
+            Great job! Your interests have
+            been successfully saved.
           </p>
 
           <div style={styles.scoreBox}>
             <div style={styles.scoreNumber}>
-              {questions.length}/{questions.length}
+              {questions.length}/
+              {questions.length}
             </div>
 
             <div style={styles.scoreLabel}>
@@ -282,14 +373,17 @@ function Interests() {
           </div>
 
           <div style={styles.infoBox}>
-            Your interest assessment will be used to
-            personalize your career recommendations.
+            Your interest assessment will
+            be used to personalize your
+            career recommendations.
           </div>
 
           <div style={styles.buttonRow}>
             <button
               onClick={restartAssessment}
-              style={styles.secondaryButton}
+              style={
+                styles.secondaryButton
+              }
             >
               🔄 Retake Assessment
             </button>
@@ -333,13 +427,14 @@ function Interests() {
   // MAIN ASSESSMENT UI
   // =====================================================
 
-  const selectedAnswer = answers[question.id];
+  const selectedAnswer =
+    answers[question.id];
 
   return (
     <div style={styles.page}>
       <div style={styles.container}>
-
         {/* HEADER */}
+
         <div style={styles.header}>
           <div>
             <div style={styles.badge}>
@@ -351,16 +446,20 @@ function Interests() {
             </h1>
 
             <p style={styles.description}>
-              Answer these questions honestly to help us
-              understand which technology career matches
-              your interests.
+              Answer these questions honestly
+              to help us understand which
+              technology career matches your
+              interests.
             </p>
           </div>
 
-          <div style={styles.questionCounter}>
+          <div
+            style={styles.questionCounter}
+          >
             <strong>
               {currentQuestion + 1}
             </strong>
+
             <span>
               {" "}
               / {questions.length}
@@ -369,7 +468,10 @@ function Interests() {
         </div>
 
         {/* PROGRESS */}
-        <div style={styles.progressContainer}>
+
+        <div
+          style={styles.progressContainer}
+        >
           <div style={styles.progressInfo}>
             <span>
               Assessment Progress
@@ -380,7 +482,11 @@ function Interests() {
             </strong>
           </div>
 
-          <div style={styles.progressBackground}>
+          <div
+            style={
+              styles.progressBackground
+            }
+          >
             <div
               style={{
                 ...styles.progressBar,
@@ -391,9 +497,13 @@ function Interests() {
         </div>
 
         {/* QUESTION CARD */}
+
         <div style={styles.questionCard}>
-          <div style={styles.questionNumber}>
-            Question {currentQuestion + 1}
+          <div
+            style={styles.questionNumber}
+          >
+            Question{" "}
+            {currentQuestion + 1}
           </div>
 
           <h2 style={styles.question}>
@@ -401,10 +511,12 @@ function Interests() {
           </h2>
 
           <p style={styles.instruction}>
-            Select the option that best describes you.
+            Select the option that best
+            describes you.
           </p>
 
           {/* OPTIONS */}
+
           <div style={styles.options}>
             {question.options.map(
               (option, index) => {
@@ -415,7 +527,9 @@ function Interests() {
                   <button
                     key={index}
                     onClick={() =>
-                      handleAnswer(index)
+                      handleAnswer(
+                        index
+                      )
                     }
                     style={{
                       ...styles.option,
@@ -449,7 +563,11 @@ function Interests() {
                     </span>
 
                     {isSelected && (
-                      <span style={styles.check}>
+                      <span
+                        style={
+                          styles.check
+                        }
+                      >
                         ✓
                       </span>
                     )}
@@ -460,13 +578,17 @@ function Interests() {
           </div>
 
           {/* NAVIGATION */}
+
           <div style={styles.navigation}>
             <button
               onClick={handlePrevious}
-              disabled={currentQuestion === 0}
+              disabled={
+                currentQuestion === 0
+              }
               style={{
                 ...styles.previousButton,
-                ...(currentQuestion === 0
+                ...(currentQuestion ===
+                0
                   ? styles.disabledButton
                   : {}),
               }}
@@ -477,11 +599,13 @@ function Interests() {
             <button
               onClick={handleNext}
               disabled={
-                selectedAnswer === undefined
+                selectedAnswer ===
+                undefined
               }
               style={{
                 ...styles.nextButton,
-                ...(selectedAnswer === undefined
+                ...(selectedAnswer ===
+                undefined
                   ? styles.disabledButton
                   : {}),
               }}
@@ -495,11 +619,14 @@ function Interests() {
         </div>
 
         {/* FOOTER INFO */}
+
         <div style={styles.footerInfo}>
           <span>🔒</span>
+
           <span>
-            Your answers are stored locally and used only
-            for career recommendations.
+            Your answers are stored locally
+            and used only for career
+            recommendations.
           </span>
         </div>
       </div>
@@ -664,7 +791,8 @@ const styles = {
     background:
       "linear-gradient(90deg, #4f46e5, #7c3aed)",
     borderRadius: "10px",
-    transition: "width 0.3s ease",
+    transition:
+      "width 0.3s ease",
   },
 
   questionCard: {
@@ -710,12 +838,14 @@ const styles = {
     border: "2px solid #e5e7eb",
     background: "#ffffff",
     cursor: "pointer",
-    transition: "all 0.2s ease",
+    transition:
+      "all 0.2s ease",
     fontSize: "16px",
   },
 
   selectedOption: {
-    border: "2px solid #4f46e5",
+    border:
+      "2px solid #4f46e5",
     background: "#eef2ff",
   },
 
@@ -765,7 +895,8 @@ const styles = {
   previousButton: {
     padding: "13px 22px",
     borderRadius: "10px",
-    border: "1px solid #d1d5db",
+    border:
+      "1px solid #d1d5db",
     background: "#ffffff",
     color: "#374151",
     cursor: "pointer",
@@ -798,7 +929,8 @@ const styles = {
   secondaryButton: {
     padding: "13px 24px",
     borderRadius: "10px",
-    border: "1px solid #d1d5db",
+    border:
+      "1px solid #d1d5db",
     background: "#ffffff",
     color: "#374151",
     cursor: "pointer",

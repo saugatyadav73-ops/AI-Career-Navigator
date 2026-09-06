@@ -1,7 +1,5 @@
-import React, {
-  useEffect,
-  useState,
-} from "react";
+
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 // =====================================================
@@ -17,7 +15,6 @@ const modules = [
     icon: "👤",
     storageKey: "studentProfile",
   },
-
   {
     title: "Skill Assessment",
     description:
@@ -26,7 +23,6 @@ const modules = [
     icon: "🧠",
     storageKey: "skillAssessment",
   },
-
   {
     title: "Interest Assessment",
     description:
@@ -35,7 +31,6 @@ const modules = [
     icon: "❤️",
     storageKey: "interestAssessment",
   },
-
   {
     title: "Career Analysis",
     description:
@@ -44,7 +39,6 @@ const modules = [
     icon: "🎯",
     storageKey: "careerAnalysis",
   },
-
   {
     title: "Skill Gap Analysis",
     description:
@@ -53,7 +47,6 @@ const modules = [
     icon: "📊",
     storageKey: "skillGap",
   },
-
   {
     title: "Learning Roadmap",
     description:
@@ -62,7 +55,6 @@ const modules = [
     icon: "🗺️",
     storageKey: "roadmap",
   },
-
   {
     title: "Project Recommendation",
     description:
@@ -71,7 +63,6 @@ const modules = [
     icon: "💻",
     storageKey: "projects",
   },
-
   {
     title: "Career Readiness",
     description:
@@ -80,7 +71,6 @@ const modules = [
     icon: "🚀",
     storageKey: "readiness",
   },
-
   {
     title: "Resume Analysis",
     description:
@@ -89,7 +79,6 @@ const modules = [
     icon: "📄",
     storageKey: "resume",
   },
-
   {
     title: "Job Preparation",
     description:
@@ -98,7 +87,6 @@ const modules = [
     icon: "💼",
     storageKey: "jobPreparation",
   },
-
   {
     title: "Mock Interview",
     description:
@@ -110,7 +98,7 @@ const modules = [
 ];
 
 // =====================================================
-// READ LOCAL STORAGE
+// LOCAL STORAGE
 // =====================================================
 
 function getStorageData(storageKey) {
@@ -134,7 +122,7 @@ function getStorageData(storageKey) {
 }
 
 // =====================================================
-// CHECK MODULE COMPLETION
+// MODULE COMPLETION
 // =====================================================
 
 function isModuleCompleted(storageKey) {
@@ -166,30 +154,6 @@ function isModuleCompleted(storageKey) {
 }
 
 // =====================================================
-// GET NUMBER FROM OBJECT
-// =====================================================
-
-function getNumber(data, keys) {
-  if (!data || typeof data !== "object") {
-    return 0;
-  }
-
-  for (const key of keys) {
-    const value = Number(data[key]);
-
-    if (
-      !Number.isNaN(value) &&
-      value >= 0 &&
-      value <= 100
-    ) {
-      return value;
-    }
-  }
-
-  return 0;
-}
-
-// =====================================================
 // FIND CAREER
 // =====================================================
 
@@ -206,10 +170,7 @@ function findCareer(...objects) {
   ];
 
   for (const object of objects) {
-    if (
-      !object ||
-      typeof object !== "object"
-    ) {
+    if (!object || typeof object !== "object") {
       continue;
     }
 
@@ -233,12 +194,7 @@ function findCareer(...objects) {
 function Dashboard() {
   const navigate = useNavigate();
 
-  // ===================================================
-  // DASHBOARD REFRESH
-  // ===================================================
-
-  const [refreshKey, setRefreshKey] =
-    useState(0);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     const refreshDashboard = () => {
@@ -278,24 +234,13 @@ function Dashboard() {
     };
   }, []);
 
-  // ===================================================
-  // FORCE DATA READ ON REFRESH
-  // ===================================================
-
   void refreshKey;
 
   // ===================================================
-  // GET ALL DATA
+  // DATA
   // ===================================================
 
-  const profile =
-    getStorageData("studentProfile");
-
-  const skillAssessment =
-    getStorageData("skillAssessment");
-
-  const interestAssessment =
-    getStorageData("interestAssessment");
+  const profile = getStorageData("studentProfile");
 
   const careerAnalysis =
     getStorageData("careerAnalysis");
@@ -303,47 +248,17 @@ function Dashboard() {
   const careerRecommendation =
     getStorageData("careerRecommendation");
 
-  const skillGap =
-    getStorageData("skillGap");
-
-  const roadmap =
-    getStorageData("roadmap");
-
-  const projects =
-    getStorageData("projects");
-
-  const readiness =
-    getStorageData("readiness");
-
-  const careerReadiness =
-    getStorageData("careerReadiness");
-
-  const resume =
-    getStorageData("resume");
-
-  const jobPreparation =
-    getStorageData("jobPreparation");
-
-  const mockInterview =
-    getStorageData("mockInterview");
-
   // ===================================================
-  // MODULE PROGRESS
+  // PROGRESS
   // ===================================================
 
-  const completedModules =
-    modules.filter((module) =>
-      isModuleCompleted(
-        module.storageKey
-      )
-    ).length;
+  const completedModules = modules.filter((module) =>
+    isModuleCompleted(module.storageKey)
+  ).length;
 
-  const progress =
-    Math.round(
-      (completedModules /
-        modules.length) *
-        100
-    );
+  const progress = Math.round(
+    (completedModules / modules.length) * 100
+  );
 
   // ===================================================
   // NEXT MODULE
@@ -352,9 +267,7 @@ function Dashboard() {
   const nextModule =
     modules.find(
       (module) =>
-        !isModuleCompleted(
-          module.storageKey
-        )
+        !isModuleCompleted(module.storageKey)
     ) || modules[modules.length - 1];
 
   // ===================================================
@@ -364,251 +277,11 @@ function Dashboard() {
   let career = findCareer(
     careerRecommendation,
     careerAnalysis,
-    jobPreparation,
-    mockInterview,
-    skillGap,
-    readiness,
-    careerReadiness,
     profile
   );
 
   if (!career) {
     career = "Not decided yet";
-  }
-
-  // ===================================================
-  // SCORES
-  // ===================================================
-
-  const skillScore = Math.min(
-    100,
-    getNumber(
-      skillAssessment,
-      [
-        "percentage",
-        "scorePercentage",
-        "score",
-      ]
-    )
-  );
-
-  const interestScore = Math.min(
-    100,
-    getNumber(
-      interestAssessment,
-      [
-        "percentage",
-        "scorePercentage",
-        "score",
-      ]
-    )
-  );
-
-  // ===================================================
-  // CAREER READINESS SCORE
-  // ===================================================
-
-  const readinessFromReadiness =
-    getNumber(
-      readiness,
-      [
-        "score",
-        "readinessScore",
-        "percentage",
-        "readinessPercentage",
-      ]
-    );
-
-  const readinessFromCareerReadiness =
-    getNumber(
-      careerReadiness,
-      [
-        "score",
-        "readinessScore",
-        "percentage",
-        "readinessPercentage",
-      ]
-    );
-
-  const readinessScore = Math.min(
-    100,
-    readinessFromReadiness > 0
-      ? readinessFromReadiness
-      : readinessFromCareerReadiness
-  );
-
-  // ===================================================
-  // JOB PREPARATION SCORE
-  // ===================================================
-
-  const jobScore = Math.min(
-    100,
-    getNumber(
-      jobPreparation,
-      [
-        "percentage",
-        "scorePercentage",
-        "score",
-      ]
-    )
-  );
-
-  // ===================================================
-  // MOCK INTERVIEW SCORE
-  // ===================================================
-
-  const mockScoreFromMain =
-    getNumber(
-      mockInterview,
-      [
-        "percentage",
-        "score",
-        "scorePercentage",
-        "overallScore",
-      ]
-    );
-
-  const mockScoreFromReport =
-    getNumber(
-      mockInterview?.report,
-      [
-        "overallScore",
-        "percentage",
-        "score",
-      ]
-    );
-
-  const mockScore = Math.min(
-    100,
-    mockScoreFromMain > 0
-      ? mockScoreFromMain
-      : mockScoreFromReport
-  );
-
-  // ===================================================
-  // MOCK INTERVIEW DETAILS
-  // ===================================================
-
-  const mockInterviewCompleted =
-    Boolean(
-      mockInterview.completed
-    ) ||
-    isModuleCompleted(
-      "mockInterview"
-    );
-
-  const mockReadinessLevel =
-    mockInterview?.report
-      ?.readinessLevel ||
-    mockInterview?.readinessLevel ||
-    "";
-
-  const mockTechnicalScore =
-    Math.min(
-      100,
-      getNumber(
-        mockInterview?.report,
-        [
-          "technicalKnowledge",
-        ]
-      )
-    );
-
-  const mockCommunicationScore =
-    Math.min(
-      100,
-      getNumber(
-        mockInterview?.report,
-        [
-          "communication",
-        ]
-      )
-    );
-
-  const mockProblemSolvingScore =
-    Math.min(
-      100,
-      getNumber(
-        mockInterview?.report,
-        [
-          "problemSolving",
-        ]
-      )
-    );
-
-  // ===================================================
-  // OVERALL SCORE
-  // ===================================================
-
-  // If official Career Readiness score
-  // exists, use it.
-  //
-  // Otherwise keep the old dashboard
-  // average calculation as fallback.
-
-  const legacyScoreValues = [
-    skillScore,
-    interestScore,
-    readinessScore,
-    jobScore,
-    mockScore,
-  ].filter(
-    (score) => score > 0
-  );
-
-  const legacyOverallScore =
-    legacyScoreValues.length > 0
-      ? Math.round(
-          legacyScoreValues.reduce(
-            (total, score) =>
-              total + score,
-            0
-          ) /
-            legacyScoreValues.length
-        )
-      : 0;
-
-  const overallScore =
-    readinessScore > 0
-      ? readinessScore
-      : legacyOverallScore;
-
-  // ===================================================
-  // RESUME STATUS
-  // ===================================================
-
-  const resumeCompleted =
-    isModuleCompleted("resume") ||
-    Object.keys(resume).length > 0;
-
-  // ===================================================
-  // SKILL GAP COUNT
-  // ===================================================
-
-  let skillGapCount = 0;
-
-  if (Array.isArray(skillGap)) {
-    skillGapCount =
-      skillGap.length;
-  } else if (
-    Array.isArray(
-      skillGap.missingSkills
-    )
-  ) {
-    skillGapCount =
-      skillGap.missingSkills.length;
-  } else if (
-    Array.isArray(
-      skillGap.skillGaps
-    )
-  ) {
-    skillGapCount =
-      skillGap.skillGaps.length;
-  } else if (
-    Array.isArray(skillGap.gaps)
-  ) {
-    skillGapCount =
-      skillGap.gaps.length;
   }
 
   // ===================================================
@@ -627,9 +300,7 @@ function Dashboard() {
   return (
     <div className="dashboard-page">
 
-      {/* =================================================
-          HEADER
-      ================================================= */}
+      {/* HEADER */}
 
       <div className="dashboard-header">
 
@@ -655,9 +326,7 @@ function Dashboard() {
           <div className="dashboard-avatar">
             {String(userName)
               .split(" ")
-              .map((word) =>
-                word.charAt(0)
-              )
+              .map((word) => word.charAt(0))
               .join("")
               .slice(0, 2)
               .toUpperCase()}
@@ -677,9 +346,7 @@ function Dashboard() {
 
       </div>
 
-      {/* =================================================
-          CAREER HERO
-      ================================================= */}
+      {/* CAREER HERO */}
 
       <section className="career-hero">
 
@@ -694,18 +361,16 @@ function Dashboard() {
           </h2>
 
           <p>
-            Your AI Career Navigator journey
-            is {progress}% complete. Continue
-            the remaining modules to improve
-            your career readiness.
+            Your AI Career Navigator journey is{" "}
+            {progress}% complete. Continue the
+            remaining modules to improve your
+            career readiness.
           </p>
 
           <button
             className="hero-button"
             onClick={() =>
-              navigate(
-                nextModule.path
-              )
+              navigate(nextModule.path)
             }
           >
             Continue Journey →
@@ -743,9 +408,7 @@ function Dashboard() {
 
       </section>
 
-      {/* =================================================
-          STAT CARDS
-      ================================================= */}
+      {/* STAT CARDS */}
 
       <section className="stats-grid">
 
@@ -779,8 +442,7 @@ function Dashboard() {
             </span>
 
             <strong>
-              {modules.length -
-                completedModules}
+              {modules.length - completedModules}
             </strong>
           </div>
 
@@ -828,354 +490,7 @@ function Dashboard() {
 
       </section>
 
-      {/* =================================================
-          FINAL CAREER SCORE
-      ================================================= */}
-
-      <section className="final-score-section">
-
-        <div>
-
-          <span className="section-label">
-            AI CAREER INSIGHT
-          </span>
-
-          <h2>
-            Overall Career Readiness
-          </h2>
-
-          <p>
-            Your overall preparation is based
-            on your completed assessments,
-            readiness, job preparation and
-            mock interview performance.
-          </p>
-
-        </div>
-
-        <div className="overall-score">
-
-          <strong>
-            {overallScore}%
-          </strong>
-
-          <span>
-            Overall Score
-          </span>
-
-        </div>
-
-      </section>
-
-      {/* =================================================
-          PERFORMANCE SUMMARY
-      ================================================= */}
-
-      <section className="performance-section">
-
-        <div className="section-heading">
-
-          <div>
-
-            <span className="section-label">
-              PERFORMANCE
-            </span>
-
-            <h2>
-              Your Career Preparation
-            </h2>
-
-          </div>
-
-        </div>
-
-        <div className="performance-grid">
-
-          {/* SKILL */}
-
-          <div className="performance-card">
-
-            <span className="performance-icon">
-              🧠
-            </span>
-
-            <h3>
-              Skill Assessment
-            </h3>
-
-            <strong>
-              {skillScore > 0
-                ? `${skillScore}%`
-                : "Not completed"}
-            </strong>
-
-          </div>
-
-          {/* INTEREST */}
-
-          <div className="performance-card">
-
-            <span className="performance-icon">
-              ❤️
-            </span>
-
-            <h3>
-              Interest Assessment
-            </h3>
-
-            <strong>
-              {interestScore > 0
-                ? `${interestScore}%`
-                : "Not completed"}
-            </strong>
-
-          </div>
-
-          {/* READINESS */}
-
-          <div className="performance-card">
-
-            <span className="performance-icon">
-              🚀
-            </span>
-
-            <h3>
-              Career Readiness
-            </h3>
-
-            <strong>
-              {readinessScore > 0
-                ? `${readinessScore}%`
-                : "Not completed"}
-            </strong>
-
-          </div>
-
-          {/* JOB PREPARATION */}
-
-          <div className="performance-card">
-
-            <span className="performance-icon">
-              💼
-            </span>
-
-            <h3>
-              Job Preparation
-            </h3>
-
-            <strong>
-              {jobScore > 0
-                ? `${jobScore}%`
-                : "Not completed"}
-            </strong>
-
-          </div>
-
-          {/* MOCK INTERVIEW */}
-
-          <div className="performance-card">
-
-            <span className="performance-icon">
-              🎤
-            </span>
-
-            <h3>
-              Mock Interview
-            </h3>
-
-            <strong>
-              {mockScore > 0
-                ? `${mockScore}%`
-                : "Not completed"}
-            </strong>
-
-            {mockReadinessLevel && (
-              <small>
-                {mockReadinessLevel}
-              </small>
-            )}
-
-          </div>
-
-          {/* SKILL GAPS */}
-
-          <div className="performance-card">
-
-            <span className="performance-icon">
-              📉
-            </span>
-
-            <h3>
-              Skill Gaps
-            </h3>
-
-            <strong>
-              {skillGapCount}
-            </strong>
-
-          </div>
-
-        </div>
-
-      </section>
-
-      {/* =================================================
-          RESUME + MOCK INTERVIEW STATUS
-      ================================================= */}
-
-      <section className="status-section">
-
-        {/* RESUME */}
-
-        <div className="status-card-large">
-
-          <div className="status-icon-large">
-            📄
-          </div>
-
-          <div>
-
-            <span className="section-label">
-              RESUME
-            </span>
-
-            <h2>
-              Resume Status
-            </h2>
-
-            <p>
-              {resumeCompleted
-                ? "Your resume data is available. Make sure it is ready for job applications."
-                : "Complete your Resume module before applying for jobs."}
-            </p>
-
-            <button
-              className="small-action-button"
-              onClick={() =>
-                navigate("/resume")
-              }
-            >
-              {resumeCompleted
-                ? "Review Resume →"
-                : "Complete Resume →"}
-            </button>
-
-          </div>
-
-        </div>
-
-        {/* MOCK INTERVIEW */}
-
-        <div className="status-card-large">
-
-          <div className="status-icon-large">
-            🎤
-          </div>
-
-          <div>
-
-            <span className="section-label">
-              INTERVIEW
-            </span>
-
-            <h2>
-              Mock Interview
-            </h2>
-
-            <p>
-              {mockInterviewCompleted
-                ? `Your latest mock interview score is ${mockScore}%.`
-                : "Practice technical questions for your recommended career."}
-            </p>
-
-            {/* INTERVIEW BREAKDOWN */}
-
-            {mockInterviewCompleted &&
-              mockReadinessLevel && (
-                <div
-                  style={{
-                    marginTop: "12px",
-                    marginBottom: "12px",
-                  }}
-                >
-
-                  <strong>
-                    AI Readiness:{" "}
-                  </strong>
-
-                  <span>
-                    {mockReadinessLevel}
-                  </span>
-
-                </div>
-              )}
-
-            {mockInterviewCompleted &&
-              (mockTechnicalScore > 0 ||
-                mockCommunicationScore > 0 ||
-                mockProblemSolvingScore > 0) && (
-                <div
-                  style={{
-                    display: "flex",
-                    gap: "14px",
-                    flexWrap: "wrap",
-                    marginBottom: "14px",
-                    fontSize: "13px",
-                  }}
-                >
-
-                  {mockTechnicalScore > 0 && (
-                    <span>
-                      Technical:{" "}
-                      <strong>
-                        {mockTechnicalScore}%
-                      </strong>
-                    </span>
-                  )}
-
-                  {mockCommunicationScore > 0 && (
-                    <span>
-                      Communication:{" "}
-                      <strong>
-                        {mockCommunicationScore}%
-                      </strong>
-                    </span>
-                  )}
-
-                  {mockProblemSolvingScore > 0 && (
-                    <span>
-                      Problem Solving:{" "}
-                      <strong>
-                        {mockProblemSolvingScore}%
-                      </strong>
-                    </span>
-                  )}
-
-                </div>
-              )}
-
-            <button
-              className="small-action-button"
-              onClick={() =>
-                navigate(
-                  "/mock-interview"
-                )
-              }
-            >
-              {mockInterviewCompleted
-                ? "Practice Again →"
-                : "Start Interview →"}
-            </button>
-
-          </div>
-
-        </div>
-
-      </section>
-
-      {/* =================================================
-          MODULE SECTION
-      ================================================= */}
+      {/* CAREER NAVIGATOR MODULES */}
 
       <section className="modules-section">
 
@@ -1200,8 +515,7 @@ function Dashboard() {
 
           <div className="module-count">
 
-            {completedModules}/
-            {modules.length}
+            {completedModules}/{modules.length}
 
             <span>
               {" "}completed
@@ -1213,120 +527,117 @@ function Dashboard() {
 
         <div className="modules-grid">
 
-          {modules.map(
-            (module, index) => {
+          {modules.map((module, index) => {
 
-              const completed =
-                isModuleCompleted(
-                  module.storageKey
-                );
+            const completed =
+              isModuleCompleted(
+                module.storageKey
+              );
 
-              const previousCompleted =
-                index === 0 ||
-                isModuleCompleted(
-                  modules[
-                    index - 1
-                  ].storageKey
-                );
+            const previousCompleted =
+              index === 0 ||
+              isModuleCompleted(
+                modules[index - 1].storageKey
+              );
 
-              const unlocked =
-                completed ||
-                previousCompleted;
+            const unlocked =
+              completed ||
+              previousCompleted;
 
-              return (
-                <div
-                  key={module.path}
-                  className={`module-card ${
-                    completed
-                      ? "module-completed"
-                      : !unlocked
-                      ? "module-locked"
-                      : "module-available"
-                  }`}
-                >
+            return (
+              <div
+                key={module.path}
+                className={`module-card ${
+                  completed
+                    ? "module-completed"
+                    : !unlocked
+                    ? "module-locked"
+                    : "module-available"
+                }`}
+              >
 
-                  <div className="module-top">
+                <div className="module-top">
 
-                    <span className="module-number">
-                      {String(index + 1)
-                        .padStart(2, "0")}
-                    </span>
+                  <span className="module-number">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
 
-                    <div className="module-icon">
-                      {unlocked
-                        ? module.icon
-                        : "🔒"}
-                    </div>
-
+                  <div className="module-icon">
+                    {unlocked
+                      ? module.icon
+                      : "🔒"}
                   </div>
 
-                  <div className="module-content">
+                </div>
 
-                    <h3>
-                      {module.title}
-                    </h3>
+                <div className="module-content">
 
-                    <p>
-                      {module.description}
-                    </p>
+                  <h3>
+                    {module.title}
+                  </h3>
 
-                    <div className="module-status">
+                  <p>
+                    {module.description}
+                  </p>
 
-                      {completed ? (
-                        <span className="status completed">
-                          ✓ Completed
-                        </span>
-                      ) : unlocked ? (
-                        <span className="status available">
-                          ● Available
-                        </span>
-                      ) : (
-                        <span className="status locked">
-                          🔒 Locked
-                        </span>
-                      )}
-
-                    </div>
+                  <div className="module-status">
 
                     {completed ? (
-                      <button
-                        className="module-button"
-                        onClick={() =>
-                          navigate(
-                            module.path
-                          )
-                        }
-                      >
-                        Review Module
-                        <span>→</span>
-                      </button>
+                      <span className="status completed">
+                        ✓ Completed
+                      </span>
                     ) : unlocked ? (
-                      <button
-                        className="module-button"
-                        onClick={() =>
-                          navigate(
-                            module.path
-                          )
-                        }
-                      >
-                        Start Module
-                        <span>→</span>
-                      </button>
+                      <span className="status available">
+                        ● Available
+                      </span>
                     ) : (
-                      <button
-                        className="module-button module-button-locked"
-                        disabled
-                      >
-                        Complete Previous Step
-                      </button>
+                      <span className="status locked">
+                        🔒 Locked
+                      </span>
                     )}
 
                   </div>
 
+                  {completed ? (
+
+                    <button
+                      className="module-button"
+                      onClick={() =>
+                        navigate(module.path)
+                      }
+                    >
+                      Review Module
+                      <span>→</span>
+                    </button>
+
+                  ) : unlocked ? (
+
+                    <button
+                      className="module-button"
+                      onClick={() =>
+                        navigate(module.path)
+                      }
+                    >
+                      Start Module
+                      <span>→</span>
+                    </button>
+
+                  ) : (
+
+                    <button
+                      className="module-button module-button-locked"
+                      disabled
+                    >
+                      Complete Previous Step
+                    </button>
+
+                  )}
+
                 </div>
-              );
-            }
-          )}
+
+              </div>
+            );
+          })}
 
         </div>
 
@@ -1337,3 +648,4 @@ function Dashboard() {
 }
 
 export default Dashboard;
+

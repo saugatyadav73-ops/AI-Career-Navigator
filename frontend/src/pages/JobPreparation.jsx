@@ -5,10 +5,6 @@ import {
   MODULE_KEYS,
 } from "../utils/progress";
 
-// =============================================================
-// LOCAL STORAGE HELPER
-// =============================================================
-
 const getData = (key, fallback = {}) => {
   try {
     const data = localStorage.getItem(key);
@@ -30,10 +26,6 @@ const getData = (key, fallback = {}) => {
   }
 };
 
-// =============================================================
-// SCORE NORMALIZER
-// =============================================================
-
 const normalizeScore = (value) => {
   if (value === undefined || value === null || value === "") {
     return 0;
@@ -42,7 +34,6 @@ const normalizeScore = (value) => {
   if (typeof value === "string") {
     const text = value.trim();
 
-    // Example: "85%"
     if (text.includes("%")) {
       const number = parseFloat(text.replace("%", ""));
 
@@ -51,7 +42,6 @@ const normalizeScore = (value) => {
         : 0;
     }
 
-    // Example: "8/10"
     if (text.includes("/")) {
       const parts = text.split("/");
 
@@ -65,10 +55,7 @@ const normalizeScore = (value) => {
       ) {
         return Math.min(
           100,
-          Math.max(
-            0,
-            Math.round((obtained / total) * 100)
-          )
+          Math.max(0, Math.round((obtained / total) * 100))
         );
       }
     }
@@ -87,10 +74,6 @@ const normalizeScore = (value) => {
     : 0;
 };
 
-// =============================================================
-// FIRST VALID VALUE
-// =============================================================
-
 const firstValue = (...values) => {
   for (const value of values) {
     if (
@@ -104,10 +87,6 @@ const firstValue = (...values) => {
 
   return 0;
 };
-
-// =============================================================
-// ARRAY NORMALIZER
-// =============================================================
 
 const normalizeList = (value) => {
   if (Array.isArray(value)) {
@@ -141,10 +120,6 @@ const normalizeList = (value) => {
   return [];
 };
 
-// =============================================================
-// CAREER DATA
-// =============================================================
-
 const careerData = {
   "AI / ML Engineer": {
     skills: [
@@ -157,7 +132,6 @@ const careerData = {
       "TensorFlow",
       "SQL",
     ],
-
     topics: [
       "Python",
       "Machine Learning",
@@ -167,13 +141,10 @@ const careerData = {
       "Deep Learning",
       "SQL",
     ],
-
     projects: "2–3",
-
     questions: [
       {
-        question:
-          "Which language is most commonly used in AI/ML?",
+        question: "Which language is most commonly used in AI/ML?",
         options: ["HTML", "Python", "CSS", "PHP"],
         answer: "Python",
       },
@@ -188,25 +159,13 @@ const careerData = {
         answer: "Machine Learning",
       },
       {
-        question:
-          "Which library is commonly used for data manipulation?",
-        options: [
-          "Pandas",
-          "React",
-          "Express",
-          "Bootstrap",
-        ],
+        question: "Which library is commonly used for data manipulation?",
+        options: ["Pandas", "React", "Express", "Bootstrap"],
         answer: "Pandas",
       },
       {
-        question:
-          "Which library is mainly used for numerical computing?",
-        options: [
-          "NumPy",
-          "React",
-          "Node.js",
-          "Django",
-        ],
+        question: "Which library is mainly used for numerical computing?",
+        options: ["NumPy", "React", "Node.js", "Django"],
         answer: "NumPy",
       },
       {
@@ -227,23 +186,15 @@ const careerData = {
           "Model never trains",
           "Model uses no features",
         ],
-        answer:
-          "Model performs well only on training data",
+        answer: "Model performs well only on training data",
       },
       {
-        question:
-          "Which is a deep learning framework?",
-        options: [
-          "TensorFlow",
-          "HTML",
-          "CSS",
-          "Git",
-        ],
+        question: "Which is a deep learning framework?",
+        options: ["TensorFlow", "HTML", "CSS", "Git"],
         answer: "TensorFlow",
       },
       {
-        question:
-          "What is a feature in machine learning?",
+        question: "What is a feature in machine learning?",
         options: [
           "An input variable",
           "A programming language",
@@ -263,8 +214,7 @@ const careerData = {
         answer: "Database management",
       },
       {
-        question:
-          "Why is data preprocessing important?",
+        question: "Why is data preprocessing important?",
         options: [
           "To prepare data for modeling",
           "To remove the model",
@@ -287,7 +237,6 @@ const careerData = {
       "Git",
       "Problem Solving",
     ],
-
     topics: [
       "Java / C++",
       "Data Structures",
@@ -297,13 +246,10 @@ const careerData = {
       "Git",
       "Problem Solving",
     ],
-
     projects: "2–3",
-
     questions: [
       {
-        question:
-          "Which concept allows a class to inherit another class?",
+        question: "Which concept allows a class to inherit another class?",
         options: [
           "Inheritance",
           "Encapsulation",
@@ -313,25 +259,13 @@ const careerData = {
         answer: "Inheritance",
       },
       {
-        question:
-          "Which data structure follows FIFO?",
-        options: [
-          "Stack",
-          "Queue",
-          "Tree",
-          "Graph",
-        ],
+        question: "Which data structure follows FIFO?",
+        options: ["Stack", "Queue", "Tree", "Graph"],
         answer: "Queue",
       },
       {
-        question:
-          "Which data structure follows LIFO?",
-        options: [
-          "Queue",
-          "Stack",
-          "Array",
-          "Graph",
-        ],
+        question: "Which data structure follows LIFO?",
+        options: ["Queue", "Stack", "Array", "Graph"],
         answer: "Stack",
       },
       {
@@ -345,41 +279,22 @@ const careerData = {
         answer: "Object Oriented Programming",
       },
       {
-        question:
-          "Which keyword creates an object in Java?",
-        options: [
-          "new",
-          "create",
-          "object",
-          "make",
-        ],
+        question: "Which keyword creates an object in Java?",
+        options: ["new", "create", "object", "make"],
         answer: "new",
       },
       {
-        question:
-          "Which is used for version control?",
-        options: [
-          "Git",
-          "HTML",
-          "CSS",
-          "SQL",
-        ],
+        question: "Which is used for version control?",
+        options: ["Git", "HTML", "CSS", "SQL"],
         answer: "Git",
       },
       {
-        question:
-          "Which is a linear data structure?",
-        options: [
-          "Array",
-          "Graph",
-          "Tree",
-          "Heap",
-        ],
+        question: "Which is a linear data structure?",
+        options: ["Array", "Graph", "Tree", "Heap"],
         answer: "Array",
       },
       {
-        question:
-          "What does SQL mainly manage?",
+        question: "What does SQL mainly manage?",
         options: [
           "Databases",
           "Images",
@@ -389,8 +304,7 @@ const careerData = {
         answer: "Databases",
       },
       {
-        question:
-          "Which algorithm searches a sorted array efficiently?",
+        question: "Which algorithm searches a sorted array efficiently?",
         options: [
           "Binary Search",
           "Bubble Sort",
@@ -423,7 +337,6 @@ const careerData = {
       "Git",
       "REST API",
     ],
-
     topics: [
       "HTML",
       "CSS",
@@ -433,9 +346,7 @@ const careerData = {
       "REST API",
       "SQL",
     ],
-
     projects: "2–3",
-
     questions: [
       {
         question: "What does HTML stand for?",
@@ -445,34 +356,20 @@ const careerData = {
           "Hyper Tool Multi Language",
           "Home Tool Markup Language",
         ],
-        answer:
-          "HyperText Markup Language",
+        answer: "HyperText Markup Language",
       },
       {
-        question:
-          "Which language is used for webpage styling?",
-        options: [
-          "HTML",
-          "CSS",
-          "JavaScript",
-          "SQL",
-        ],
+        question: "Which language is used for webpage styling?",
+        options: ["HTML", "CSS", "JavaScript", "SQL"],
         answer: "CSS",
       },
       {
-        question:
-          "Which language adds interactivity to webpages?",
-        options: [
-          "CSS",
-          "HTML",
-          "JavaScript",
-          "SQL",
-        ],
+        question: "Which language adds interactivity to webpages?",
+        options: ["CSS", "HTML", "JavaScript", "SQL"],
         answer: "JavaScript",
       },
       {
-        question:
-          "React is mainly used for what?",
+        question: "React is mainly used for what?",
         options: [
           "Building user interfaces",
           "Database management",
@@ -482,8 +379,7 @@ const careerData = {
         answer: "Building user interfaces",
       },
       {
-        question:
-          "Node.js allows JavaScript to run where?",
+        question: "Node.js allows JavaScript to run where?",
         options: [
           "On the server",
           "Only in CSS",
@@ -500,40 +396,21 @@ const careerData = {
           "Application Process Input",
           "Automated Programming Internet",
         ],
-        answer:
-          "Application Programming Interface",
+        answer: "Application Programming Interface",
       },
       {
-        question:
-          "Which is commonly used for version control?",
-        options: [
-          "Git",
-          "React",
-          "CSS",
-          "HTML",
-        ],
+        question: "Which is commonly used for version control?",
+        options: ["Git", "React", "CSS", "HTML"],
         answer: "Git",
       },
       {
-        question:
-          "Which is a database query language?",
-        options: [
-          "SQL",
-          "CSS",
-          "HTML",
-          "JSX",
-        ],
+        question: "Which is a database query language?",
+        options: ["SQL", "CSS", "HTML", "JSX"],
         answer: "SQL",
       },
       {
-        question:
-          "Which HTTP method is commonly used to retrieve data?",
-        options: [
-          "GET",
-          "POST",
-          "DELETE",
-          "PATCH",
-        ],
+        question: "Which HTTP method is commonly used to retrieve data?",
+        options: ["GET", "POST", "DELETE", "PATCH"],
         answer: "GET",
       },
       {
@@ -544,8 +421,7 @@ const careerData = {
           "Only mobile coding",
           "Only desktop coding",
         ],
-        answer:
-          "Design that adapts to screen sizes",
+        answer: "Design that adapts to screen sizes",
       },
     ],
   },
@@ -561,7 +437,6 @@ const careerData = {
       "SQL",
       "Matplotlib",
     ],
-
     topics: [
       "Python",
       "Statistics",
@@ -572,30 +447,16 @@ const careerData = {
       "Data Visualization",
       "SQL",
     ],
-
     projects: "2–3",
-
     questions: [
       {
-        question:
-          "Which Python library is commonly used for data analysis?",
-        options: [
-          "Pandas",
-          "React",
-          "Express",
-          "Bootstrap",
-        ],
+        question: "Which Python library is commonly used for data analysis?",
+        options: ["Pandas", "React", "Express", "Bootstrap"],
         answer: "Pandas",
       },
       {
-        question:
-          "Which library is commonly used for numerical operations?",
-        options: [
-          "NumPy",
-          "React",
-          "HTML",
-          "Node",
-        ],
+        question: "Which library is commonly used for numerical operations?",
+        options: ["NumPy", "React", "HTML", "Node"],
         answer: "NumPy",
       },
       {
@@ -619,19 +480,12 @@ const careerData = {
         answer: "Middle value",
       },
       {
-        question:
-          "Which library is useful for plotting graphs?",
-        options: [
-          "Matplotlib",
-          "React",
-          "Express",
-          "Django",
-        ],
+        question: "Which library is useful for plotting graphs?",
+        options: ["Matplotlib", "React", "Express", "Django"],
         answer: "Matplotlib",
       },
       {
-        question:
-          "What does SQL help a data scientist with?",
+        question: "What does SQL help a data scientist with?",
         options: [
           "Querying databases",
           "Creating CSS",
@@ -648,8 +502,7 @@ const careerData = {
           "Creating a website",
           "Installing Python",
         ],
-        answer:
-          "Removing or correcting bad data",
+        answer: "Removing or correcting bad data",
       },
       {
         question: "What is machine learning?",
@@ -659,8 +512,7 @@ const careerData = {
           "Only database storage",
           "Manual calculations",
         ],
-        answer:
-          "Learning patterns from data",
+        answer: "Learning patterns from data",
       },
       {
         question: "What is data visualization?",
@@ -670,8 +522,7 @@ const careerData = {
           "Encrypting data",
           "Sorting files",
         ],
-        answer:
-          "Representing data graphically",
+        answer: "Representing data graphically",
       },
       {
         question: "What is an outlier?",
@@ -681,8 +532,7 @@ const careerData = {
           "The median",
           "A database",
         ],
-        answer:
-          "An unusually different data point",
+        answer: "An unusually different data point",
       },
     ],
   },
@@ -698,7 +548,6 @@ const careerData = {
       "Security Tools",
       "Risk Analysis",
     ],
-
     topics: [
       "Network Security",
       "Cybersecurity Fundamentals",
@@ -708,21 +557,17 @@ const careerData = {
       "Threat Detection",
       "Risk Management",
     ],
-
     projects: "2–3",
-
     questions: [
       {
-        question:
-          "What does cybersecurity protect?",
+        question: "What does cybersecurity protect?",
         options: [
           "Digital systems and data",
           "Only buildings",
           "Only hardware",
           "Only websites",
         ],
-        answer:
-          "Digital systems and data",
+        answer: "Digital systems and data",
       },
       {
         question: "What is phishing?",
@@ -732,8 +577,7 @@ const careerData = {
           "A database",
           "A firewall",
         ],
-        answer:
-          "A social engineering attack",
+        answer: "A social engineering attack",
       },
       {
         question: "What is encryption?",
@@ -743,18 +587,11 @@ const careerData = {
           "Copying files",
           "Creating websites",
         ],
-        answer:
-          "Converting data into a protected form",
+        answer: "Converting data into a protected form",
       },
       {
-        question:
-          "Which OS is commonly used in cybersecurity?",
-        options: [
-          "Linux",
-          "DOS only",
-          "Android only",
-          "iOS only",
-        ],
+        question: "Which OS is commonly used in cybersecurity?",
+        options: ["Linux", "DOS only", "Android only", "iOS only"],
         answer: "Linux",
       },
       {
@@ -765,8 +602,7 @@ const careerData = {
           "Stores passwords only",
           "Compiles code",
         ],
-        answer:
-          "Controls network traffic",
+        answer: "Controls network traffic",
       },
       {
         question: "What is malware?",
@@ -796,20 +632,17 @@ const careerData = {
           "A firewall",
           "A backup",
         ],
-        answer:
-          "A weakness that can be exploited",
+        answer: "A weakness that can be exploited",
       },
       {
-        question:
-          "What does VPN commonly provide?",
+        question: "What does VPN commonly provide?",
         options: [
           "Encrypted network connection",
           "Faster CPU",
           "More RAM",
           "Database storage",
         ],
-        answer:
-          "Encrypted network connection",
+        answer: "Encrypted network connection",
       },
       {
         question: "What is risk analysis?",
@@ -819,128 +652,74 @@ const careerData = {
           "Writing CSS",
           "Installing games",
         ],
-        answer:
-          "Identifying and evaluating security risks",
+        answer: "Identifying and evaluating security risks",
       },
     ],
   },
 };
 
-// =============================================================
-// COMPONENT
-// =============================================================
-
 function JobPreparation() {
   const navigate = useNavigate();
 
-  // ===========================================================
-  // LIVE REFRESH
-  // ===========================================================
-
   const [refreshKey, setRefreshKey] = useState(0);
+  const [answers, setAnswers] = useState({});
+  const [submitted, setSubmitted] = useState(false);
+  const [score, setScore] = useState(0);
 
   useEffect(() => {
     const refresh = () => {
       setRefreshKey((previous) => previous + 1);
     };
 
-    window.addEventListener("mockInterviewUpdated", refresh);
-    window.addEventListener("readinessUpdated", refresh);
-    window.addEventListener("resumeUpdated", refresh);
-    window.addEventListener("careerUpdated", refresh);
-    window.addEventListener("skillGapUpdated", refresh);
-    window.addEventListener("jobPreparationUpdated", refresh);
+    const events = [
+      "mockInterviewUpdated",
+      "readinessUpdated",
+      "resumeUpdated",
+      "careerUpdated",
+      "skillGapUpdated",
+      "jobPreparationUpdated",
+      "projectUpdated",
+      "projectsUpdated",
+    ];
+
+    events.forEach((eventName) => {
+      window.addEventListener(eventName, refresh);
+    });
+
     window.addEventListener("storage", refresh);
 
     return () => {
-      window.removeEventListener(
-        "mockInterviewUpdated",
-        refresh
-      );
-      window.removeEventListener(
-        "readinessUpdated",
-        refresh
-      );
-      window.removeEventListener(
-        "resumeUpdated",
-        refresh
-      );
-      window.removeEventListener(
-        "careerUpdated",
-        refresh
-      );
-      window.removeEventListener(
-        "skillGapUpdated",
-        refresh
-      );
-      window.removeEventListener(
-        "jobPreparationUpdated",
-        refresh
-      );
+      events.forEach((eventName) => {
+        window.removeEventListener(eventName, refresh);
+      });
+
       window.removeEventListener("storage", refresh);
     };
   }, []);
 
-  // ===========================================================
-  // LOAD PROJECT DATA
-  // ===========================================================
-
   const projectData = useMemo(() => {
-    const profile = getData("studentProfile", {});
-
-    const skillAssessment = getData(
-      "skillAssessment",
-      {}
-    );
-
-    const careerAnalysis = getData(
-      "careerAnalysis",
-      {}
-    );
-
-    const careerRecommendation = getData(
-      "careerRecommendation",
-      {}
-    );
-
-    const skillGap = getData("skillGap", {});
-
-    const readiness = getData("readiness", {});
-
-    const careerReadiness = getData(
-      "careerReadiness",
-      {}
-    );
-
-    const resume = getData("resume", {});
-
-    const resumeAnalysis = getData(
-      "resumeAnalysis",
-      {}
-    );
-
-    const mockInterview = getData(
-      "mockInterview",
-      {}
-    );
-
-    const jobPreparation = getData(
-      "jobPreparation",
-      {}
-    );
-
     return {
-      profile,
-      skillAssessment,
-      careerAnalysis,
-      careerRecommendation,
-      skillGap,
-      readiness,
-      careerReadiness,
-      resume,
-      resumeAnalysis,
-      mockInterview,
-      jobPreparation,
+      profile: getData("studentProfile", {}),
+      skillAssessment: getData("skillAssessment", {}),
+      careerAnalysis: getData("careerAnalysis", {}),
+      careerRecommendation: getData("careerRecommendation", {}),
+      skillGap: getData("skillGap", {}),
+      readiness: getData("readiness", {}),
+      careerReadiness: getData("careerReadiness", {}),
+      resume: getData("resume", {}),
+      resumeAnalysis: getData("resumeAnalysis", {}),
+      mockInterview: getData("mockInterview", {}),
+      jobPreparation: getData("jobPreparation", {}),
+      projectStatus: getData("projectStatus", {}),
+      projects: getData("projects", {}),
+      projectRecommendations: getData(
+        "projectRecommendations",
+        {}
+      ),
+      skillGapCourseProgress: getData(
+        "skillGapCourseProgress",
+        {}
+      ),
     };
   }, [refreshKey]);
 
@@ -956,16 +735,13 @@ function JobPreparation() {
     resumeAnalysis,
     mockInterview,
     jobPreparation,
+    projectStatus,
+    projects,
+    projectRecommendations,
+    skillGapCourseProgress,
   } = projectData;
 
-  // ===========================================================
-  // CAREER DETECTION
-  // ===========================================================
-
   const career = useMemo(() => {
-    // IMPORTANT:
-    // careerRecommendation.career is the current primary field.
-    // Older fields are kept as fallbacks for compatibility.
     const recommendationCandidates = [
       careerRecommendation?.career,
       careerRecommendation?.recommendedCareer,
@@ -977,11 +753,8 @@ function JobPreparation() {
       careerAnalysis?.recommendedCareerName,
     ]
       .filter(Boolean)
-      .map((value) =>
-        String(value).toLowerCase().trim()
-      );
+      .map((value) => String(value).toLowerCase().trim());
 
-    // Exact/strong recommendation matching first
     for (const value of recommendationCandidates) {
       if (
         value.includes("artificial intelligence") ||
@@ -1039,17 +812,13 @@ function JobPreparation() {
       profile?.interests,
       profile?.skills,
     ]
-      .flatMap((value) =>
-        Array.isArray(value) ? value : [value]
-      )
+      .flatMap((value) => (Array.isArray(value) ? value : [value]))
       .filter(Boolean)
       .join(" ")
       .toLowerCase();
 
     if (
-      allCareerText.includes(
-        "artificial intelligence"
-      ) ||
+      allCareerText.includes("artificial intelligence") ||
       allCareerText.includes("machine learning") ||
       allCareerText.includes("machine-learning") ||
       allCareerText.includes("deep learning") ||
@@ -1094,28 +863,18 @@ function JobPreparation() {
   ]);
 
   const currentCareerData =
-    careerData[career] ||
-    careerData["Software Developer"];
-
-  // ===========================================================
-  // MERGED RESUME DATA
-  // ===========================================================
+    careerData[career] || careerData["Software Developer"];
 
   const resumeData = useMemo(() => {
     return {
       ...resumeAnalysis,
       ...resume,
-
       analysis: {
         ...(resumeAnalysis?.analysis || {}),
         ...(resume?.analysis || {}),
       },
     };
   }, [resume, resumeAnalysis]);
-
-  // ===========================================================
-  // MERGED READINESS DATA
-  // ===========================================================
 
   const readinessData = useMemo(() => {
     return {
@@ -1124,10 +883,6 @@ function JobPreparation() {
     };
   }, [readiness, careerReadiness]);
 
-  // ===========================================================
-  // SKILL SCORE
-  // ===========================================================
-
   const skillScore = normalizeScore(
     firstValue(
       skillAssessment?.percentage,
@@ -1135,19 +890,11 @@ function JobPreparation() {
       skillAssessment?.percent,
       skillAssessment?.result?.percentage,
       skillAssessment?.result?.score,
-
-      skillAssessment?.score &&
-        skillAssessment?.total
-        ? (skillAssessment.score /
-            skillAssessment.total) *
-            100
+      skillAssessment?.score && skillAssessment?.total
+        ? (skillAssessment.score / skillAssessment.total) * 100
         : 0
     )
   );
-
-  // ===========================================================
-  // CAREER READINESS
-  // ===========================================================
 
   const readinessScore = normalizeScore(
     firstValue(
@@ -1159,10 +906,6 @@ function JobPreparation() {
     )
   );
 
-  // ===========================================================
-  // RESUME SCORE
-  // ===========================================================
-
   const resumeScore = normalizeScore(
     firstValue(
       resumeData?.analysis?.resumeScore,
@@ -1171,10 +914,6 @@ function JobPreparation() {
       resumeData?.score
     )
   );
-
-  // ===========================================================
-  // ATS SCORE
-  // ===========================================================
 
   const atsScore = normalizeScore(
     firstValue(
@@ -1195,22 +934,14 @@ function JobPreparation() {
     resumeData?.analyzedAt ||
     resumeData?.resumeName;
 
-  // ===========================================================
-  // MOCK INTERVIEW
-  // ===========================================================
-
-  const mockReport =
-    mockInterview?.report || {};
+  const mockReport = mockInterview?.report || {};
 
   const mockCompleted =
     mockInterview?.completed === true ||
-    mockInterview?.report?.overallScore !==
-      undefined ||
+    mockInterview?.report?.overallScore !== undefined ||
     mockInterview?.percentage !== undefined ||
     mockInterview?.score !== undefined ||
-    Number(
-      mockInterview?.answeredQuestions || 0
-    ) > 0;
+    Number(mockInterview?.answeredQuestions || 0) > 0;
 
   const mockOverall = normalizeScore(
     firstValue(
@@ -1242,12 +973,7 @@ function JobPreparation() {
     )
   );
 
-  const mockReadinessLevel =
-    mockReport?.readinessLevel || "";
-
-  // ===========================================================
-  // SKILL GAPS
-  // ===========================================================
+  const mockReadinessLevel = mockReport?.readinessLevel || "";
 
   const gaps = useMemo(() => {
     const rawGaps =
@@ -1260,10 +986,6 @@ function JobPreparation() {
     return normalizeList(rawGaps);
   }, [skillGap]);
 
-  // ===========================================================
-  // LEARNED SKILLS
-  // ===========================================================
-
   const learnedSkills = useMemo(() => {
     const rawLearned =
       skillGap?.learnedSkills ??
@@ -1273,10 +995,6 @@ function JobPreparation() {
 
     return normalizeList(rawLearned);
   }, [skillGap]);
-
-  // ===========================================================
-  // WEAK AREAS
-  // ===========================================================
 
   const weakAreas = useMemo(() => {
     const areas = [];
@@ -1288,10 +1006,7 @@ function JobPreparation() {
         reason:
           "Your skill assessment score is below 60%. Strengthen your core technical concepts.",
       });
-    } else if (
-      skillScore >= 60 &&
-      skillScore < 75
-    ) {
+    } else if (skillScore >= 60 && skillScore < 75) {
       areas.push({
         title: "Technical Fundamentals",
         level: "Medium",
@@ -1303,22 +1018,14 @@ function JobPreparation() {
     if (gaps.length > 0) {
       areas.push({
         title: "Missing Skills",
-        level:
-          gaps.length >= 4
-            ? "High"
-            : "Medium",
-        reason:
-          `You have ${gaps.length} skill gap${
-            gaps.length > 1 ? "s" : ""
-          } that should be addressed.`,
+        level: gaps.length >= 4 ? "High" : "Medium",
+        reason: `You have ${gaps.length} skill gap${
+          gaps.length > 1 ? "s" : ""
+        } that should be addressed.`,
       });
     }
 
-    if (
-      resumeExists &&
-      resumeScore > 0 &&
-      resumeScore < 70
-    ) {
+    if (resumeExists && resumeScore > 0 && resumeScore < 70) {
       areas.push({
         title: "Resume Quality",
         level: "High",
@@ -1327,11 +1034,7 @@ function JobPreparation() {
       });
     }
 
-    if (
-      resumeExists &&
-      atsScore > 0 &&
-      atsScore < 70
-    ) {
+    if (resumeExists && atsScore > 0 && atsScore < 70) {
       areas.push({
         title: "ATS Optimization",
         level: "High",
@@ -1340,10 +1043,7 @@ function JobPreparation() {
       });
     }
 
-    if (
-      mockTechnical > 0 &&
-      mockTechnical < 70
-    ) {
+    if (mockTechnical > 0 && mockTechnical < 70) {
       areas.push({
         title: "Technical Interview",
         level: "High",
@@ -1352,10 +1052,7 @@ function JobPreparation() {
       });
     }
 
-    if (
-      mockCommunication > 0 &&
-      mockCommunication < 70
-    ) {
+    if (mockCommunication > 0 && mockCommunication < 70) {
       areas.push({
         title: "Communication",
         level: "High",
@@ -1364,10 +1061,7 @@ function JobPreparation() {
       });
     }
 
-    if (
-      mockProblemSolving > 0 &&
-      mockProblemSolving < 70
-    ) {
+    if (mockProblemSolving > 0 && mockProblemSolving < 70) {
       areas.push({
         title: "Problem Solving",
         level: "High",
@@ -1376,16 +1070,10 @@ function JobPreparation() {
       });
     }
 
-    if (
-      readinessScore > 0 &&
-      readinessScore < 70
-    ) {
+    if (readinessScore > 0 && readinessScore < 70) {
       areas.push({
         title: "Career Readiness",
-        level:
-          readinessScore < 50
-            ? "High"
-            : "Medium",
+        level: readinessScore < 50 ? "High" : "Medium",
         reason:
           "Your overall career readiness score shows that additional preparation is required.",
       });
@@ -1404,14 +1092,9 @@ function JobPreparation() {
     readinessScore,
   ]);
 
-  // ===========================================================
-  // PREPARATION PRIORITY
-  // ===========================================================
-
-  const highPriorityCount =
-    weakAreas.filter(
-      (item) => item.level === "High"
-    ).length;
+  const highPriorityCount = weakAreas.filter(
+    (item) => item.level === "High"
+  ).length;
 
   let preparationPriority = {
     level: "Low",
@@ -1436,25 +1119,8 @@ function JobPreparation() {
     };
   }
 
-  // ===========================================================
-  // QUIZ STATE
-  // ===========================================================
-
-  const [answers, setAnswers] = useState({});
-  const [submitted, setSubmitted] =
-    useState(false);
-  const [score, setScore] = useState(0);
-
-  // ===========================================================
-  // LOAD SAVED QUIZ
-  // ===========================================================
-
   useEffect(() => {
-    const savedPrimary = getData(
-      "jobPreparation",
-      null
-    );
-
+    const savedPrimary = getData("jobPreparation", null);
     const savedSecondary = getData(
       "jobPreparationResult",
       null
@@ -1497,14 +1163,7 @@ function JobPreparation() {
     currentCareerData.questions.length,
   ]);
 
-  // ===========================================================
-  // SELECT ANSWER
-  // ===========================================================
-
-  const selectAnswer = (
-    questionIndex,
-    answer
-  ) => {
+  const selectAnswer = (questionIndex, answer) => {
     if (submitted) {
       return;
     }
@@ -1515,18 +1174,9 @@ function JobPreparation() {
     }));
   };
 
-  // ===========================================================
-  // SUBMIT QUIZ
-  // ===========================================================
-
   const submitQuiz = () => {
-    const questions =
-      currentCareerData.questions;
+    const questions = currentCareerData.questions;
 
-    // IMPORTANT:
-    // Use undefined/null/empty string check.
-    // Do not use !answers[index] because it can
-    // incorrectly treat valid values as empty.
     const unanswered = questions.filter(
       (_, index) =>
         answers[index] === undefined ||
@@ -1543,126 +1193,65 @@ function JobPreparation() {
 
     let correctAnswers = 0;
 
-    questions.forEach(
-      (question, index) => {
-        if (
-          answers[index] ===
-          question.answer
-        ) {
-          correctAnswers++;
-        }
+    questions.forEach((question, index) => {
+      if (answers[index] === question.answer) {
+        correctAnswers++;
       }
-    );
+    });
 
     const quizPercentage = Math.round(
-      (correctAnswers /
-        questions.length) *
-        100
+      (correctAnswers / questions.length) * 100
     );
 
     setScore(correctAnswers);
     setSubmitted(true);
 
-    // ---------------------------------------------------------
-    // SAVE COMPLETE JOB PREPARATION SNAPSHOT
-    // ---------------------------------------------------------
-
     const result = {
       career,
-
       score: correctAnswers,
-
       total: questions.length,
-
       percentage: quizPercentage,
-
       scorePercentage: quizPercentage,
-
       answers: {
         ...answers,
       },
-
       completed: true,
-
-      completedAt:
-        new Date().toISOString(),
-
-      // Skill Assessment
-      skillAssessmentScore:
-        skillScore,
-
-      // Career Readiness
-      careerReadinessScore:
-        readinessScore,
-
+      completedAt: new Date().toISOString(),
+      skillAssessmentScore: skillScore,
+      careerReadinessScore: readinessScore,
       readinessLevel:
         mockReadinessLevel ||
         readinessData?.readinessLevel ||
         "",
-
-      // Resume
       resumeExists,
-
       resumeScore,
-
       atsScore,
-
-      // Skill Gap
-      skillGapCount:
-        gaps.length,
-
-      skillGaps: [
-        ...gaps,
-      ],
-
-      // Mock Interview
-      mockInterviewCompleted:
-        mockCompleted,
-
-      mockInterviewScore:
-        mockOverall,
-
-      mockTechnicalScore:
-        mockTechnical,
-
-      mockCommunicationScore:
-        mockCommunication,
-
-      mockProblemSolvingScore:
-        mockProblemSolving,
-
+      skillGapCount: gaps.length,
+      skillGaps: [...gaps],
+      mockInterviewCompleted: mockCompleted,
+      mockInterviewScore: mockOverall,
+      mockTechnicalScore: mockTechnical,
+      mockCommunicationScore: mockCommunication,
+      mockProblemSolvingScore: mockProblemSolving,
       mockReadinessLevel,
-
-      // Job Preparation analysis
-      weakAreas:
-        weakAreas.map((area) => ({
-          ...area,
-        })),
-
-      preparationPriority:
-        preparationPriority.level,
+      weakAreas: weakAreas.map((area) => ({
+        ...area,
+      })),
+      preparationPriority: preparationPriority.level,
     };
 
-    // Primary storage
     localStorage.setItem(
       "jobPreparation",
       JSON.stringify(result)
     );
 
-    // Secondary/compatibility storage
     localStorage.setItem(
       "jobPreparationResult",
       JSON.stringify(result)
     );
 
-    // ---------------------------------------------------------
-    // COMPLETE MODULE
-    // ---------------------------------------------------------
-
     try {
-      completeModule(
-        MODULE_KEYS.JOB_PREPARATION
-      );
+      completeModule(MODULE_KEYS.JOB_PREPARATION);
     } catch (error) {
       console.error(
         "Could not update Job Preparation progress:",
@@ -1670,39 +1259,21 @@ function JobPreparation() {
       );
     }
 
-    // ---------------------------------------------------------
-    // INFORM OTHER COMPONENTS
-    // ---------------------------------------------------------
-
     window.dispatchEvent(
-      new Event(
-        "jobPreparationUpdated"
-      )
+      new Event("jobPreparationUpdated")
     );
   };
-
-  // ===========================================================
-  // RESTART QUIZ
-  // ===========================================================
 
   const restartQuiz = () => {
     setAnswers({});
     setSubmitted(false);
     setScore(0);
 
-    // Remove both saved versions
-    localStorage.removeItem(
-      "jobPreparation"
-    );
-
-    localStorage.removeItem(
-      "jobPreparationResult"
-    );
+    localStorage.removeItem("jobPreparation");
+    localStorage.removeItem("jobPreparationResult");
 
     window.dispatchEvent(
-      new Event(
-        "jobPreparationUpdated"
-      )
+      new Event("jobPreparationUpdated")
     );
 
     window.scrollTo({
@@ -1711,24 +1282,14 @@ function JobPreparation() {
     });
   };
 
-  // ===========================================================
-  // QUIZ PERCENTAGE
-  // ===========================================================
-
   const percentage =
-    currentCareerData.questions
-      .length > 0
+    currentCareerData.questions.length > 0
       ? Math.round(
           (score /
-            currentCareerData
-              .questions.length) *
+            currentCareerData.questions.length) *
             100
         )
       : 0;
-
-  // ===========================================================
-  // RESULT MESSAGE
-  // ===========================================================
 
   const getResultMessage = () => {
     if (percentage >= 80) {
@@ -1742,14 +1303,7 @@ function JobPreparation() {
     return "Keep practicing. Focus on the concepts you got wrong and strengthen your fundamentals.";
   };
 
-  // ===========================================================
-  // DISPLAY SCORE
-  // ===========================================================
-
-  const displayScore = (
-    value,
-    fallback = "N/A"
-  ) => {
+  const displayScore = (value, fallback = "N/A") => {
     if (
       value === undefined ||
       value === null ||
@@ -1761,65 +1315,252 @@ function JobPreparation() {
     return `${Math.round(value)}%`;
   };
 
-  // ===========================================================
-  // CHECKLIST STATUS
-  // ===========================================================
+  const skillGapCourseCompleted = useMemo(() => {
+    if (gaps.length === 0) {
+      return true;
+    }
+
+    if (
+      !skillGapCourseProgress ||
+      typeof skillGapCourseProgress !== "object"
+    ) {
+      return false;
+    }
+
+    return gaps.every((gap) => {
+      const progressItem =
+        skillGapCourseProgress[gap];
+
+      if (typeof progressItem === "number") {
+        return progressItem >= 100;
+      }
+
+      if (
+        progressItem &&
+        typeof progressItem === "object"
+      ) {
+        return (
+          Number(
+            progressItem.completed ??
+              progressItem.progress ??
+              progressItem.completedQuestions ??
+              0
+          ) >= 100
+        );
+      }
+
+      const normalizedGap = gap.toLowerCase();
+
+      const matchingKey = Object.keys(
+        skillGapCourseProgress
+      ).find(
+        (key) =>
+          key.toLowerCase() === normalizedGap
+      );
+
+      if (!matchingKey) {
+        return false;
+      }
+
+      const matchingValue =
+        skillGapCourseProgress[matchingKey];
+
+      if (typeof matchingValue === "number") {
+        return matchingValue >= 100;
+      }
+
+      if (
+        matchingValue &&
+        typeof matchingValue === "object"
+      ) {
+        return (
+          Number(
+            matchingValue.completed ??
+              matchingValue.progress ??
+              matchingValue.completedQuestions ??
+              0
+          ) >= 100
+        );
+      }
+
+      return false;
+    });
+  }, [gaps, skillGapCourseProgress]);
+
+  const projectsCompleted = useMemo(() => {
+    const possibleSources = [
+      projectStatus,
+      projects,
+      projectRecommendations,
+    ];
+
+    for (const source of possibleSources) {
+      if (!source || typeof source !== "object") {
+        continue;
+      }
+
+      const values = Object.values(source);
+
+      const completedValues = values.filter(
+        (value) =>
+          value === true ||
+          value === "completed" ||
+          value === "Completed" ||
+          value?.completed === true ||
+          value?.status === "completed" ||
+          value?.status === "Completed"
+      );
+
+      if (
+        completedValues.length >= 2
+      ) {
+        return true;
+      }
+
+      if (
+        source.completed === true ||
+        source.allCompleted === true ||
+        source.completedAll === true
+      ) {
+        return true;
+      }
+
+      if (
+        Number(source.completedCount || 0) >= 2
+      ) {
+        return true;
+      }
+    }
+
+    return false;
+  }, [
+    projectStatus,
+    projects,
+    projectRecommendations,
+  ]);
+
+  const resumeCompleted = Boolean(resumeExists);
+
+  const technicalQuestionsCompleted =
+    jobPreparation?.completed === true ||
+    submitted === true;
+
+  const communicationProblemSolvingCompleted =
+    mockCompleted &&
+    mockCommunication >= 70 &&
+    mockProblemSolving >= 70;
 
   const checklist = [
     {
+      number: 1,
       text: "Complete your technical skill assessment",
       done: skillScore > 0,
+      path: "/skills",
     },
-
     {
+      number: 2,
       text: "Learn the missing skills from your skill-gap analysis",
-      done: gaps.length === 0,
+      done: skillGapCourseCompleted,
+      path: "/skill-gap",
     },
-
     {
+      number: 3,
       text: `Build ${currentCareerData.projects} career-related projects`,
-      done: false,
+      done: projectsCompleted,
+      path: "/projects",
     },
-
     {
+      number: 4,
       text: "Prepare and optimize your resume",
-      done: resumeExists,
+      done: resumeCompleted,
+      path: "/resume",
     },
-
     {
+      number: 5,
       text: "Practice technical interview questions",
-      done: mockCompleted,
+      done: technicalQuestionsCompleted,
+      path: null,
     },
-
     {
+      number: 6,
       text: "Complete at least one mock interview",
       done: mockCompleted,
+      path: "/mock-interview",
     },
-
     {
+      number: 7,
       text: "Practice communication and problem solving",
-      done:
-        mockCommunication >= 70 &&
-        mockProblemSolving >= 70,
+      done: communicationProblemSolvingCompleted,
+      path: "/mock-interview",
     },
   ];
 
-  // ===========================================================
-  // UI
-  // ===========================================================
+  const firstIncompleteIndex = checklist.findIndex(
+    (item) => !item.done
+  );
+
+  const allChecklistCompleted =
+    firstIncompleteIndex === -1;
+
+  const isStepUnlocked = (index) => {
+    if (index === 0) {
+      return true;
+    }
+
+    return checklist[index - 1].done;
+  };
+
+  const openChecklistStep = (item, index) => {
+    if (item.done) {
+      if (item.path) {
+        navigate(item.path);
+      } else if (index === 4) {
+        document
+          .getElementById("job-preparation-assessment")
+          ?.scrollIntoView({
+            behavior: "smooth",
+          });
+      }
+
+      return;
+    }
+
+    if (!isStepUnlocked(index)) {
+      return;
+    }
+
+    if (item.path) {
+      navigate(item.path);
+      return;
+    }
+
+    if (index === 4) {
+      document
+        .getElementById("job-preparation-assessment")
+        ?.scrollIntoView({
+          behavior: "smooth",
+        });
+    }
+  };
+
+  const completedChecklistCount = checklist.filter(
+    (item) => item.done
+  ).length;
+
+  const checklistPercentage = Math.round(
+    (completedChecklistCount / checklist.length) * 100
+  );
+
+  const currentStep =
+    firstIncompleteIndex === -1
+      ? checklist.length
+      : firstIncompleteIndex + 1;
 
   return (
     <div style={styles.page}>
       <div style={styles.container}>
-
-        {/* =====================================================
-            HEADER
-        ====================================================== */}
-
         <header style={styles.header}>
-          <div style={styles.icon}>
-            💼
-          </div>
+          <div style={styles.icon}>💼</div>
 
           <div>
             <h1 style={styles.title}>
@@ -1833,10 +1574,6 @@ function JobPreparation() {
           </div>
         </header>
 
-        {/* =====================================================
-            TARGET CAREER
-        ====================================================== */}
-
         <section style={styles.careerCard}>
           <div style={styles.careerLabel}>
             🎯 TARGET CAREER
@@ -1847,16 +1584,167 @@ function JobPreparation() {
           </div>
 
           <p style={styles.careerText}>
-            Your job preparation is connected
-            with your Skill Assessment, Skill Gap,
+            Your job preparation is connected with
+            your Skill Assessment, Skill Gap,
             Career Readiness, Resume and Mock
             Interview results.
           </p>
         </section>
 
-        {/* =====================================================
-            SUMMARY
-        ====================================================== */}
+        <section style={styles.section}>
+          <h2 style={styles.sectionTitle}>
+            📊 Preparation Progress
+          </h2>
+
+          <div style={styles.progressTop}>
+            <div>
+              <strong>
+                Step {currentStep} of {checklist.length}
+              </strong>
+
+              <p style={styles.progressText}>
+                Complete each step to unlock the next
+                step.
+              </p>
+            </div>
+
+            <strong style={styles.progressPercent}>
+              {checklistPercentage}%
+            </strong>
+          </div>
+
+          <div style={styles.progressTrack}>
+            <div
+              style={{
+                ...styles.progressFill,
+                width: `${checklistPercentage}%`,
+              }}
+            />
+          </div>
+        </section>
+
+        <section style={styles.section}>
+          <h2 style={styles.sectionTitle}>
+            📋 Personalized Job Preparation Checklist
+          </h2>
+
+          <p style={styles.description}>
+            Complete the current step to automatically
+            unlock the next step.
+          </p>
+
+          <div style={styles.checklist}>
+            {checklist.map((item, index) => {
+              const unlocked =
+                isStepUnlocked(index);
+
+              const locked =
+                !item.done && !unlocked;
+
+              return (
+                <button
+                  key={item.number}
+                  type="button"
+                  onClick={() =>
+                    openChecklistStep(
+                      item,
+                      index
+                    )
+                  }
+                  disabled={locked}
+                  style={{
+                    ...styles.checkItem,
+                    background: item.done
+                      ? "#f0fdf4"
+                      : unlocked
+                      ? "#eff6ff"
+                      : "#f8fafc",
+                    border: item.done
+                      ? "1px solid #bbf7d0"
+                      : unlocked
+                      ? "1px solid #93c5fd"
+                      : "1px solid #e5e7eb",
+                    cursor: locked
+                      ? "not-allowed"
+                      : "pointer",
+                    opacity: locked ? 0.65 : 1,
+                  }}
+                >
+                  <span
+                    style={{
+                      ...styles.checkNumber,
+                      background: item.done
+                        ? "#16a34a"
+                        : unlocked
+                        ? "#2563eb"
+                        : "#9ca3af",
+                    }}
+                  >
+                    {item.done
+                      ? "✓"
+                      : locked
+                      ? "🔒"
+                      : item.number}
+                  </span>
+
+                  <span
+                    style={{
+                      ...styles.checkContent,
+                      color: item.done
+                        ? "#166534"
+                        : locked
+                        ? "#6b7280"
+                        : "#1d4ed8",
+                    }}
+                  >
+                    <strong>
+                      {item.text}
+                    </strong>
+
+                    <small>
+                      {item.done
+                        ? "Completed"
+                        : locked
+                        ? `Locked — complete step ${
+                            index
+                          } first`
+                        : "Unlocked — click to continue"}
+                    </small>
+                  </span>
+
+                  <span
+                    style={
+                      item.done
+                        ? styles.done
+                        : locked
+                        ? styles.locked
+                        : styles.pending
+                    }
+                  >
+                    {item.done
+                      ? "Completed"
+                      : locked
+                      ? "Locked"
+                      : "Open →"}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {allChecklistCompleted && (
+            <div style={styles.successBox}>
+              <strong>
+                🎉 Job Preparation Checklist Completed!
+              </strong>
+
+              <p>
+                You have completed all seven job
+                preparation steps.
+              </p>
+            </div>
+          )}
+        </section>
 
         <section style={styles.section}>
           <h2 style={styles.sectionTitle}>
@@ -1864,21 +1752,16 @@ function JobPreparation() {
           </h2>
 
           <div style={styles.grid}>
-
             <SummaryCard
               icon="🧠"
-              value={displayScore(
-                skillScore
-              )}
+              value={displayScore(skillScore)}
               label="Skill Assessment"
               style={styles.cardBlue}
             />
 
             <SummaryCard
               icon="🚀"
-              value={displayScore(
-                readinessScore
-              )}
+              value={displayScore(readinessScore)}
               label="Career Readiness"
               style={styles.cardGreen}
             />
@@ -1894,9 +1777,7 @@ function JobPreparation() {
               icon="📄"
               value={
                 resumeExists
-                  ? displayScore(
-                      resumeScore
-                    )
+                  ? displayScore(resumeScore)
                   : "No"
               }
               label="Resume"
@@ -1907,9 +1788,7 @@ function JobPreparation() {
               icon="🤖"
               value={
                 resumeExists
-                  ? displayScore(
-                      atsScore
-                    )
+                  ? displayScore(atsScore)
                   : "N/A"
               }
               label="ATS Score"
@@ -1920,21 +1799,14 @@ function JobPreparation() {
               icon="🎤"
               value={
                 mockCompleted
-                  ? displayScore(
-                      mockOverall
-                    )
+                  ? displayScore(mockOverall)
                   : "N/A"
               }
               label="Mock Interview"
               style={styles.cardGreen}
             />
-
           </div>
         </section>
-
-        {/* =====================================================
-            CONNECTED MODULE STATUS
-        ====================================================== */}
 
         <section style={styles.section}>
           <h2 style={styles.sectionTitle}>
@@ -1942,41 +1814,23 @@ function JobPreparation() {
           </h2>
 
           <div style={styles.moduleGrid}>
-
             <ModuleStatus
               icon="🧠"
               title="Skill Assessment"
-              value={displayScore(
-                skillScore
-              )}
-              completed={
-                skillScore > 0
-              }
-              onClick={() =>
-                navigate(
-                  "/skills"
-                )
-              }
+              value={displayScore(skillScore)}
+              completed={skillScore > 0}
+              onClick={() => navigate("/skills")}
             />
 
             <ModuleStatus
               icon="🔍"
               title="Skill Gap"
               value={`${gaps.length} gap${
-                gaps.length !== 1
-                  ? "s"
-                  : ""
+                gaps.length !== 1 ? "s" : ""
               }`}
-              completed={
-                gaps.length === 0 &&
-                Object.keys(
-                  skillGap || {}
-                ).length > 0
-              }
+              completed={skillGapCourseCompleted}
               onClick={() =>
-                navigate(
-                  "/skill-gap"
-                )
+                navigate("/skill-gap")
               }
             />
 
@@ -1985,19 +1839,11 @@ function JobPreparation() {
               title="Resume"
               value={
                 resumeExists
-                  ? `${Math.round(
-                      resumeScore
-                    )}%`
+                  ? `${Math.round(resumeScore)}%`
                   : "Not analyzed"
               }
-              completed={
-                resumeExists
-              }
-              onClick={() =>
-                navigate(
-                  "/resume"
-                )
-              }
+              completed={resumeExists}
+              onClick={() => navigate("/resume")}
             />
 
             <ModuleStatus
@@ -2005,18 +1851,12 @@ function JobPreparation() {
               title="Career Readiness"
               value={
                 readinessScore > 0
-                  ? `${Math.round(
-                      readinessScore
-                    )}%`
+                  ? `${Math.round(readinessScore)}%`
                   : "Not calculated"
               }
-              completed={
-                readinessScore > 0
-              }
+              completed={readinessScore > 0}
               onClick={() =>
-                navigate(
-                  "/readiness"
-                )
+                navigate("/readiness")
               }
             />
 
@@ -2025,34 +1865,21 @@ function JobPreparation() {
               title="Mock Interview"
               value={
                 mockCompleted
-                  ? `${Math.round(
-                      mockOverall
-                    )}%`
+                  ? `${Math.round(mockOverall)}%`
                   : "Not completed"
               }
-              completed={
-                mockCompleted
-              }
+              completed={mockCompleted}
               onClick={() =>
-                navigate(
-                  "/mock-interview"
-                )
+                navigate("/mock-interview")
               }
             />
-
           </div>
         </section>
 
-        {/* =====================================================
-            PRIORITY
-        ====================================================== */}
-
         <section style={styles.section}>
           <div style={styles.priorityBox}>
-
             <div style={styles.priorityIcon}>
-              {preparationPriority.level ===
-              "High"
+              {preparationPriority.level === "High"
                 ? "🔴"
                 : preparationPriority.level ===
                   "Medium"
@@ -2061,41 +1888,20 @@ function JobPreparation() {
             </div>
 
             <div>
-              <div
-                style={
-                  styles.priorityLabel
-                }
-              >
+              <div style={styles.priorityLabel}>
                 PREPARATION PRIORITY
               </div>
 
-              <h3
-                style={
-                  styles.priorityTitle
-                }
-              >
-                {
-                  preparationPriority.title
-                }
+              <h3 style={styles.priorityTitle}>
+                {preparationPriority.title}
               </h3>
 
-              <p
-                style={
-                  styles.priorityText
-                }
-              >
-                {
-                  preparationPriority.description
-                }
+              <p style={styles.priorityText}>
+                {preparationPriority.description}
               </p>
             </div>
-
           </div>
         </section>
-
-        {/* =====================================================
-            WEAK AREAS
-        ====================================================== */}
 
         <section style={styles.section}>
           <h2 style={styles.sectionTitle}>
@@ -2103,78 +1909,54 @@ function JobPreparation() {
           </h2>
 
           {weakAreas.length === 0 ? (
-            <div
-              style={
-                styles.successBox
-              }
-            >
+            <div style={styles.successBox}>
               <strong>
-                🎉 No major weak areas
-                detected.
+                🎉 No major weak areas detected.
               </strong>
 
               <p>
-                Keep practicing and continue
-                improving your technical,
-                communication and interview
-                skills.
+                Keep practicing and continue improving
+                your technical, communication and
+                interview skills.
               </p>
             </div>
           ) : (
             <div style={styles.weakGrid}>
-              {weakAreas.map(
-                (item, index) => (
-                  <div
-                    key={index}
-                    style={
-                      styles.weakCard
-                    }
-                  >
-                    <div
-                      style={
-                        styles.weakHeader
-                      }
-                    >
-                      <strong>
-                        {item.title}
-                      </strong>
+              {weakAreas.map((item, index) => (
+                <div
+                  key={index}
+                  style={styles.weakCard}
+                >
+                  <div style={styles.weakHeader}>
+                    <strong>
+                      {item.title}
+                    </strong>
 
-                      <span
-                        style={{
-                          ...styles.priorityBadge,
-                          background:
-                            item.level ===
-                            "High"
-                              ? "#fee2e2"
-                              : "#fef3c7",
-                          color:
-                            item.level ===
-                            "High"
-                              ? "#b91c1c"
-                              : "#b45309",
-                        }}
-                      >
-                        {item.level}
-                      </span>
-                    </div>
-
-                    <p
-                      style={
-                        styles.weakReason
-                      }
+                    <span
+                      style={{
+                        ...styles.priorityBadge,
+                        background:
+                          item.level === "High"
+                            ? "#fee2e2"
+                            : "#fef3c7",
+                        color:
+                          item.level === "High"
+                            ? "#b91c1c"
+                            : "#b45309",
+                      }}
                     >
-                      {item.reason}
-                    </p>
+                      {item.level}
+                    </span>
                   </div>
-                )
-              )}
+
+                  <p style={styles.weakReason}>
+                    {item.reason}
+                  </p>
+                </div>
+              ))}
             </div>
           )}
         </section>
-
-        {/* =====================================================
-            REQUIRED SKILLS
-        ====================================================== */}
 
         <section style={styles.section}>
           <h2 style={styles.sectionTitle}>
@@ -2182,8 +1964,8 @@ function JobPreparation() {
           </h2>
 
           <p style={styles.description}>
-            These are the most important skills
-            you should develop for{" "}
+            These are the most important skills you
+            should develop for{" "}
             <strong>{career}</strong>.
           </p>
 
@@ -2200,14 +1982,9 @@ function JobPreparation() {
                 return (
                   <div
                     key={index}
-                    style={
-                      styles.skill
-                    }
+                    style={styles.skill}
                   >
-                    {learned
-                      ? "✅"
-                      : "📌"}{" "}
-                    {skill}
+                    {learned ? "✅" : "📌"} {skill}
                   </div>
                 );
               }
@@ -2215,45 +1992,29 @@ function JobPreparation() {
           </div>
         </section>
 
-        {/* =====================================================
-            SKILL GAPS
-        ====================================================== */}
-
         <section style={styles.section}>
           <h2 style={styles.sectionTitle}>
             🔍 Skill Gaps
           </h2>
 
           {gaps.length === 0 ? (
-            <div
-              style={
-                styles.successBox
-              }
-            >
+            <div style={styles.successBox}>
               <strong>
-                {Object.keys(
-                  skillGap || {}
-                ).length > 0
+                {Object.keys(skillGap || {}).length > 0
                   ? "✅ No skill gaps found."
                   : "ℹ️ Skill gap data not available yet."}
               </strong>
 
               <p>
-                {Object.keys(
-                  skillGap || {}
-                ).length > 0
+                {Object.keys(skillGap || {}).length > 0
                   ? "Your current skill information does not show any major missing skills."
                   : "Complete the Skill Gap module to receive personalized missing-skill recommendations."}
               </p>
 
               <button
-                style={
-                  styles.mockButton
-                }
+                style={styles.mockButton}
                 onClick={() =>
-                  navigate(
-                    "/skill-gap"
-                  )
+                  navigate("/skill-gap")
                 }
               >
                 Open Skill Gap
@@ -2261,21 +2022,15 @@ function JobPreparation() {
             </div>
           ) : (
             <>
-              <div
-                style={styles.skillBox}
-              >
-                {gaps.map(
-                  (gap, index) => (
-                    <div
-                      key={index}
-                      style={
-                        styles.gap
-                      }
-                    >
-                      ⚠️ {gap}
-                    </div>
-                  )
-                )}
+              <div style={styles.skillBox}>
+                {gaps.map((gap, index) => (
+                  <div
+                    key={index}
+                    style={styles.gap}
+                  >
+                    ⚠️ {gap}
+                  </div>
+                ))}
               </div>
 
               <button
@@ -2284,9 +2039,7 @@ function JobPreparation() {
                   marginTop: "15px",
                 }}
                 onClick={() =>
-                  navigate(
-                    "/skill-gap"
-                  )
+                  navigate("/skill-gap")
                 }
               >
                 View Full Skill Gap →
@@ -2295,43 +2048,31 @@ function JobPreparation() {
           )}
         </section>
 
-        {/* =====================================================
-            MOCK INTERVIEW
-        ====================================================== */}
-
         <section style={styles.section}>
           <h2 style={styles.sectionTitle}>
             🎤 Mock Interview Performance
           </h2>
 
           {!mockCompleted ? (
-            <div
-              style={
-                styles.warningBox
-              }
-            >
+            <div style={styles.warningBox}>
               <div>
                 <strong>
-                  You have not completed a
-                  mock interview yet.
+                  You have not completed a mock
+                  interview yet.
                 </strong>
 
                 <p>
-                  Take a mock interview to
-                  measure your technical
-                  knowledge, communication and
-                  problem-solving skills.
+                  Take a mock interview to measure
+                  your technical knowledge,
+                  communication and problem-solving
+                  skills.
                 </p>
               </div>
 
               <button
-                style={
-                  styles.mockButton
-                }
+                style={styles.mockButton}
                 onClick={() =>
-                  navigate(
-                    "/mock-interview"
-                  )
+                  navigate("/mock-interview")
                 }
               >
                 Start Mock Interview
@@ -2339,11 +2080,7 @@ function JobPreparation() {
             </div>
           ) : (
             <>
-              <div
-                style={
-                  styles.mockGrid
-                }
-              >
+              <div style={styles.mockGrid}>
                 <MockCard
                   icon="⭐"
                   title="Overall"
@@ -2359,26 +2096,18 @@ function JobPreparation() {
                 <MockCard
                   icon="🗣️"
                   title="Communication"
-                  value={
-                    mockCommunication
-                  }
+                  value={mockCommunication}
                 />
 
                 <MockCard
                   icon="🧩"
                   title="Problem Solving"
-                  value={
-                    mockProblemSolving
-                  }
+                  value={mockProblemSolving}
                 />
               </div>
 
               {mockReadinessLevel && (
-                <div
-                  style={
-                    styles.infoBox
-                  }
-                >
+                <div style={styles.infoBox}>
                   <strong>
                     Interview Readiness:
                   </strong>{" "}
@@ -2390,23 +2119,15 @@ function JobPreparation() {
 
           {mockCompleted && (
             <button
-              style={
-                styles.secondaryButton
-              }
+              style={styles.secondaryButton}
               onClick={() =>
-                navigate(
-                  "/mock-interview"
-                )
+                navigate("/mock-interview")
               }
             >
               Retake Mock Interview
             </button>
           )}
         </section>
-
-        {/* =====================================================
-            INTERVIEW TOPICS
-        ====================================================== */}
 
         <section style={styles.section}>
           <h2 style={styles.sectionTitle}>
@@ -2418,24 +2139,14 @@ function JobPreparation() {
             technical interviews.
           </p>
 
-          <div
-            style={
-              styles.topicGrid
-            }
-          >
+          <div style={styles.topicGrid}>
             {currentCareerData.topics.map(
               (topic, index) => (
                 <div
                   key={index}
-                  style={
-                    styles.topic
-                  }
+                  style={styles.topic}
                 >
-                  <span
-                    style={
-                      styles.topicCheck
-                    }
-                  >
+                  <span style={styles.topicCheck}>
                     ✓
                   </span>
 
@@ -2446,217 +2157,41 @@ function JobPreparation() {
           </div>
         </section>
 
-        {/* =====================================================
-            CHECKLIST
-        ====================================================== */}
-
-        <section style={styles.section}>
-          <h2 style={styles.sectionTitle}>
-            ✅ Personalized Job Preparation
-            Checklist
-          </h2>
-
-          <div
-            style={
-              styles.checklist
-            }
-          >
-            {checklist.map(
-              (item, index) => (
-                <div
-                  key={index}
-                  style={
-                    styles.checkItem
-                  }
-                >
-                  <span
-                    style={{
-                      ...styles.checkNumber,
-                      background:
-                        item.done
-                          ? "#16a34a"
-                          : "#2563eb",
-                    }}
-                  >
-                    {item.done
-                      ? "✓"
-                      : index + 1}
-                  </span>
-
-                  <span
-                    style={
-                      item.done
-                        ? styles.doneText
-                        : {}
-                    }
-                  >
-                    {item.text}
-                  </span>
-
-                  <span
-                    style={
-                      item.done
-                        ? styles.done
-                        : styles.pending
-                    }
-                  >
-                    {item.done
-                      ? "Completed"
-                      : "Pending"}
-                  </span>
-                </div>
-              )
-            )}
-          </div>
-        </section>
-
-        {/* =====================================================
-            RESUME STATUS
-        ====================================================== */}
-
-        <section style={styles.section}>
-          <h2 style={styles.sectionTitle}>
-            📄 Resume Status
-          </h2>
-
-          {resumeExists ? (
-            <div
-              style={
-                styles.successBox
-              }
-            >
-              <strong>
-                ✅ Resume information found
-              </strong>
-
-              <p>
-                Resume Score:{" "}
-                <strong>
-                  {displayScore(
-                    resumeScore
-                  )}
-                </strong>
-              </p>
-
-              <p>
-                ATS Score:{" "}
-                <strong>
-                  {displayScore(
-                    atsScore
-                  )}
-                </strong>
-              </p>
-
-              <button
-                style={
-                  styles.mockButton
-                }
-                onClick={() =>
-                  navigate(
-                    "/resume"
-                  )
-                }
-              >
-                Review Resume
-              </button>
-            </div>
-          ) : (
-            <div
-              style={
-                styles.warningBox
-              }
-            >
-              <div>
-                <strong>
-                  Your resume has not been
-                  analyzed yet.
-                </strong>
-
-                <p>
-                  Analyze your resume before
-                  applying for internships and
-                  jobs.
-                </p>
-              </div>
-
-              <button
-                style={
-                  styles.mockButton
-                }
-                onClick={() =>
-                  navigate(
-                    "/resume"
-                  )
-                }
-              >
-                Go to Resume
-              </button>
-            </div>
-          )}
-        </section>
-
-        {/* =====================================================
-            JOB PREPARATION QUIZ
-        ====================================================== */}
-
-        <section style={styles.quizSection}>
+        <section
+          id="job-preparation-assessment"
+          style={styles.quizSection}
+        >
           <div style={styles.quizHeader}>
-            <div
-              style={
-                styles.quizIcon
-              }
-            >
-              📝
-            </div>
+            <div style={styles.quizIcon}>📝</div>
 
             <div>
-              <h2
-                style={
-                  styles.quizTitle
-                }
-              >
+              <h2 style={styles.quizTitle}>
                 Job Preparation Assessment
               </h2>
 
               <p>
                 Test your knowledge for the{" "}
-                <strong>
-                  {career}
-                </strong>{" "}
-                career path.
+                <strong>{career}</strong> career path.
               </p>
             </div>
           </div>
 
           {currentCareerData.questions.map(
-            (
-              question,
-              questionIndex
-            ) => (
+            (question, questionIndex) => (
               <div
                 key={questionIndex}
-                style={
-                  styles.question
-                }
+                style={styles.question}
               >
-                <h3
-                  style={
-                    styles.questionTitle
-                  }
-                >
+                <h3 style={styles.questionTitle}>
                   {questionIndex + 1}.{" "}
                   {question.question}
                 </h3>
 
                 {question.options.map(
-                  (
-                    option,
-                    optionIndex
-                  ) => {
+                  (option, optionIndex) => {
                     const selected =
-                      answers[
-                        questionIndex
-                      ] === option;
+                      answers[questionIndex] ===
+                      option;
 
                     const correct =
                       submitted &&
@@ -2671,13 +2206,9 @@ function JobPreparation() {
 
                     return (
                       <button
-                        key={
-                          optionIndex
-                        }
+                        key={optionIndex}
                         type="button"
-                        disabled={
-                          submitted
-                        }
+                        disabled={submitted}
                         onClick={() =>
                           selectAnswer(
                             questionIndex,
@@ -2686,7 +2217,6 @@ function JobPreparation() {
                         }
                         style={{
                           ...styles.option,
-
                           border: correct
                             ? "2px solid #16a34a"
                             : wrong
@@ -2694,7 +2224,6 @@ function JobPreparation() {
                             : selected
                             ? "2px solid #2563eb"
                             : "1px solid #d1d5db",
-
                           background:
                             correct
                               ? "#dcfce7"
@@ -2707,8 +2236,7 @@ function JobPreparation() {
                       >
                         <span>
                           {String.fromCharCode(
-                            65 +
-                              optionIndex
+                            65 + optionIndex
                           )}
                           .
                         </span>
@@ -2718,17 +2246,11 @@ function JobPreparation() {
                         </span>
 
                         {correct && (
-                          <span>
-                            {" "}
-                            ✅
-                          </span>
+                          <span> ✅</span>
                         )}
 
                         {wrong && (
-                          <span>
-                            {" "}
-                            ❌
-                          </span>
+                          <span> ❌</span>
                         )}
                       </button>
                     );
@@ -2736,11 +2258,7 @@ function JobPreparation() {
                 )}
 
                 {submitted && (
-                  <div
-                    style={
-                      styles.correctAnswer
-                    }
-                  >
+                  <div style={styles.correctAnswer}>
                     Correct Answer:{" "}
                     <strong>
                       {question.answer}
@@ -2754,65 +2272,34 @@ function JobPreparation() {
           {!submitted ? (
             <button
               type="button"
-              style={
-                styles.submitButton
-              }
-              onClick={
-                submitQuiz
-              }
+              style={styles.submitButton}
+              onClick={submitQuiz}
             >
               Submit Assessment
             </button>
           ) : (
-            <div
-              style={
-                styles.resultBox
-              }
-            >
-              <div
-                style={
-                  styles.resultIcon
-                }
-              >
+            <div style={styles.resultBox}>
+              <div style={styles.resultIcon}>
                 🏆
               </div>
 
-              <div
-                style={
-                  styles.bigScore
-                }
-              >
+              <div style={styles.bigScore}>
                 {score}/
-                {
-                  currentCareerData
-                    .questions.length
-                }
+                {currentCareerData.questions.length}
               </div>
 
-              <div
-                style={
-                  styles.percentage
-                }
-              >
+              <div style={styles.percentage}>
                 {percentage}%
               </div>
 
-              <p
-                style={
-                  styles.resultMessage
-                }
-              >
+              <p style={styles.resultMessage}>
                 {getResultMessage()}
               </p>
 
               <button
                 type="button"
-                style={
-                  styles.restartButton
-                }
-                onClick={
-                  restartQuiz
-                }
+                style={styles.restartButton}
+                onClick={restartQuiz}
               >
                 Retake Assessment
               </button>
@@ -2820,44 +2307,40 @@ function JobPreparation() {
           )}
         </section>
 
-        {/* =====================================================
-            NEXT STEP
-        ====================================================== */}
-
         <section style={styles.nextBox}>
           <div>
             <h3>
-              🚀 Ready for the next step?
+              {allChecklistCompleted
+                ? "🎉 You are fully prepared!"
+                : `🚀 Step ${currentStep} is your next step`}
             </h3>
 
             <p>
-              Practice your communication and
-              technical skills with a personalized
-              mock interview.
+              {allChecklistCompleted
+                ? "You have completed your personalized job preparation journey."
+                : "Complete the current step to unlock the next step in your job preparation journey."}
             </p>
           </div>
 
-          <button
-            style={
-              styles.nextButton
-            }
-            onClick={() =>
-              navigate(
-                "/mock-interview"
-              )
-            }
-          >
-            Go to Mock Interview →
-          </button>
+          {!allChecklistCompleted &&
+            checklist[currentStep - 1] && (
+              <button
+                style={styles.nextButton}
+                onClick={() =>
+                  openChecklistStep(
+                    checklist[currentStep - 1],
+                    currentStep - 1
+                  )
+                }
+              >
+                Continue Step {currentStep} →
+              </button>
+            )}
         </section>
       </div>
     </div>
   );
 }
-
-// =============================================================
-// SUMMARY CARD
-// =============================================================
 
 function SummaryCard({
   icon,
@@ -2882,10 +2365,6 @@ function SummaryCard({
   );
 }
 
-// =============================================================
-// MODULE STATUS
-// =============================================================
-
 function ModuleStatus({
   icon,
   title,
@@ -2906,18 +2385,9 @@ function ModuleStatus({
         {icon}
       </div>
 
-      <div
-        style={
-          styles.moduleContent
-        }
-      >
-        <strong>
-          {title}
-        </strong>
-
-        <span>
-          {value}
-        </span>
+      <div style={styles.moduleContent}>
+        <strong>{title}</strong>
+        <span>{value}</span>
       </div>
 
       <div
@@ -2928,17 +2398,11 @@ function ModuleStatus({
             : "#f59e0b",
         }}
       >
-        {completed
-          ? "✓"
-          : "!"}
+        {completed ? "✓" : "!"}
       </div>
     </button>
   );
 }
-
-// =============================================================
-// MOCK CARD
-// =============================================================
 
 function MockCard({
   icon,
@@ -2946,41 +2410,21 @@ function MockCard({
   value,
 }) {
   return (
-    <div
-      style={
-        styles.mockCard
-      }
-    >
-      <div
-        style={
-          styles.mockIcon
-        }
-      >
+    <div style={styles.mockCard}>
+      <div style={styles.mockIcon}>
         {icon}
       </div>
 
-      <strong>
-        {title}
-      </strong>
+      <strong>{title}</strong>
 
-      <div
-        style={
-          styles.number
-        }
-      >
+      <div style={styles.number}>
         {value > 0
-          ? `${Math.round(
-              value
-            )}%`
+          ? `${Math.round(value)}%`
           : "N/A"}
       </div>
     </div>
   );
 }
-
-// =============================================================
-// STYLES
-// =============================================================
 
 const styles = {
   page: {
@@ -3082,6 +2526,40 @@ const styles = {
     marginTop: "-5px",
     marginBottom: "18px",
     lineHeight: 1.6,
+  },
+
+  progressTop: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: "20px",
+    marginBottom: "12px",
+  },
+
+  progressText: {
+    margin: "5px 0 0",
+    color: "#6b7280",
+    fontSize: "13px",
+  },
+
+  progressPercent: {
+    fontSize: "25px",
+    color: "#2563eb",
+  },
+
+  progressTrack: {
+    width: "100%",
+    height: "10px",
+    background: "#e5e7eb",
+    borderRadius: "999px",
+    overflow: "hidden",
+  },
+
+  progressFill: {
+    height: "100%",
+    background: "#2563eb",
+    borderRadius: "999px",
+    transition: "width 0.3s ease",
   },
 
   grid: {
@@ -3274,6 +2752,7 @@ const styles = {
     background: "#f0fdf4",
     border: "1px solid #bbf7d0",
     color: "#166534",
+    marginTop: "15px",
   },
 
   warningBox: {
@@ -3375,26 +2854,33 @@ const styles = {
   },
 
   checkItem: {
+    width: "100%",
     display: "flex",
     alignItems: "center",
     gap: "12px",
-    padding: "13px",
+    padding: "15px",
     borderRadius: "12px",
-    background: "#f8fafc",
-    border: "1px solid #e5e7eb",
+    textAlign: "left",
+    transition: "0.2s",
   },
 
   checkNumber: {
-    width: "30px",
-    height: "30px",
+    width: "34px",
+    height: "34px",
     borderRadius: "50%",
-    background: "#2563eb",
     color: "#ffffff",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     fontWeight: 800,
     flexShrink: 0,
+  },
+
+  checkContent: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "4px",
+    flex: 1,
   },
 
   done: {
@@ -3404,13 +2890,15 @@ const styles = {
     marginLeft: "auto",
   },
 
-  doneText: {
-    color: "#166534",
-    fontWeight: 600,
+  pending: {
+    color: "#2563eb",
+    fontSize: "12px",
+    fontWeight: 700,
+    marginLeft: "auto",
   },
 
-  pending: {
-    color: "#f59e0b",
+  locked: {
+    color: "#9ca3af",
     fontSize: "12px",
     fontWeight: 700,
     marginLeft: "auto",
@@ -3452,8 +2940,7 @@ const styles = {
   question: {
     marginBottom: "25px",
     paddingBottom: "20px",
-    borderBottom:
-      "1px solid #e5e7eb",
+    borderBottom: "1px solid #e5e7eb",
   },
 
   questionTitle: {

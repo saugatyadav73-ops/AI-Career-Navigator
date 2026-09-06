@@ -6,6 +6,12 @@ import {
 
 import ModuleCompleteButton from "../components/ModuleCompleteButton";
 
+import {
+  getStudentData,
+  removeStudentData,
+  saveStudentData,
+} from "../utils/studentStorage";
+
 const questions = [
   {
     question:
@@ -130,22 +136,24 @@ function SkillAssessment() {
   const [error, setError] = useState("");
 
   // ------------------------------------
-  // Load Previous Assessment
+  // Load Current Student Assessment
   // ------------------------------------
 
   useEffect(() => {
     const savedAssessment =
-      localStorage.getItem("skillAssessment");
+      getStudentData("skillAssessment", null);
 
     if (savedAssessment) {
       try {
-        const data =
-          JSON.parse(savedAssessment);
+        setAnswers(
+          savedAssessment.answers || {}
+        );
 
-        setAnswers(data.answers || {});
-        setScore(Number(data.score || 0));
+        setScore(
+          Number(savedAssessment.score || 0)
+        );
 
-        if (data.submitted) {
+        if (savedAssessment.submitted) {
           setSubmitted(true);
         }
       } catch (error) {
@@ -213,15 +221,15 @@ function SkillAssessment() {
     setScore(finalScore);
     setSubmitted(true);
 
-    // Save assessment result
-    localStorage.setItem(
+    // Save only for current student
+    saveStudentData(
       "skillAssessment",
-      JSON.stringify({
+      {
         score: finalScore,
         total: questions.length,
         answers: answers,
         submitted: true,
-      })
+      }
     );
   };
 
@@ -235,9 +243,8 @@ function SkillAssessment() {
     setScore(0);
     setError("");
 
-    localStorage.removeItem(
-      "skillAssessment"
-    );
+    // Remove only current student's assessment
+    removeStudentData("skillAssessment");
   };
 
   // ------------------------------------
@@ -357,7 +364,6 @@ function SkillAssessment() {
 
   return (
     <div style={styles.container}>
-
       <h1 style={styles.title}>
         🧠 Skill Assessment
       </h1>
@@ -447,7 +453,6 @@ function SkillAssessment() {
 
       {submitted && (
         <div style={styles.result}>
-
           <h2
             style={{
               textAlign: "center",
@@ -600,9 +605,7 @@ function SkillAssessment() {
             >
               Complete Assessment & Continue
             </ModuleCompleteButton>
-
           </div>
-
         </div>
       )}
     </div>

@@ -11,6 +11,15 @@ import {
   MODULE_KEYS,
 } from "../utils/progress";
 
+import {
+  getStudentData,
+  saveStudentData,
+} from "../utils/studentStorage";
+
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ||
+  "http://localhost:5000";
+
 function SkillGap() {
   const navigate = useNavigate();
 
@@ -38,70 +47,55 @@ function SkillGap() {
   const [questionError, setQuestionError] =
     useState("");
 
+  // =====================================================
+  // STUDENT-WISE COURSE PROGRESS
+  // =====================================================
+
   const [courseProgress, setCourseProgress] =
     useState(() => {
-      try {
-        return JSON.parse(
-          localStorage.getItem(
-            "skillGapCourseProgress"
-          ) || "{}"
-        );
-      } catch {
-        return {};
-      }
+      return getStudentData(
+        "skillGapCourseProgress",
+        {}
+      );
     });
 
-  const getData = (key) => {
-    try {
-      const savedData =
-        localStorage.getItem(key);
-
-      if (!savedData) {
-        return {};
-      }
-
-      return JSON.parse(savedData);
-    } catch (error) {
-      console.error(
-        `Error reading ${key}:`,
-        error
-      );
-
-      return {};
-    }
-  };
+  // =====================================================
+  // STUDENT-WISE DATA
+  // =====================================================
 
   const profile = useMemo(() => {
-    return getData("studentProfile");
+    return getStudentData(
+      "studentProfile",
+      {}
+    );
   }, []);
 
   const assessment = useMemo(() => {
-    return getData("skillAssessment");
+    return getStudentData(
+      "skillAssessment",
+      {}
+    );
   }, []);
 
   const careerRecommendation =
     useMemo(() => {
-      return getData(
-        "careerRecommendation"
+      return getStudentData(
+        "careerRecommendation",
+        {}
       );
     }, []);
 
   const aiCareerAnalysis =
     useMemo(() => {
-      try {
-        return (
-          localStorage.getItem(
-            "aiCareerAnalysis"
-          ) || ""
-        );
-      } catch {
-        return "";
-      }
+      return getStudentData(
+        "aiCareerAnalysis",
+        ""
+      );
     }, []);
 
-  const API_BASE_URL =
-    import.meta.env.VITE_API_URL ||
-    "http://localhost:5000";
+  // =====================================================
+  // SKILLS
+  // =====================================================
 
   const skills = useMemo(() => {
     const profileSkills =
@@ -135,6 +129,10 @@ function SkillGap() {
     return [];
   }, [profile]);
 
+  // =====================================================
+  // ASSESSMENT SCORE
+  // =====================================================
+
   const score = Number(
     assessment?.score || 0
   );
@@ -153,6 +151,10 @@ function SkillGap() {
         )
       : 0;
 
+  // =====================================================
+  // CAREER
+  // =====================================================
+
   const recommendedCareer =
     careerRecommendation?.career ||
     careerRecommendation?.recommendedCareer ||
@@ -165,6 +167,10 @@ function SkillGap() {
         ?.careerMatch ||
       0
   );
+
+  // =====================================================
+  // CAREER SKILLS
+  // =====================================================
 
   const careerSkills = {
     "AI / ML Engineer": [
@@ -241,6 +247,10 @@ function SkillGap() {
       );
     }, [recommendedCareer]);
 
+  // =====================================================
+  // NORMALIZE SKILL
+  // =====================================================
+
   const normalizeSkill = (value) => {
     return String(value || "")
       .toLowerCase()
@@ -248,6 +258,10 @@ function SkillGap() {
       .replace(/\s+/g, " ")
       .trim();
   };
+
+  // =====================================================
+  // CHECK WHETHER STUDENT HAS SKILL
+  // =====================================================
 
   const hasSkill = (requiredSkill) => {
     const required =
@@ -461,6 +475,10 @@ function SkillGap() {
     );
   };
 
+  // =====================================================
+  // SKILL RESULTS
+  // =====================================================
+
   const skillResults =
     useMemo(() => {
       return requiredSkills.map(
@@ -505,6 +523,10 @@ function SkillGap() {
     skillPercentage * 0.7 +
       assessmentPercentage * 0.3
   );
+
+  // =====================================================
+  // COURSE DATA
+  // =====================================================
 
   const courseData = {
     "C++": {
@@ -569,6 +591,10 @@ function SkillGap() {
     },
   };
 
+  // =====================================================
+  // SAVE STUDENT-WISE SKILL GAP
+  // =====================================================
+
   useEffect(() => {
     const result = {
       career:
@@ -603,9 +629,9 @@ function SkillGap() {
         new Date().toISOString(),
     };
 
-    localStorage.setItem(
+    saveStudentData(
       "skillGap",
-      JSON.stringify(result)
+      result
     );
 
     if (MODULE_KEYS?.SKILL_GAP) {
@@ -626,6 +652,10 @@ function SkillGap() {
     aiCareerAnalysis,
   ]);
 
+  // =====================================================
+  // COURSE PROGRESS
+  // =====================================================
+
   const getCourseProgress = (skill) => {
     return Number(
       courseProgress?.[skill]
@@ -639,6 +669,10 @@ function SkillGap() {
         ?.score || 0
     );
   };
+
+  // =====================================================
+  // OPEN COURSE
+  // =====================================================
 
   const openCourse = (skill) => {
     const course =
@@ -655,6 +689,10 @@ function SkillGap() {
     );
   };
 
+  // =====================================================
+  // START AI QUESTIONS
+  // =====================================================
+
   const startAIQuestions = async (
     skill
   ) => {
@@ -665,7 +703,9 @@ function SkillGap() {
       setQuestionError(
         "This course already has 100 questions completed."
       );
+
       setSelectedSkill(skill);
+
       return;
     }
 
@@ -674,9 +714,11 @@ function SkillGap() {
     setCurrentQuestion(0);
     setSelectedAnswer("");
     setShowAnswer(false);
+
     setQuestionScore(
       getCourseScore(skill)
     );
+
     setQuestionError("");
     setLoadingQuestions(true);
 
@@ -686,18 +728,24 @@ function SkillGap() {
           `${API_BASE_URL}/api/skill-gap/questions`,
           {
             method: "POST",
+
             headers: {
               "Content-Type":
                 "application/json",
             },
+
             body: JSON.stringify({
               skill,
+
               count: Math.min(
                 10,
                 100 - completed
               ),
+
               difficulty:
                 "beginner",
+
+              completed,
             }),
           }
         );
@@ -752,6 +800,10 @@ function SkillGap() {
     }
   };
 
+  // =====================================================
+  // QUESTION OPTIONS
+  // =====================================================
+
   const getQuestionOptions = (
     question
   ) => {
@@ -774,6 +826,10 @@ function SkillGap() {
     return [];
   };
 
+  // =====================================================
+  // CORRECT ANSWER
+  // =====================================================
+
   const getCorrectAnswer = (
     question
   ) => {
@@ -785,6 +841,10 @@ function SkillGap() {
     );
   };
 
+  // =====================================================
+  // SAVE COURSE PROGRESS
+  // =====================================================
+
   const saveCourseProgress = (
     skill,
     completedQuestions,
@@ -792,16 +852,20 @@ function SkillGap() {
   ) => {
     const nextProgress = {
       ...courseProgress,
+
       [skill]: {
         completedQuestions:
           Math.min(
             100,
             completedQuestions
           ),
+
         score: scoreValue,
+
         completed:
           completedQuestions >=
           100,
+
         updatedAt:
           new Date().toISOString(),
       },
@@ -811,13 +875,15 @@ function SkillGap() {
       nextProgress
     );
 
-    localStorage.setItem(
+    saveStudentData(
       "skillGapCourseProgress",
-      JSON.stringify(
-        nextProgress
-      )
+      nextProgress
     );
   };
+
+  // =====================================================
+  // SUBMIT ANSWER
+  // =====================================================
 
   const submitAnswer = () => {
     if (
@@ -859,6 +925,10 @@ function SkillGap() {
     setShowAnswer(true);
   };
 
+  // =====================================================
+  // NEXT QUESTION
+  // =====================================================
+
   const nextQuestion = () => {
     const completedBefore =
       getCourseProgress(
@@ -886,8 +956,10 @@ function SkillGap() {
       setCurrentQuestion(
         currentQuestion + 1
       );
+
       setSelectedAnswer("");
       setShowAnswer(false);
+
       return;
     }
 
@@ -896,6 +968,10 @@ function SkillGap() {
     setSelectedAnswer("");
     setShowAnswer(false);
   };
+
+  // =====================================================
+  // CLOSE QUESTIONS
+  // =====================================================
 
   const closeQuestions = () => {
     setSelectedSkill(null);
@@ -906,13 +982,22 @@ function SkillGap() {
     setQuestionError("");
   };
 
+  // =====================================================
+  // ROADMAP
+  // =====================================================
+
   const goToRoadmap = () => {
     navigate("/roadmap");
   };
 
+  // =====================================================
+  // UI
+  // =====================================================
+
   return (
     <div style={styles.page}>
       <div style={styles.container}>
+
         <div style={styles.header}>
           <div style={styles.headerIcon}>
             📊
@@ -949,6 +1034,7 @@ function SkillGap() {
         </div>
 
         <div style={styles.statsGrid}>
+
           <div style={styles.statCard}>
             <div style={styles.statIcon}>
               🧠
@@ -1021,6 +1107,7 @@ function SkillGap() {
               Current readiness
             </p>
           </div>
+
         </div>
 
         <div style={styles.section}>
@@ -1028,7 +1115,11 @@ function SkillGap() {
             📈 Your Skill Progress
           </h2>
 
-          <div style={styles.progressBackground}>
+          <div
+            style={
+              styles.progressBackground
+            }
+          >
             <div
               style={{
                 ...styles.progressFill,
@@ -1037,7 +1128,11 @@ function SkillGap() {
             />
           </div>
 
-          <div style={styles.progressLabels}>
+          <div
+            style={
+              styles.progressLabels
+            }
+          >
             <span>
               Skills You Have:{" "}
               <strong>
@@ -1064,7 +1159,9 @@ function SkillGap() {
               (item) => (
                 <div
                   key={item.skill}
-                  style={styles.learnedSkill}
+                  style={
+                    styles.learnedSkill
+                  }
                 >
                   <span
                     style={
@@ -1330,9 +1427,8 @@ function SkillGap() {
             <strong>
               {skillPercentage}%
             </strong>{" "}
-            of the core skills required for
+            of the core skills required for{" "}
             <strong>
-              {" "}
               {recommendedCareer}
             </strong>.
           </p>
@@ -1376,11 +1472,14 @@ function SkillGap() {
             🗺️ Create Learning Roadmap →
           </button>
         </div>
+
       </div>
 
       {selectedSkill && (
         <div style={styles.modalOverlay}>
+
           <div style={styles.modal}>
+
             <div
               style={
                 styles.modalHeader
@@ -1442,6 +1541,7 @@ function SkillGap() {
               !questionError &&
               questions.length > 0 && (
                 <div>
+
                   <div
                     style={
                       styles.questionProgress
@@ -1560,6 +1660,7 @@ function SkillGap() {
                     </button>
                   ) : (
                     <div>
+
                       <div
                         style={
                           styles.answerBox
@@ -1602,6 +1703,7 @@ function SkillGap() {
                           ? "Next Question →"
                           : "Finish Practice ✓"}
                       </button>
+
                     </div>
                   )}
 
@@ -1615,6 +1717,7 @@ function SkillGap() {
                       {questionScore}
                     </strong>
                   </div>
+
                 </div>
               )}
 
@@ -1656,6 +1759,7 @@ function SkillGap() {
                   </button>
                 </div>
               )}
+
           </div>
         </div>
       )}

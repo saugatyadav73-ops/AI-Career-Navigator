@@ -1,4 +1,8 @@
-import React, { useEffect, useMemo } from "react";
+import React, {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -6,1513 +10,1455 @@ import {
   MODULE_KEYS,
 } from "../utils/progress";
 
+import {
+  getStudentData,
+  saveStudentData,
+} from "../utils/studentStorage";
+
 function Roadmap() {
   const navigate = useNavigate();
 
   // =====================================================
-  // SAFE LOCAL STORAGE READER
+  // STUDENT-WISE STORAGE
   // =====================================================
 
-  const getData = (key) => {
+  const getData = (key, defaultValue = null) => {
     try {
-      const savedData = localStorage.getItem(key);
-
-      if (!savedData) {
-        return {};
-      }
-
-      return JSON.parse(savedData);
+      return getStudentData(key, defaultValue);
     } catch (error) {
       console.error(`Error reading ${key}:`, error);
-      return {};
+      return defaultValue;
     }
   };
 
   // =====================================================
-  // GET CAREER RECOMMENDATION
+  // LOAD STUDENT DATA
   // =====================================================
 
-  const careerRecommendation = useMemo(
-    () => getData("careerRecommendation"),
-    []
+  const [careerRecommendation, setCareerRecommendation] =
+    useState(
+      getData("careerRecommendation")
+    );
+
+  const [skillGap, setSkillGap] = useState(
+    getData("skillGap")
   );
 
-  // =====================================================
-  // GET SKILL GAP
-  // =====================================================
-
-  const skillGap = useMemo(
-    () => getData("skillGap"),
-    []
+  const [profile, setProfile] = useState(
+    getData("studentProfile")
   );
 
-  // =====================================================
-  // GET STUDENT PROFILE
-  // =====================================================
+  const [skillAssessment, setSkillAssessment] =
+    useState(
+      getData("skillAssessment")
+    );
 
-  const profile = useMemo(
-    () => getData("studentProfile"),
-    []
-  );
+  const [interestAssessment, setInterestAssessment] =
+    useState(
+      getData("interestAssessment")
+    );
 
-  // =====================================================
-  // GET SKILL ASSESSMENT
-  // =====================================================
-
-  const assessment = useMemo(
-    () => getData("skillAssessment"),
-    []
-  );
+  const [completed, setCompleted] =
+    useState(false);
 
   // =====================================================
-  // GET INTEREST ASSESSMENT
+  // RELOAD STUDENT DATA
   // =====================================================
 
-  const interestAssessment = useMemo(
-    () => getData("interestAssessment"),
-    []
-  );
+  useEffect(() => {
+    const recommendation =
+      getData("careerRecommendation");
+
+    const gap = getData("skillGap");
+
+    const studentProfile =
+      getData("studentProfile");
+
+    const assessment =
+      getData("skillAssessment");
+
+    const interests =
+      getData("interestAssessment");
+
+    setCareerRecommendation(recommendation);
+    setSkillGap(gap);
+    setProfile(studentProfile);
+    setSkillAssessment(assessment);
+    setInterestAssessment(interests);
+  }, []);
 
   // =====================================================
-  // ASSESSMENT SCORE
+  // NORMALIZE TEXT
   // =====================================================
 
-  const score = Number(assessment.score || 0);
-
-  const total = Number(assessment.total || 10);
-
-  const percentage =
-    total > 0
-      ? Math.round((score / total) * 100)
-      : 0;
+  const normalize = (value) =>
+    String(value || "")
+      .toLowerCase()
+      .replace(/[^a-z0-9+#.\s/-]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
 
   // =====================================================
-  // TARGET CAREER
-  // IMPORTANT:
-  // Careers.jsx saves "career"
+  // DETECT CAREER
   // =====================================================
 
-  const career =
-    careerRecommendation.career ||
-    careerRecommendation.recommendedCareer ||
-    skillGap.career ||
-    skillGap.recommendedCareer ||
-    "Software Developer";
+  const getCareerName = () => {
+    const sources = [
+      careerRecommendation?.career,
+      careerRecommendation?.recommendedCareer,
+      careerRecommendation?.title,
+      careerRecommendation?.name,
+      careerRecommendation?.careerPath,
+      profile?.career,
+      profile?.careerGoal,
+      profile?.targetCareer,
+    ];
+
+    const text = sources.find(
+      (item) => item
+    );
+
+    if (!text) {
+      return "Software Developer";
+    }
+
+    const value = normalize(text);
+
+    if (
+      value.includes("ai") ||
+      value.includes("machine learning") ||
+      value.includes("ml")
+    ) {
+      return "AI / ML Engineer";
+    }
+
+    if (
+      value.includes("data scientist") ||
+      value.includes("data science")
+    ) {
+      return "Data Scientist";
+    }
+
+    if (
+      value.includes("cyber") ||
+      value.includes("security")
+    ) {
+      return "Cybersecurity Analyst";
+    }
+
+    if (
+      value.includes("web") ||
+      value.includes("frontend") ||
+      value.includes("backend")
+    ) {
+      return "Web Developer";
+    }
+
+    return "Software Developer";
+  };
+
+  const career = getCareerName();
 
   // =====================================================
-  // CAREER MATCH
-  // =====================================================
-
-  const careerMatch = Number(
-    careerRecommendation.matchPercentage ||
-      careerRecommendation.careerMatch ||
-      skillGap.careerMatch ||
-      0
-  );
-
-  // =====================================================
-  // LEARNED SKILLS
-  // =====================================================
-
-  const learnedSkills = Array.isArray(
-    skillGap.learnedSkills
-  )
-    ? skillGap.learnedSkills
-    : [];
-
-  // =====================================================
-  // MISSING SKILLS
-  // =====================================================
-
-  const missingSkills = Array.isArray(
-    skillGap.missingSkills
-  )
-    ? skillGap.missingSkills
-    : [];
-
-  // =====================================================
-  // CAREER ROADMAP DATA
+  // ROADMAP DATA
   // =====================================================
 
   const roadmapData = {
     "AI / ML Engineer": [
       {
-        title: "Python Fundamentals",
-        duration: "2 Weeks",
+        title: "Python Programming",
+        duration: "3-4 weeks",
         description:
-          "Learn Python syntax, variables, data types, conditions, loops, functions, OOP and problem solving.",
+          "Learn Python fundamentals, functions, data structures, modules and object-oriented programming.",
         skill: "Python",
+        courseTitle:
+          "Python Official Tutorial",
+        courseUrl:
+          "https://docs.python.org/3/tutorial/",
       },
       {
-        title: "Data Structures & Algorithms",
-        duration: "3 Weeks",
+        title: "NumPy and Pandas",
+        duration: "2-3 weeks",
         description:
-          "Learn arrays, strings, linked lists, stacks, queues, trees, graphs and algorithms.",
-        skill: "Data Structures & Algorithms",
+          "Learn numerical computing, arrays, data manipulation and practical data analysis.",
+        skill: "NumPy / Pandas",
+        courseTitle:
+          "Pandas Documentation",
+        courseUrl:
+          "https://pandas.pydata.org/docs/getting_started/intro_tutorials/",
       },
       {
-        title: "Statistics",
-        duration: "2 Weeks",
+        title:
+          "Mathematics for Machine Learning",
+        duration: "3-4 weeks",
         description:
-          "Learn probability, mean, median, variance, standard deviation, correlation and regression.",
-        skill: "Statistics",
+          "Study linear algebra, probability, statistics and the mathematics required for machine learning.",
+        skill: "Mathematics",
+        courseTitle:
+          "Khan Academy Mathematics",
+        courseUrl:
+          "https://www.khanacademy.org/math",
       },
       {
-        title: "NumPy & Pandas",
-        duration: "2 Weeks",
+        title:
+          "Machine Learning Fundamentals",
+        duration: "4-6 weeks",
         description:
-          "Learn numerical computing, arrays, data manipulation and data analysis using NumPy and Pandas.",
-        skill: "NumPy",
-      },
-      {
-        title: "Machine Learning",
-        duration: "4 Weeks",
-        description:
-          "Learn supervised learning, unsupervised learning, regression, classification and model evaluation.",
+          "Learn supervised learning, unsupervised learning, model evaluation and feature engineering.",
         skill: "Machine Learning",
+        courseTitle:
+          "Scikit-learn User Guide",
+        courseUrl:
+          "https://scikit-learn.org/stable/user_guide.html",
       },
       {
         title: "Deep Learning",
-        duration: "4 Weeks",
+        duration: "4-6 weeks",
         description:
-          "Learn neural networks, CNNs, RNNs and deep learning fundamentals.",
+          "Learn neural networks, CNNs, optimization, training and deep learning workflows.",
         skill: "Deep Learning",
+        courseTitle:
+          "PyTorch Tutorials",
+        courseUrl:
+          "https://docs.pytorch.org/tutorials/",
       },
       {
-        title: "TensorFlow",
-        duration: "2 Weeks",
+        title:
+          "Generative AI and LLMs",
+        duration: "3-4 weeks",
         description:
-          "Learn how to build and train machine learning and deep learning models using TensorFlow.",
-        skill: "TensorFlow",
+          "Learn LLM concepts, prompting, embeddings, APIs and AI application development.",
+        skill: "Generative AI",
+        courseTitle:
+          "Hugging Face Learn",
+        courseUrl:
+          "https://huggingface.co/learn",
       },
       {
-        title: "SQL",
-        duration: "2 Weeks",
+        title: "AI Projects",
+        duration: "4-6 weeks",
         description:
-          "Learn databases, SELECT queries, filtering, joins, grouping and data management.",
-        skill: "SQL",
-      },
-      {
-        title: "AI Project",
-        duration: "3 Weeks",
-        description:
-          "Build a practical AI project and add it to your portfolio.",
-        skill: "AI Projects",
+          "Build real-world AI projects and create a portfolio suitable for internships and jobs.",
+        skill: "Projects",
+        courseTitle: "Google Colab",
+        courseUrl:
+          "https://colab.research.google.com/",
       },
     ],
 
     "Software Developer": [
       {
-        title: "Java / C++ Fundamentals",
-        duration: "2 Weeks",
+        title: "Java Programming",
+        duration: "4-6 weeks",
         description:
-          "Strengthen programming fundamentals, syntax, functions, arrays and object-oriented programming.",
+          "Learn Java syntax, variables, control flow, methods, arrays, classes and object-oriented programming.",
         skill: "Java",
+        courseTitle:
+          "Learn Java - Dev.java",
+        courseUrl:
+          "https://dev.java/learn/",
       },
       {
-        title: "Data Structures & Algorithms",
-        duration: "4 Weeks",
-        description:
-          "Practice arrays, linked lists, stacks, queues, trees, graphs and algorithms.",
-        skill: "Data Structures & Algorithms",
-      },
-      {
-        title: "Object-Oriented Programming",
-        duration: "2 Weeks",
+        title:
+          "Object-Oriented Programming",
+        duration: "2-3 weeks",
         description:
           "Master classes, objects, inheritance, polymorphism, abstraction and encapsulation.",
-        skill: "Object-Oriented Programming",
+        skill: "OOP",
+        courseTitle:
+          "Java OOP Tutorial",
+        courseUrl:
+          "https://docs.oracle.com/javase/tutorial/java/javaOO/",
       },
       {
-        title: "Database & SQL",
-        duration: "2 Weeks",
+        title:
+          "Data Structures and Algorithms",
+        duration: "5-7 weeks",
         description:
-          "Learn relational databases, SQL queries, joins and database design.",
+          "Learn arrays, linked lists, stacks, queues, trees, graphs, sorting and searching.",
+        skill: "DSA",
+        courseTitle:
+          "GeeksforGeeks DSA",
+        courseUrl:
+          "https://www.geeksforgeeks.org/data-structures/",
+      },
+      {
+        title: "Database and SQL",
+        duration: "3-4 weeks",
+        description:
+          "Learn relational databases, SQL queries, joins, indexes and database design.",
         skill: "SQL",
+        courseTitle: "SQLBolt",
+        courseUrl:
+          "https://sqlbolt.com/",
       },
       {
-        title: "Git & GitHub",
-        duration: "1 Week",
+        title: "Git and GitHub",
+        duration: "1-2 weeks",
         description:
-          "Learn repositories, commits, branches, merging and GitHub workflow.",
+          "Learn version control, repositories, branches, commits, pull requests and collaboration.",
         skill: "Git",
+        courseTitle:
+          "Git Documentation",
+        courseUrl:
+          "https://git-scm.com/doc",
       },
       {
-        title: "Problem Solving",
-        duration: "3 Weeks",
+        title: "Backend Development",
+        duration: "4-6 weeks",
         description:
-          "Solve coding problems and improve logical thinking and algorithmic skills.",
-        skill: "Problem Solving",
+          "Learn REST APIs, authentication, server-side development and database integration.",
+        skill: "Backend",
+        courseTitle:
+          "Node.js Learn",
+        courseUrl:
+          "https://nodejs.org/en/learn",
       },
       {
-        title: "Software Project",
-        duration: "3 Weeks",
+        title:
+          "Software Development Projects",
+        duration: "4-6 weeks",
         description:
-          "Build a complete software project for your portfolio.",
-        skill: "Software Projects",
+          "Build complete applications and create a professional software development portfolio.",
+        skill: "Projects",
+        courseTitle: "GitHub",
+        courseUrl:
+          "https://github.com/",
       },
     ],
 
     "Web Developer": [
       {
-        title: "HTML",
-        duration: "1 Week",
+        title: "HTML and CSS",
+        duration: "2-3 weeks",
         description:
-          "Learn semantic HTML, forms, tables, links and webpage structure.",
-        skill: "HTML",
-      },
-      {
-        title: "CSS",
-        duration: "2 Weeks",
-        description:
-          "Learn layouts, Flexbox, Grid, responsive design and modern styling.",
-        skill: "CSS",
+          "Learn semantic HTML, CSS layouts, responsive design, Flexbox and Grid.",
+        skill: "HTML / CSS",
+        courseTitle:
+          "MDN Web Development",
+        courseUrl:
+          "https://developer.mozilla.org/en-US/docs/Learn_web_development",
       },
       {
         title: "JavaScript",
-        duration: "3 Weeks",
+        duration: "3-5 weeks",
         description:
-          "Learn variables, functions, arrays, objects, DOM and asynchronous JavaScript.",
+          "Learn modern JavaScript, functions, arrays, objects, DOM, events, promises and async programming.",
         skill: "JavaScript",
+        courseTitle:
+          "MDN JavaScript Guide",
+        courseUrl:
+          "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide",
       },
       {
         title: "React",
-        duration: "3 Weeks",
+        duration: "3-5 weeks",
         description:
-          "Learn components, props, state, hooks and React Router.",
+          "Learn components, props, state, hooks, events, forms and modern React development.",
         skill: "React",
+        courseTitle:
+          "React Learn",
+        courseUrl:
+          "https://react.dev/learn",
       },
       {
-        title: "Node.js & REST API",
-        duration: "3 Weeks",
+        title: "Node.js and APIs",
+        duration: "3-4 weeks",
         description:
-          "Learn backend development, Express and REST API development.",
+          "Learn backend development, REST APIs, routing, middleware and server-side JavaScript.",
         skill: "Node.js",
+        courseTitle:
+          "Node.js Learn",
+        courseUrl:
+          "https://nodejs.org/en/learn",
       },
       {
         title: "Database",
-        duration: "2 Weeks",
+        duration: "2-3 weeks",
         description:
-          "Learn database concepts and connect web applications with databases.",
+          "Learn SQL, database design, CRUD operations and application database integration.",
         skill: "Database",
+        courseTitle: "SQLBolt",
+        courseUrl:
+          "https://sqlbolt.com/",
       },
       {
-        title: "Git & GitHub",
-        duration: "1 Week",
+        title: "Git and GitHub",
+        duration: "1-2 weeks",
         description:
-          "Learn version control, commits, branches and collaborative development.",
+          "Learn version control and how to manage and publish web projects.",
         skill: "Git",
+        courseTitle:
+          "Git Documentation",
+        courseUrl:
+          "https://git-scm.com/doc",
       },
       {
-        title: "Web Project",
-        duration: "3 Weeks",
+        title: "Full Stack Project",
+        duration: "4-6 weeks",
         description:
-          "Build and deploy a complete responsive web application.",
-        skill: "Web Projects",
+          "Build and deploy a complete responsive full-stack web application.",
+        skill: "Full Stack",
+        courseTitle: "Vercel",
+        courseUrl:
+          "https://vercel.com/docs",
       },
     ],
 
     "Data Scientist": [
       {
-        title: "Python",
-        duration: "2 Weeks",
+        title: "Python Programming",
+        duration: "3-4 weeks",
         description:
-          "Learn Python programming and data-oriented programming.",
+          "Learn Python programming fundamentals required for data science.",
         skill: "Python",
+        courseTitle:
+          "Python Official Tutorial",
+        courseUrl:
+          "https://docs.python.org/3/tutorial/",
       },
       {
-        title: "Statistics",
-        duration: "3 Weeks",
+        title:
+          "Statistics and Probability",
+        duration: "3-4 weeks",
         description:
-          "Learn probability, statistics, distributions and hypothesis testing.",
+          "Learn descriptive statistics, probability, distributions, hypothesis testing and correlation.",
         skill: "Statistics",
+        courseTitle:
+          "Khan Academy Statistics",
+        courseUrl:
+          "https://www.khanacademy.org/math/statistics-probability",
       },
       {
-        title: "SQL",
-        duration: "2 Weeks",
+        title: "NumPy and Pandas",
+        duration: "2-3 weeks",
         description:
-          "Learn SQL queries, joins, aggregation and databases.",
-        skill: "SQL",
-      },
-      {
-        title: "NumPy & Pandas",
-        duration: "2 Weeks",
-        description:
-          "Learn numerical computing and data manipulation.",
-        skill: "NumPy",
+          "Learn data manipulation, cleaning, transformation and numerical analysis.",
+        skill: "Pandas",
+        courseTitle:
+          "Pandas Getting Started",
+        courseUrl:
+          "https://pandas.pydata.org/docs/getting_started/intro_tutorials/",
       },
       {
         title: "Data Visualization",
-        duration: "2 Weeks",
+        duration: "2-3 weeks",
         description:
-          "Learn charts, graphs and how to communicate data insights.",
+          "Learn how to communicate insights using charts, plots and dashboards.",
         skill: "Data Visualization",
+        courseTitle:
+          "Matplotlib Tutorials",
+        courseUrl:
+          "https://matplotlib.org/stable/tutorials/",
       },
       {
         title: "Machine Learning",
-        duration: "4 Weeks",
+        duration: "4-6 weeks",
         description:
-          "Learn regression, classification, clustering and model evaluation.",
+          "Learn regression, classification, clustering, preprocessing and model evaluation.",
         skill: "Machine Learning",
+        courseTitle:
+          "Scikit-learn User Guide",
+        courseUrl:
+          "https://scikit-learn.org/stable/user_guide.html",
       },
       {
-        title: "Data Analysis",
-        duration: "2 Weeks",
+        title: "SQL",
+        duration: "2-3 weeks",
         description:
-          "Analyze real-world datasets and discover useful insights.",
-        skill: "Data Analysis",
+          "Learn SQL queries, joins, aggregation, subqueries and database analysis.",
+        skill: "SQL",
+        courseTitle: "SQLBolt",
+        courseUrl:
+          "https://sqlbolt.com/",
       },
       {
-        title: "Data Project",
-        duration: "3 Weeks",
+        title:
+          "Data Science Projects",
+        duration: "4-6 weeks",
         description:
-          "Build a complete data science project for your portfolio.",
-        skill: "Data Projects",
+          "Build end-to-end data science projects and create a strong portfolio.",
+        skill: "Projects",
+        courseTitle:
+          "Kaggle Learn",
+        courseUrl:
+          "https://www.kaggle.com/learn",
       },
     ],
 
     "Cybersecurity Analyst": [
       {
-        title: "Networking",
-        duration: "3 Weeks",
+        title:
+          "Networking Fundamentals",
+        duration: "3-4 weeks",
         description:
-          "Learn TCP/IP, DNS, HTTP, ports, protocols and networking fundamentals.",
+          "Learn TCP/IP, DNS, HTTP, ports, protocols, routing and network security fundamentals.",
         skill: "Networking",
+        courseTitle:
+          "Cisco Networking Academy",
+        courseUrl:
+          "https://www.netacad.com/",
       },
       {
-        title: "Linux",
-        duration: "2 Weeks",
+        title: "Linux Fundamentals",
+        duration: "2-3 weeks",
         description:
-          "Learn Linux commands, permissions, processes and system administration.",
+          "Learn Linux commands, file systems, permissions, processes and shell basics.",
         skill: "Linux",
+        courseTitle:
+          "Linux Documentation",
+        courseUrl:
+          "https://docs.kernel.org/",
       },
       {
-        title: "Cybersecurity Fundamentals",
-        duration: "3 Weeks",
+        title:
+          "Cybersecurity Fundamentals",
+        duration: "3-4 weeks",
         description:
-          "Learn threats, vulnerabilities, authentication and security principles.",
+          "Learn common threats, vulnerabilities, security controls and defensive techniques.",
         skill: "Cybersecurity",
+        courseTitle:
+          "Cisco Cybersecurity",
+        courseUrl:
+          "https://www.netacad.com/courses/cybersecurity",
       },
       {
         title: "Ethical Hacking",
-        duration: "3 Weeks",
+        duration: "4-6 weeks",
         description:
-          "Learn authorized security testing and vulnerability assessment.",
+          "Learn penetration testing concepts, reconnaissance, vulnerabilities and security testing.",
         skill: "Ethical Hacking",
+        courseTitle:
+          "OWASP Web Security Testing",
+        courseUrl:
+          "https://owasp.org/www-project-web-security-testing-guide/",
       },
       {
-        title: "Cryptography",
-        duration: "2 Weeks",
+        title:
+          "Web Application Security",
+        duration: "3-4 weeks",
         description:
-          "Learn encryption, hashing, keys and secure communication.",
-        skill: "Cryptography",
+          "Learn authentication, authorization, injection, XSS and common web vulnerabilities.",
+        skill: "Web Security",
+        courseTitle:
+          "OWASP Top 10",
+        courseUrl:
+          "https://owasp.org/www-project-top-ten/",
       },
       {
-        title: "Python for Security",
-        duration: "2 Weeks",
+        title: "Security Tools",
+        duration: "3-4 weeks",
         description:
-          "Use Python for automation and security-related scripting.",
-        skill: "Python",
+          "Practice with security tools and understand how security analysts investigate threats.",
+        skill: "Security Tools",
+        courseTitle:
+          "Kali Linux Documentation",
+        courseUrl:
+          "https://www.kali.org/docs/",
       },
       {
-        title: "Network Security",
-        duration: "3 Weeks",
+        title:
+          "Cybersecurity Projects",
+        duration: "4-6 weeks",
         description:
-          "Learn firewalls, secure networks, monitoring and security practices.",
-        skill: "Network Security",
-      },
-      {
-        title: "Security Project",
-        duration: "3 Weeks",
-        description:
-          "Build a cybersecurity project demonstrating practical skills.",
-        skill: "Security Projects",
+          "Build practical security projects and document your work in a professional portfolio.",
+        skill: "Projects",
+        courseTitle:
+          "OWASP Projects",
+        courseUrl:
+          "https://owasp.org/projects/",
       },
     ],
-  };
-
-  // =====================================================
-  // GET FULL ROADMAP
-  // =====================================================
-
-  const fullRoadmap =
-    roadmapData[career] ||
-    roadmapData["Software Developer"];
-
-  // =====================================================
-  // NORMALIZE SKILL TEXT
-  // =====================================================
-
-  const normalizeSkill = (value) => {
-    return String(value || "")
-      .toLowerCase()
-      .trim()
-      .replace(/[&/]/g, " ")
-      .replace(/\s+/g, " ");
   };
 
   // =====================================================
   // SKILL ALIASES
   // =====================================================
 
-  const skillAliases = {
+  const aliases = {
     python: ["python"],
+
     java: ["java"],
-    "data structures & algorithms": [
-      "data structures",
-      "data structures and algorithms",
-      "dsa",
-      "algorithms",
+
+    javascript: [
+      "javascript",
+      "js",
     ],
-    "object-oriented programming": [
-      "object oriented programming",
-      "object-oriented programming",
-      "oop",
-      "oops",
+
+    react: [
+      "react",
+      "reactjs",
     ],
-    sql: ["sql", "database"],
-    git: ["git", "github"],
-    "problem solving": [
-      "problem solving",
-      "problem-solving",
-      "logical thinking",
+
+    "html / css": [
+      "html",
+      "css",
+      "html/css",
     ],
-    html: ["html"],
-    css: ["css"],
-    javascript: ["javascript", "js"],
-    react: ["react", "react.js"],
-    "node.js": ["node.js", "node", "express", "express.js"],
-    database: ["database", "databases", "mysql", "mongodb"],
-    numpy: ["numpy"],
-    pandas: ["pandas"],
-    statistics: ["statistics", "statistic"],
+
     "machine learning": [
       "machine learning",
       "ml",
     ],
+
     "deep learning": [
       "deep learning",
-      "dl",
+      "neural network",
     ],
-    tensorflow: ["tensorflow"],
+
+    "generative ai": [
+      "generative ai",
+      "genai",
+      "llm",
+      "large language model",
+    ],
+
     "data visualization": [
       "data visualization",
       "visualization",
+      "matplotlib",
     ],
-    "data analysis": [
-      "data analysis",
-      "data analytics",
+
+    statistics: [
+      "statistics",
+      "probability",
+      "statistic",
     ],
+
+    sql: [
+      "sql",
+      "database",
+    ],
+
     networking: [
       "networking",
-      "network",
-      "computer networks",
+      "computer network",
+      "tcp",
+      "ip",
     ],
-    linux: ["linux"],
+
+    linux: [
+      "linux",
+      "unix",
+    ],
+
     cybersecurity: [
       "cybersecurity",
       "cyber security",
       "security",
     ],
+
     "ethical hacking": [
       "ethical hacking",
-      "ethical hacker",
+      "penetration testing",
+      "pentesting",
     ],
-    cryptography: ["cryptography"],
-    "network security": [
-      "network security",
+
+    "web security": [
+      "web security",
+      "owasp",
     ],
-    "security tools": [
-      "security tools",
-      "security tool",
+
+    git: [
+      "git",
+      "github",
     ],
-    "ai projects": [
-      "ai projects",
-      "ai project",
-      "artificial intelligence project",
-    ],
-    "software projects": [
-      "software projects",
-      "software project",
-    ],
-    "web projects": [
-      "web projects",
-      "web project",
-    ],
-    "data projects": [
-      "data projects",
-      "data project",
-    ],
-    "security projects": [
-      "security projects",
-      "security project",
+
+    dsa: [
+      "dsa",
+      "data structures",
+      "data structure",
+      "algorithms",
+      "algorithm",
     ],
   };
 
   // =====================================================
-  // CHECK WHETHER ROADMAP STEP IS A MISSING SKILL
+  // LEARNED SKILLS
   // =====================================================
 
-  const matchesMissingSkill = (step) => {
-    if (missingSkills.length === 0) {
-      return false;
-    }
+  const learnedSkills = useMemo(() => {
+    const values = [];
 
-    const stepSkill = normalizeSkill(step.skill);
-    const stepTitle = normalizeSkill(step.title);
+    const collect = (value) => {
+      if (!value) return;
 
-    return missingSkills.some((skill) => {
-      const skillText = normalizeSkill(skill);
-
-      if (!skillText) {
-        return false;
+      if (Array.isArray(value)) {
+        value.forEach(collect);
+        return;
       }
 
-      // Direct matching
-      if (
-        stepSkill.includes(skillText) ||
-        skillText.includes(stepSkill) ||
-        stepTitle.includes(skillText) ||
-        skillText.includes(stepTitle)
-      ) {
-        return true;
+      if (typeof value === "object") {
+        Object.values(value).forEach(collect);
+        return;
       }
 
-      // Alias matching
-      const aliases =
-        skillAliases[stepSkill] || [];
+      values.push(normalize(value));
+    };
 
-      return aliases.some((alias) =>
-        skillText.includes(
-          normalizeSkill(alias)
-        ) ||
-        normalizeSkill(alias).includes(
-          skillText
+    collect(skillAssessment);
+    collect(profile?.skills);
+    collect(profile?.technicalSkills);
+    collect(profile?.programmingLanguages);
+    collect(profile?.knownSkills);
+
+    return values.filter(Boolean);
+  }, [
+    skillAssessment,
+    profile,
+  ]);
+
+  // =====================================================
+  // MISSING SKILLS
+  // =====================================================
+
+  const missingSkills = useMemo(() => {
+    const values = [];
+
+    const collect = (value) => {
+      if (!value) return;
+
+      if (Array.isArray(value)) {
+        value.forEach(collect);
+        return;
+      }
+
+      if (typeof value === "object") {
+        Object.values(value).forEach(collect);
+        return;
+      }
+
+      values.push(normalize(value));
+    };
+
+    collect(skillGap?.missingSkills);
+    collect(skillGap?.skillsToLearn);
+    collect(skillGap?.skillGaps);
+    collect(skillGap?.gaps);
+    collect(skillGap?.recommendations);
+
+    return values.filter(Boolean);
+  }, [skillGap]);
+
+  // =====================================================
+  // SELECT ROADMAP
+  // =====================================================
+
+  const roadmap =
+    roadmapData[career] ||
+    roadmapData["Software Developer"];
+
+  // =====================================================
+  // CHECK KNOWN SKILL
+  // =====================================================
+
+  const isSkillKnown = (skill) => {
+    const target = normalize(skill);
+
+    const related =
+      aliases[target] || [target];
+
+    return learnedSkills.some(
+      (learned) =>
+        related.some(
+          (item) =>
+            learned === item ||
+            learned.includes(item) ||
+            item.includes(learned)
         )
-      );
-    });
+    );
+  };
+
+  // =====================================================
+  // CHECK MISSING SKILL
+  // =====================================================
+
+  const isSkillMissing = (skill) => {
+    const target = normalize(skill);
+
+    const related =
+      aliases[target] || [target];
+
+    return missingSkills.some(
+      (missing) =>
+        related.some(
+          (item) =>
+            missing === item ||
+            missing.includes(item) ||
+            item.includes(missing)
+        )
+    );
   };
 
   // =====================================================
   // PERSONALIZED ROADMAP
   // =====================================================
 
-  const personalizedRoadmap =
-    fullRoadmap.filter(matchesMissingSkill);
+  const personalizedRoadmap = useMemo(() => {
+    const filtered = roadmap.filter(
+      (step) => {
+        if (isSkillMissing(step.skill)) {
+          return true;
+        }
+
+        if (isSkillKnown(step.skill)) {
+          return false;
+        }
+
+        return true;
+      }
+    );
+
+    return filtered.length > 0
+      ? filtered
+      : roadmap;
+  }, [
+    roadmap,
+    learnedSkills,
+    missingSkills,
+  ]);
 
   // =====================================================
-  // FINAL ROADMAP
+  // COMPLETED ROADMAP STEPS
   // =====================================================
 
-  const roadmap =
-    personalizedRoadmap.length > 0
-      ? personalizedRoadmap
-      : fullRoadmap;
+  const completedCount =
+    personalizedRoadmap.filter(
+      (step) => {
+        const stepKey =
+          `roadmap_completed_${normalize(
+            step.title
+          ).replace(/\s+/g, "_")}`;
 
-  // =====================================================
-  // TOTAL DURATION
-  // =====================================================
-
-  const totalWeeks = roadmap.reduce(
-    (total, step) => {
-      const match =
-        String(step.duration || "").match(
-          /\d+/
+        return Boolean(
+          getData(stepKey, false)
         );
-
-      return (
-        total +
-        (match ? Number(match[0]) : 0)
-      );
-    },
-    0
-  );
+      }
+    ).length;
 
   // =====================================================
-  // ROADMAP PROGRESS
+  // ROADMAP PERCENTAGE
   // =====================================================
 
-  const roadmapProgress = 0;
+  const percentage =
+    personalizedRoadmap.length > 0
+      ? Math.round(
+          (completedCount /
+            personalizedRoadmap.length) *
+            100
+        )
+      : 0;
 
   // =====================================================
   // SAVE ROADMAP
   // =====================================================
 
   useEffect(() => {
-    const roadmapResult = {
+    const roadmapPayload = {
       career,
-      careerMatch,
-      profile,
-      missingSkills,
-      learnedSkills,
-      roadmap,
-      fullRoadmap,
-      assessmentPercentage: percentage,
-      interestAssessment,
-      totalWeeks,
-      progress: roadmapProgress,
-      completedSteps: 0,
-      totalSteps: roadmap.length,
-      createdAt: new Date().toISOString(),
+      roadmap: personalizedRoadmap,
+      generatedAt:
+        new Date().toISOString(),
     };
 
-    localStorage.setItem(
+    // Student-wise storage
+    saveStudentData(
       "careerRoadmap",
-      JSON.stringify(roadmapResult)
+      roadmapPayload
     );
 
-    localStorage.setItem(
+    saveStudentData(
       "roadmap",
-      JSON.stringify(roadmapResult)
+      roadmapPayload
     );
 
-    completeModule(MODULE_KEYS.ROADMAP);
+    // Preserve module completion
+    if (
+      personalizedRoadmap.length > 0
+    ) {
+      completeModule(
+        MODULE_KEYS.ROADMAP
+      );
+
+      setCompleted(true);
+    }
   }, [
     career,
-    careerMatch,
-    profile,
-    missingSkills,
-    learnedSkills,
-    roadmap,
-    fullRoadmap,
-    percentage,
-    interestAssessment,
-    totalWeeks,
+    personalizedRoadmap,
   ]);
+
+  // =====================================================
+  // OPEN COURSE
+  // =====================================================
+
+  const openCourse = (step) => {
+    if (step.courseUrl) {
+      window.open(
+        step.courseUrl,
+        "_blank",
+        "noopener,noreferrer"
+      );
+    }
+  };
+
+  // =====================================================
+  // MARK ROADMAP STEP COMPLETE
+  // =====================================================
+
+  const markComplete = (title) => {
+    const key =
+      `roadmap_completed_${normalize(
+        title
+      ).replace(/\s+/g, "_")}`;
+
+    // Student-wise storage
+    saveStudentData(
+      key,
+      true
+    );
+
+    // Force UI refresh
+    setCompleted(
+      (value) => !value
+    );
+
+    window.dispatchEvent(
+      new Event("roadmapUpdated")
+    );
+  };
 
   // =====================================================
   // UI
   // =====================================================
 
   return (
-    <div style={styles.page}>
-      <div style={styles.container}>
+    <div
+      style={{
+        minHeight: "100vh",
+        background:
+          "linear-gradient(135deg, #f8fafc 0%, #eef2ff 50%, #f8fafc 100%)",
+        padding: "32px",
+      }}
+    >
+      <div
+        style={{
+          maxWidth: "1100px",
+          margin: "0 auto",
+        }}
+      >
+        {/* =====================================================
+            HEADER
+        ===================================================== */}
 
-        {/* HEADER */}
+        <div
+          style={{
+            background: "#ffffff",
+            borderRadius: "24px",
+            padding: "32px",
+            marginBottom: "24px",
+            boxShadow:
+              "0 10px 30px rgba(15, 23, 42, 0.08)",
+          }}
+        >
+          <button
+            onClick={() =>
+              navigate("/dashboard")
+            }
+            style={{
+              border: "none",
+              background: "#eef2ff",
+              color: "#4338ca",
+              padding: "10px 16px",
+              borderRadius: "10px",
+              cursor: "pointer",
+              marginBottom: "20px",
+              fontWeight: "600",
+            }}
+          >
+            ← Dashboard
+          </button>
 
-        <div style={styles.header}>
-          <div style={styles.icon}>
-            🗺️
-          </div>
-
-          <h1 style={styles.title}>
-            Personalized Learning Roadmap
-          </h1>
-
-          <p style={styles.subtitle}>
-            Your step-by-step learning plan
-            for becoming{" "}
-            <strong>{career}</strong>.
-          </p>
-        </div>
-
-        {/* TARGET CAREER */}
-
-        <div style={styles.careerCard}>
-          <div style={styles.targetIcon}>
-            🎯
-          </div>
-
-          <p style={styles.targetLabel}>
-            TARGET CAREER
-          </p>
-
-          <h1 style={styles.careerName}>
-            {career}
-          </h1>
-
-          {careerMatch > 0 && (
-            <div style={styles.matchBadge}>
-              ⭐ Career Match:{" "}
-              <strong>
-                {careerMatch}%
-              </strong>
-            </div>
-          )}
-
-          <p style={styles.scoreText}>
-            Your Skill Assessment Score:{" "}
-            <strong>
-              {percentage}%
-            </strong>
-          </p>
-        </div>
-
-        {/* SUMMARY */}
-
-        <div style={styles.statsGrid}>
-
-          <div style={styles.statCard}>
-            <div style={styles.statIcon}>
-              📚
-            </div>
-
-            <h2 style={styles.statNumber}>
-              {roadmap.length}
-            </h2>
-
-            <p style={styles.statLabel}>
-              Learning Steps
-            </p>
-          </div>
-
-          <div style={styles.statCard}>
-            <div style={styles.statIcon}>
-              ❌
-            </div>
-
-            <h2 style={styles.statNumber}>
-              {missingSkills.length}
-            </h2>
-
-            <p style={styles.statLabel}>
-              Skills to Learn
-            </p>
-          </div>
-
-          <div style={styles.statCard}>
-            <div style={styles.statIcon}>
-              ✅
-            </div>
-
-            <h2 style={styles.statNumber}>
-              {learnedSkills.length}
-            </h2>
-
-            <p style={styles.statLabel}>
-              Skills Already Have
-            </p>
-          </div>
-
-          <div style={styles.statCard}>
-            <div style={styles.statIcon}>
-              ⏳
-            </div>
-
-            <h2 style={styles.statNumber}>
-              {totalWeeks}
-            </h2>
-
-            <p style={styles.statLabel}>
-              Approx. Weeks
-            </p>
-          </div>
-
-        </div>
-
-        {/* PROGRESS */}
-
-        <div style={styles.section}>
-          <div style={styles.sectionHeader}>
-            <h2 style={styles.sectionTitle}>
-              📈 Learning Progress
-            </h2>
-
-            <span style={styles.progressText}>
-              {roadmapProgress}% Started
-            </span>
-          </div>
-
-          <div style={styles.progressBackground}>
-            <div
-              style={{
-                ...styles.progressFill,
-                width: `${roadmapProgress}%`,
-              }}
-            />
-          </div>
-
-          <p style={styles.progressHint}>
-            Complete each roadmap step to
-            improve your career readiness.
-          </p>
-        </div>
-
-        {/* SKILL GAPS */}
-
-        <div style={styles.section}>
-          <h2 style={styles.sectionTitle}>
-            📌 Your Skill Gaps
-          </h2>
-
-          {missingSkills.length > 0 ? (
-            <div style={styles.skillList}>
-              {missingSkills.map(
-                (skill, index) => (
-                  <span
-                    key={`${skill}-${index}`}
-                    style={styles.skillTag}
-                  >
-                    📚 {skill}
-                  </span>
-                )
-              )}
-            </div>
-          ) : (
-            <div style={styles.successBox}>
-              🎉 You already have all
-              the required skills!
-            </div>
-          )}
-        </div>
-
-        {/* LEARNED SKILLS */}
-
-        <div style={styles.section}>
-          <h2 style={styles.sectionTitle}>
-            ✅ Skills You Already Have
-          </h2>
-
-          {learnedSkills.length > 0 ? (
-            <div style={styles.skillList}>
-              {learnedSkills.map(
-                (skill, index) => (
-                  <span
-                    key={`${skill}-${index}`}
-                    style={styles.learnedTag}
-                  >
-                    ✓ {skill}
-                  </span>
-                )
-              )}
-            </div>
-          ) : (
-            <p style={styles.emptyText}>
-              No required skills matched
-              yet.
-            </p>
-          )}
-        </div>
-
-        {/* LEARNING JOURNEY */}
-
-        <div style={styles.section}>
-          <div style={styles.journeyHeader}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent:
+                "space-between",
+              alignItems: "flex-start",
+              gap: "20px",
+              flexWrap: "wrap",
+            }}
+          >
             <div>
-              <h2 style={styles.sectionTitle}>
-                🚀 Your Learning Journey
-              </h2>
+              <div
+                style={{
+                  fontSize: "14px",
+                  fontWeight: "700",
+                  color: "#6366f1",
+                  marginBottom: "8px",
+                  textTransform:
+                    "uppercase",
+                  letterSpacing: "1px",
+                }}
+              >
+                Personalized Learning
+                Roadmap
+              </div>
 
-              <p style={styles.journeySubtitle}>
-                This roadmap is personalized
-                using your recommended career
-                and current skill gaps.
+              <h1
+                style={{
+                  margin: 0,
+                  fontSize: "34px",
+                  color: "#0f172a",
+                }}
+              >
+                {career}
+              </h1>
+
+              <p
+                style={{
+                  color: "#64748b",
+                  marginTop: "10px",
+                  maxWidth: "700px",
+                  lineHeight: "1.7",
+                }}
+              >
+                Your learning path is
+                personalized using your
+                career recommendation,
+                skills, profile and
+                skill-gap information.
               </p>
             </div>
 
-            <div style={styles.roadmapBadge}>
-              {roadmap.length} Steps
+            <div
+              style={{
+                minWidth: "170px",
+                background: "#f8fafc",
+                borderRadius: "18px",
+                padding: "20px",
+                textAlign: "center",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: "32px",
+                  fontWeight: "800",
+                  color: "#4f46e5",
+                }}
+              >
+                {percentage}%
+              </div>
+
+              <div
+                style={{
+                  color: "#64748b",
+                  fontSize: "14px",
+                }}
+              >
+                Roadmap Progress
+              </div>
             </div>
           </div>
+        </div>
 
-          <div style={styles.timeline}>
+        {/* =====================================================
+            PROGRESS BAR
+        ===================================================== */}
 
-            {roadmap.map(
-              (step, index) => (
+        <div
+          style={{
+            background: "#ffffff",
+            borderRadius: "20px",
+            padding: "24px",
+            marginBottom: "24px",
+            boxShadow:
+              "0 8px 24px rgba(15, 23, 42, 0.06)",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent:
+                "space-between",
+              marginBottom: "12px",
+              color: "#475569",
+              fontWeight: "600",
+            }}
+          >
+            <span>
+              Learning Progress
+            </span>
+
+            <span>
+              {completedCount}/
+              {personalizedRoadmap.length}{" "}
+              completed
+            </span>
+          </div>
+
+          <div
+            style={{
+              width: "100%",
+              height: "10px",
+              background: "#e2e8f0",
+              borderRadius: "20px",
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                width: `${percentage}%`,
+                height: "100%",
+                background:
+                  "linear-gradient(90deg, #4f46e5, #7c3aed)",
+                borderRadius: "20px",
+                transition:
+                  "width 0.3s ease",
+              }}
+            />
+          </div>
+        </div>
+
+        {/* =====================================================
+            ROADMAP STEPS
+        ===================================================== */}
+
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "18px",
+          }}
+        >
+          {personalizedRoadmap.map(
+            (step, index) => {
+              const stepKey =
+                `roadmap_completed_${normalize(
+                  step.title
+                ).replace(
+                  /\s+/g,
+                  "_"
+                )}`;
+
+              const stepCompleted =
+                Boolean(
+                  getData(
+                    stepKey,
+                    false
+                  )
+                );
+
+              return (
                 <div
                   key={`${step.title}-${index}`}
-                  style={styles.step}
+                  style={{
+                    background:
+                      "#ffffff",
+                    borderRadius:
+                      "20px",
+                    padding: "24px",
+                    boxShadow:
+                      "0 8px 24px rgba(15, 23, 42, 0.06)",
+                    border:
+                      stepCompleted
+                        ? "2px solid #22c55e"
+                        : "1px solid #e2e8f0",
+                  }}
                 >
-
-                  {/* NUMBER */}
-
-                  <div style={styles.numberColumn}>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "20px",
+                      alignItems:
+                        "flex-start",
+                    }}
+                  >
+                    {/* STEP NUMBER */}
 
                     <div
-                      style={styles.number}
+                      style={{
+                        minWidth: "46px",
+                        height: "46px",
+                        borderRadius:
+                          "50%",
+                        background:
+                          stepCompleted
+                            ? "#dcfce7"
+                            : "#eef2ff",
+                        color:
+                          stepCompleted
+                            ? "#15803d"
+                            : "#4f46e5",
+                        display: "flex",
+                        alignItems:
+                          "center",
+                        justifyContent:
+                          "center",
+                        fontWeight: "800",
+                        fontSize: "18px",
+                      }}
                     >
-                      {index + 1}
+                      {stepCompleted
+                        ? "✓"
+                        : index + 1}
                     </div>
 
-                    {index <
-                      roadmap.length - 1 && (
-                      <div
-                        style={
-                          styles.connector
-                        }
-                      />
-                    )}
-
-                  </div>
-
-                  {/* CONTENT */}
-
-                  <div
-                    style={
-                      styles.stepContent
-                    }
-                  >
-
                     <div
-                      style={
-                        styles.stepHeader
-                      }
+                      style={{
+                        flex: 1,
+                      }}
                     >
-                      <div>
-                        <p
-                          style={
-                            styles.stepLabel
-                          }
-                        >
-                          STEP {index + 1}
-                        </p>
+                      {/* TITLE + DURATION */}
 
-                        <h3
-                          style={
-                            styles.stepTitle
-                          }
+                      <div
+                        style={{
+                          display:
+                            "flex",
+                          justifyContent:
+                            "space-between",
+                          gap: "12px",
+                          flexWrap:
+                            "wrap",
+                        }}
+                      >
+                        <h2
+                          style={{
+                            margin: 0,
+                            color:
+                              "#0f172a",
+                            fontSize:
+                              "21px",
+                          }}
                         >
                           {step.title}
-                        </h3>
+                        </h2>
+
+                        <span
+                          style={{
+                            background:
+                              "#f1f5f9",
+                            color:
+                              "#475569",
+                            padding:
+                              "6px 12px",
+                            borderRadius:
+                              "999px",
+                            fontSize:
+                              "13px",
+                            fontWeight:
+                              "600",
+                          }}
+                        >
+                          {step.duration}
+                        </span>
                       </div>
 
-                      <span
-                        style={
-                          styles.duration
-                        }
+                      {/* DESCRIPTION */}
+
+                      <p
+                        style={{
+                          color:
+                            "#64748b",
+                          lineHeight:
+                            "1.7",
+                          margin:
+                            "12px 0",
+                        }}
                       >
-                        ⏱️ {step.duration}
-                      </span>
-                    </div>
+                        {
+                          step.description
+                        }
+                      </p>
 
-                    <p
-                      style={
-                        styles.description
-                      }
-                    >
-                      {step.description}
-                    </p>
+                      {/* FOCUS SKILL */}
 
-                    <div
-                      style={
-                        styles.stepBottom
-                      }
-                    >
                       <div
-                        style={
-                          styles.stepSkill
-                        }
+                        style={{
+                          display:
+                            "flex",
+                          alignItems:
+                            "center",
+                          gap: "8px",
+                          marginBottom:
+                            "18px",
+                          flexWrap:
+                            "wrap",
+                        }}
                       >
-                        🎯 Focus Skill:{" "}
-                        <strong>
+                        <span
+                          style={{
+                            fontSize:
+                              "13px",
+                            color:
+                              "#64748b",
+                          }}
+                        >
+                          Focus Skill:
+                        </span>
+
+                        <span
+                          style={{
+                            background:
+                              "#ede9fe",
+                            color:
+                              "#6d28d9",
+                            padding:
+                              "5px 10px",
+                            borderRadius:
+                              "8px",
+                            fontSize:
+                              "13px",
+                            fontWeight:
+                              "700",
+                          }}
+                        >
                           {step.skill}
-                        </strong>
+                        </span>
                       </div>
+
+                      {/* BUTTONS */}
 
                       <div
-                        style={
-                          styles.stepStatus
-                        }
+                        style={{
+                          display:
+                            "flex",
+                          gap: "10px",
+                          flexWrap:
+                            "wrap",
+                        }}
                       >
-                        🔒 Not Started
+                        <button
+                          onClick={() =>
+                            openCourse(
+                              step
+                            )
+                          }
+                          style={{
+                            border:
+                              "none",
+                            background:
+                              "linear-gradient(135deg, #4f46e5, #7c3aed)",
+                            color:
+                              "#ffffff",
+                            padding:
+                              "11px 18px",
+                            borderRadius:
+                              "10px",
+                            cursor:
+                              "pointer",
+                            fontWeight:
+                              "700",
+                          }}
+                        >
+                          📚 Start
+                          Course
+                        </button>
+
+                        <button
+                          onClick={() =>
+                            markComplete(
+                              step.title
+                            )
+                          }
+                          style={{
+                            border:
+                              "1px solid #cbd5e1",
+                            background:
+                              stepCompleted
+                                ? "#dcfce7"
+                                : "#ffffff",
+                            color:
+                              stepCompleted
+                                ? "#15803d"
+                                : "#475569",
+                            padding:
+                              "11px 18px",
+                            borderRadius:
+                              "10px",
+                            cursor:
+                              "pointer",
+                            fontWeight:
+                              "700",
+                          }}
+                        >
+                          {stepCompleted
+                            ? "✓ Completed"
+                            : "Mark Complete"}
+                        </button>
+                      </div>
+
+                      {/* RESOURCE */}
+
+                      <div
+                        style={{
+                          marginTop:
+                            "12px",
+                          fontSize:
+                            "13px",
+                          color:
+                            "#64748b",
+                        }}
+                      >
+                        Recommended
+                        resource:{" "}
+                        {
+                          step.courseTitle
+                        }
                       </div>
                     </div>
-
                   </div>
                 </div>
-              )
-            )}
-
-          </div>
-        </div>
-
-        {/* MOTIVATION */}
-
-        <div style={styles.motivation}>
-          <div style={styles.motivationIcon}>
-            💡
-          </div>
-
-          <h2>
-            Keep Going!
-          </h2>
-
-          <p>
-            Follow this roadmap step by
-            step. Build projects while
-            learning and continuously
-            improve your skills.
-          </p>
-        </div>
-
-        {/* COMPLETED */}
-
-        <div style={styles.completed}>
-          <span style={styles.completedIcon}>
-            ✓
-          </span>
-
-          <div>
-            <strong>
-              Personalized Learning
-              Roadmap Created
-            </strong>
-
-            <p>
-              Your roadmap has been saved
-              successfully.
-            </p>
-          </div>
-        </div>
-
-        {/* NEXT STEP */}
-
-        <div style={styles.nextSection}>
-          <button
-            type="button"
-            onClick={() =>
-              navigate("/projects")
+              );
             }
-            style={styles.nextButton}
-          >
-            💻 Get Project
-            Recommendations
-
-            <span style={styles.arrow}>
-              →
-            </span>
-          </button>
+          )}
         </div>
 
+        {/* =====================================================
+            EMPTY ROADMAP
+        ===================================================== */}
+
+        {personalizedRoadmap.length ===
+          0 && (
+          <div
+            style={{
+              background:
+                "#ffffff",
+              borderRadius:
+                "20px",
+              padding: "40px",
+              textAlign:
+                "center",
+              color:
+                "#64748b",
+            }}
+          >
+            No roadmap steps
+            are available yet.
+          </div>
+        )}
+
+        {/* =====================================================
+            FOOTER MESSAGE
+        ===================================================== */}
+
+        <div
+          style={{
+            marginTop: "28px",
+            background: "#eef2ff",
+            borderRadius: "18px",
+            padding: "20px",
+            color: "#3730a3",
+            lineHeight: "1.7",
+          }}
+        >
+          Complete the recommended
+          courses and mark each step as
+          completed to track your learning
+          progress.
+        </div>
       </div>
     </div>
   );
 }
-
-// =====================================================
-// STYLES
-// =====================================================
-
-const styles = {
-  page: {
-    minHeight: "100vh",
-    background:
-      "linear-gradient(135deg, #eef2ff 0%, #f8fafc 50%, #ecfdf5 100%)",
-    padding: "40px 20px 70px",
-    fontFamily:
-      "Arial, Helvetica, sans-serif",
-  },
-
-  container: {
-    maxWidth: "1000px",
-    margin: "0 auto",
-  },
-
-  header: {
-    background: "#ffffff",
-    padding: "40px 30px",
-    borderRadius: "20px",
-    textAlign: "center",
-    boxShadow:
-      "0 8px 25px rgba(15, 23, 42, 0.08)",
-    border:
-      "1px solid #e2e8f0",
-  },
-
-  icon: {
-    fontSize: "50px",
-    marginBottom: "10px",
-  },
-
-  title: {
-    margin: "0 0 12px",
-    color: "#0f172a",
-    fontSize: "32px",
-    fontWeight: "800",
-  },
-
-  subtitle: {
-    margin: "0 auto",
-    maxWidth: "720px",
-    color: "#64748b",
-    fontSize: "17px",
-    lineHeight: "1.7",
-  },
-
-  careerCard: {
-    marginTop: "28px",
-    padding: "35px 25px",
-    background:
-      "linear-gradient(135deg, #dbeafe, #eff6ff)",
-    borderRadius: "18px",
-    textAlign: "center",
-    border:
-      "2px solid #3b82f6",
-    boxShadow:
-      "0 8px 20px rgba(37, 99, 235, 0.12)",
-  },
-
-  targetIcon: {
-    fontSize: "35px",
-  },
-
-  targetLabel: {
-    margin: "8px 0",
-    color: "#64748b",
-    fontSize: "13px",
-    fontWeight: "800",
-    letterSpacing: "1.5px",
-  },
-
-  careerName: {
-    margin: "5px 0 12px",
-    color: "#1d4ed8",
-    fontSize: "30px",
-    fontWeight: "800",
-  },
-
-  matchBadge: {
-    display: "inline-block",
-    padding: "8px 16px",
-    background: "#ffffff",
-    color: "#166534",
-    borderRadius: "20px",
-    fontSize: "14px",
-    fontWeight: "700",
-    boxShadow:
-      "0 3px 10px rgba(0,0,0,0.06)",
-  },
-
-  scoreText: {
-    marginTop: "15px",
-    color: "#475569",
-    fontSize: "16px",
-  },
-
-  statsGrid: {
-    display: "grid",
-    gridTemplateColumns:
-      "repeat(auto-fit, minmax(190px, 1fr))",
-    gap: "20px",
-    marginTop: "28px",
-  },
-
-  statCard: {
-    background: "#ffffff",
-    padding: "25px 15px",
-    borderRadius: "15px",
-    textAlign: "center",
-    boxShadow:
-      "0 6px 20px rgba(15, 23, 42, 0.07)",
-    border:
-      "1px solid #e2e8f0",
-  },
-
-  statIcon: {
-    fontSize: "32px",
-    marginBottom: "5px",
-  },
-
-  statNumber: {
-    margin: "8px 0 4px",
-    color: "#2563eb",
-    fontSize: "28px",
-  },
-
-  statLabel: {
-    margin: "0",
-    color: "#64748b",
-    fontSize: "14px",
-    fontWeight: "600",
-  },
-
-  section: {
-    marginTop: "30px",
-    background: "#ffffff",
-    padding: "28px",
-    borderRadius: "16px",
-    boxShadow:
-      "0 6px 20px rgba(15, 23, 42, 0.07)",
-    border:
-      "1px solid #e2e8f0",
-  },
-
-  sectionHeader: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    gap: "15px",
-    flexWrap: "wrap",
-  },
-
-  sectionTitle: {
-    margin: "0",
-    color: "#1e293b",
-    fontSize: "21px",
-  },
-
-  progressText: {
-    color: "#2563eb",
-    fontWeight: "700",
-    fontSize: "14px",
-  },
-
-  progressBackground: {
-    width: "100%",
-    height: "16px",
-    background: "#e5e7eb",
-    borderRadius: "20px",
-    overflow: "hidden",
-    marginTop: "20px",
-  },
-
-  progressFill: {
-    height: "100%",
-    background:
-      "linear-gradient(90deg, #2563eb, #7c3aed)",
-    borderRadius: "20px",
-    transition:
-      "width 0.5s ease",
-  },
-
-  progressHint: {
-    margin: "12px 0 0",
-    color: "#64748b",
-    fontSize: "14px",
-  },
-
-  skillList: {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: "10px",
-    marginTop: "18px",
-  },
-
-  skillTag: {
-    padding: "10px 15px",
-    background: "#fef2f2",
-    color: "#b91c1c",
-    border:
-      "1px solid #fecaca",
-    borderRadius: "20px",
-    fontWeight: "600",
-    fontSize: "14px",
-  },
-
-  learnedTag: {
-    padding: "10px 15px",
-    background: "#f0fdf4",
-    color: "#15803d",
-    border:
-      "1px solid #bbf7d0",
-    borderRadius: "20px",
-    fontWeight: "600",
-    fontSize: "14px",
-  },
-
-  successBox: {
-    marginTop: "18px",
-    padding: "16px",
-    background: "#dcfce7",
-    color: "#166534",
-    borderRadius: "10px",
-    fontWeight: "700",
-    textAlign: "center",
-  },
-
-  emptyText: {
-    color: "#64748b",
-    marginTop: "15px",
-  },
-
-  journeyHeader: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    gap: "20px",
-    flexWrap: "wrap",
-  },
-
-  journeySubtitle: {
-    color: "#64748b",
-    lineHeight: "1.6",
-    margin: "10px 0 0",
-  },
-
-  roadmapBadge: {
-    padding: "9px 15px",
-    background: "#ede9fe",
-    color: "#6d28d9",
-    borderRadius: "20px",
-    fontWeight: "700",
-    fontSize: "13px",
-  },
-
-  timeline: {
-    marginTop: "28px",
-  },
-
-  step: {
-    display: "flex",
-    gap: "16px",
-    marginBottom: "0",
-  },
-
-  numberColumn: {
-    width: "44px",
-    minWidth: "44px",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-  },
-
-  number: {
-    width: "42px",
-    height: "42px",
-    borderRadius: "50%",
-    background:
-      "linear-gradient(135deg, #2563eb, #7c3aed)",
-    color: "#ffffff",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontWeight: "800",
-    fontSize: "17px",
-    boxShadow:
-      "0 4px 10px rgba(37, 99, 235, 0.25)",
-  },
-
-  connector: {
-    width: "3px",
-    flex: 1,
-    minHeight: "25px",
-    background: "#bfdbfe",
-    margin: "5px 0",
-  },
-
-  stepContent: {
-    flex: 1,
-    background: "#f8fafc",
-    padding: "22px",
-    borderRadius: "14px",
-    border:
-      "1px solid #e2e8f0",
-    marginBottom: "20px",
-  },
-
-  stepHeader: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    gap: "15px",
-    flexWrap: "wrap",
-  },
-
-  stepLabel: {
-    margin: "0 0 4px",
-    color: "#64748b",
-    fontSize: "11px",
-    fontWeight: "800",
-    letterSpacing: "1px",
-  },
-
-  stepTitle: {
-    margin: "0",
-    color: "#1e293b",
-    fontSize: "19px",
-  },
-
-  duration: {
-    background: "#dbeafe",
-    color: "#1d4ed8",
-    padding: "7px 12px",
-    borderRadius: "20px",
-    fontSize: "13px",
-    fontWeight: "700",
-  },
-
-  description: {
-    color: "#475569",
-    lineHeight: "1.7",
-    margin: "15px 0",
-  },
-
-  stepBottom: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    gap: "15px",
-    flexWrap: "wrap",
-  },
-
-  stepSkill: {
-    padding: "9px 12px",
-    background: "#eff6ff",
-    color: "#1d4ed8",
-    borderRadius: "8px",
-    fontSize: "13px",
-  },
-
-  stepStatus: {
-    color: "#64748b",
-    fontSize: "13px",
-    fontWeight: "600",
-  },
-
-  motivation: {
-    marginTop: "30px",
-    padding: "30px",
-    background:
-      "linear-gradient(135deg, #ecfdf5, #f0fdf4)",
-    borderRadius: "16px",
-    textAlign: "center",
-    border:
-      "1px solid #bbf7d0",
-  },
-
-  motivationIcon: {
-    fontSize: "35px",
-  },
-
-  completed: {
-    marginTop: "25px",
-    padding: "18px 20px",
-    background: "#dcfce7",
-    color: "#166534",
-    borderRadius: "12px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: "12px",
-    textAlign: "center",
-    fontWeight: "700",
-  },
-
-  completedIcon: {
-    width: "30px",
-    height: "30px",
-    borderRadius: "50%",
-    background: "#16a34a",
-    color: "#ffffff",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontWeight: "bold",
-  },
-
-  nextSection: {
-    textAlign: "center",
-    marginTop: "35px",
-  },
-
-  nextButton: {
-    padding: "15px 28px",
-    background:
-      "linear-gradient(135deg, #16a34a, #15803d)",
-    color: "#ffffff",
-    border: "none",
-    borderRadius: "10px",
-    fontSize: "16px",
-    fontWeight: "800",
-    cursor: "pointer",
-    boxShadow:
-      "0 6px 15px rgba(22, 163, 74, 0.25)",
-  },
-
-  arrow: {
-    marginLeft: "10px",
-    fontSize: "20px",
-  },
-};
 
 export default Roadmap;

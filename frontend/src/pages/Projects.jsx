@@ -1,4 +1,8 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -6,20 +10,34 @@ import {
   MODULE_KEYS,
 } from "../utils/progress";
 
+import {
+  getStudentData,
+  saveStudentData,
+} from "../utils/studentStorage";
+
 function Projects() {
   const navigate = useNavigate();
 
   // =====================================================
-  // GET DATA FROM LOCAL STORAGE
+  // STUDENT-WISE DATA
   // =====================================================
 
-  const getData = (key) => {
+  const getData = (
+    key,
+    defaultValue = {}
+  ) => {
     try {
-      const saved = localStorage.getItem(key);
-      return saved ? JSON.parse(saved) : {};
+      return getStudentData(
+        key,
+        defaultValue
+      );
     } catch (error) {
-      console.error(`Error reading ${key}:`, error);
-      return {};
+      console.error(
+        `Error reading ${key}:`,
+        error
+      );
+
+      return defaultValue;
     }
   };
 
@@ -28,7 +46,10 @@ function Projects() {
   // =====================================================
 
   const careerRecommendation = useMemo(
-    () => getData("careerRecommendation"),
+    () =>
+      getData(
+        "careerRecommendation"
+      ),
     []
   );
 
@@ -37,23 +58,30 @@ function Projects() {
   // =====================================================
 
   const skillGap = useMemo(
-    () => getData("skillGap"),
+    () =>
+      getData(
+        "skillGap"
+      ),
     []
   );
 
   // =====================================================
-  // ROADMAP
+  // CAREER ROADMAP
   // =====================================================
 
   const careerRoadmap = useMemo(
     () =>
-      getData("careerRoadmap") ||
-      getData("roadmap"),
+      getData(
+        "careerRoadmap"
+      ) ||
+      getData(
+        "roadmap"
+      ),
     []
   );
 
   // =====================================================
-  // TARGET CAREER
+  // CAREER
   // =====================================================
 
   const career =
@@ -77,7 +105,7 @@ function Projects() {
   );
 
   // =====================================================
-  // MISSING SKILLS
+  // SKILLS
   // =====================================================
 
   const missingSkills = Array.isArray(
@@ -86,10 +114,6 @@ function Projects() {
     ? skillGap.missingSkills
     : [];
 
-  // =====================================================
-  // LEARNED SKILLS
-  // =====================================================
-
   const learnedSkills = Array.isArray(
     skillGap.learnedSkills
   )
@@ -97,14 +121,15 @@ function Projects() {
     : [];
 
   // =====================================================
-  // PROJECT DATABASE
+  // PROJECT DATA
   // =====================================================
 
   const projectData = {
     "AI / ML Engineer": [
       {
         id: "ai-project-1",
-        title: "AI Student Performance Predictor",
+        title:
+          "AI Student Performance Predictor",
         difficulty: "Beginner",
         technologies: [
           "Python",
@@ -122,10 +147,16 @@ function Projects() {
         ],
         duration: "2-3 Weeks",
         portfolioValue: "High",
+        projectUrl:
+          "https://scikit-learn.org/stable/getting_started.html",
+        projectResource:
+          "Scikit-learn Getting Started",
       },
+
       {
         id: "ai-project-2",
-        title: "AI Career Recommendation System",
+        title:
+          "AI Career Recommendation System",
         difficulty: "Intermediate",
         technologies: [
           "Python",
@@ -143,11 +174,18 @@ function Projects() {
           "AI Projects",
         ],
         duration: "3-4 Weeks",
-        portfolioValue: "Very High",
+        portfolioValue:
+          "Very High",
+        projectUrl:
+          "https://huggingface.co/learn",
+        projectResource:
+          "Hugging Face Learn",
       },
+
       {
         id: "ai-project-3",
-        title: "Resume Screening AI",
+        title:
+          "Resume Screening AI",
         difficulty: "Intermediate",
         technologies: [
           "Python",
@@ -165,11 +203,18 @@ function Projects() {
           "AI Projects",
         ],
         duration: "4 Weeks",
-        portfolioValue: "Very High",
+        portfolioValue:
+          "Very High",
+        projectUrl:
+          "https://huggingface.co/learn/nlp-course",
+        projectResource:
+          "Hugging Face NLP Course",
       },
+
       {
         id: "ai-project-4",
-        title: "Image Classification System",
+        title:
+          "Image Classification System",
         difficulty: "Advanced",
         technologies: [
           "Python",
@@ -187,11 +232,18 @@ function Projects() {
           "AI Projects",
         ],
         duration: "4-5 Weeks",
-        portfolioValue: "Very High",
+        portfolioValue:
+          "Very High",
+        projectUrl:
+          "https://www.tensorflow.org/tutorials/images/classification",
+        projectResource:
+          "TensorFlow Image Classification",
       },
+
       {
         id: "ai-project-5",
-        title: "AI Chatbot Assistant",
+        title:
+          "AI Chatbot Assistant",
         difficulty: "Advanced",
         technologies: [
           "Python",
@@ -209,14 +261,20 @@ function Projects() {
           "React",
         ],
         duration: "4-6 Weeks",
-        portfolioValue: "Very High",
+        portfolioValue:
+          "Very High",
+        projectUrl:
+          "https://fastapi.tiangolo.com/tutorial/",
+        projectResource:
+          "FastAPI Tutorial",
       },
     ],
 
     "Software Developer": [
       {
         id: "software-project-1",
-        title: "Student Management System",
+        title:
+          "Student Management System",
         difficulty: "Beginner",
         technologies: [
           "Java",
@@ -232,10 +290,16 @@ function Projects() {
         ],
         duration: "2 Weeks",
         portfolioValue: "Medium",
+        projectUrl:
+          "https://dev.java/learn/",
+        projectResource:
+          "Dev.java Learn",
       },
+
       {
         id: "software-project-2",
-        title: "Library Management System",
+        title:
+          "Library Management System",
         difficulty: "Beginner",
         technologies: [
           "Java",
@@ -252,10 +316,16 @@ function Projects() {
         ],
         duration: "2-3 Weeks",
         portfolioValue: "Medium",
+        projectUrl:
+          "https://dev.mysql.com/doc/",
+        projectResource:
+          "MySQL Documentation",
       },
+
       {
         id: "software-project-3",
-        title: "Online Examination System",
+        title:
+          "Online Examination System",
         difficulty: "Intermediate",
         technologies: [
           "Java",
@@ -273,10 +343,16 @@ function Projects() {
         ],
         duration: "3-4 Weeks",
         portfolioValue: "High",
+        projectUrl:
+          "https://spring.io/guides",
+        projectResource:
+          "Spring Guides",
       },
+
       {
         id: "software-project-4",
-        title: "Expense Tracker Application",
+        title:
+          "Expense Tracker Application",
         difficulty: "Intermediate",
         technologies: [
           "Java",
@@ -294,10 +370,16 @@ function Projects() {
         ],
         duration: "3 Weeks",
         portfolioValue: "High",
+        projectUrl:
+          "https://spring.io/guides",
+        projectResource:
+          "Spring Guides",
       },
+
       {
         id: "software-project-5",
-        title: "E-Commerce Management System",
+        title:
+          "E-Commerce Management System",
         difficulty: "Advanced",
         technologies: [
           "Java",
@@ -316,14 +398,20 @@ function Projects() {
           "Software Projects",
         ],
         duration: "5-6 Weeks",
-        portfolioValue: "Very High",
+        portfolioValue:
+          "Very High",
+        projectUrl:
+          "https://spring.io/guides",
+        projectResource:
+          "Spring Guides",
       },
     ],
 
     "Web Developer": [
       {
         id: "web-project-1",
-        title: "Personal Portfolio Website",
+        title:
+          "Personal Portfolio Website",
         difficulty: "Beginner",
         technologies: [
           "HTML",
@@ -339,10 +427,16 @@ function Projects() {
         ],
         duration: "1 Week",
         portfolioValue: "High",
+        projectUrl:
+          "https://developer.mozilla.org/en-US/docs/Learn_web_development",
+        projectResource:
+          "MDN Web Development",
       },
+
       {
         id: "web-project-2",
-        title: "Responsive Weather Application",
+        title:
+          "Responsive Weather Application",
         difficulty: "Beginner",
         technologies: [
           "HTML",
@@ -359,10 +453,16 @@ function Projects() {
         ],
         duration: "1-2 Weeks",
         portfolioValue: "Medium",
+        projectUrl:
+          "https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API",
+        projectResource:
+          "MDN Fetch API",
       },
+
       {
         id: "web-project-3",
-        title: "Task Management Application",
+        title:
+          "Task Management Application",
         difficulty: "Intermediate",
         technologies: [
           "React",
@@ -379,10 +479,16 @@ function Projects() {
         ],
         duration: "2-3 Weeks",
         portfolioValue: "High",
+        projectUrl:
+          "https://react.dev/learn",
+        projectResource:
+          "React Learn",
       },
+
       {
         id: "web-project-4",
-        title: "Full-Stack Blog Platform",
+        title:
+          "Full-Stack Blog Platform",
         difficulty: "Intermediate",
         technologies: [
           "React",
@@ -400,10 +506,16 @@ function Projects() {
         ],
         duration: "3-4 Weeks",
         portfolioValue: "High",
+        projectUrl:
+          "https://expressjs.com/en/starter/installing.html",
+        projectResource:
+          "Express.js Guide",
       },
+
       {
         id: "web-project-5",
-        title: "E-Commerce Web Application",
+        title:
+          "E-Commerce Web Application",
         difficulty: "Advanced",
         technologies: [
           "React",
@@ -422,14 +534,20 @@ function Projects() {
           "Web Projects",
         ],
         duration: "5-6 Weeks",
-        portfolioValue: "Very High",
+        portfolioValue:
+          "Very High",
+        projectUrl:
+          "https://www.mongodb.com/docs/",
+        projectResource:
+          "MongoDB Documentation",
       },
     ],
 
     "Data Scientist": [
       {
         id: "data-project-1",
-        title: "Student Performance Analysis",
+        title:
+          "Student Performance Analysis",
         difficulty: "Beginner",
         technologies: [
           "Python",
@@ -447,10 +565,16 @@ function Projects() {
         ],
         duration: "1-2 Weeks",
         portfolioValue: "Medium",
+        projectUrl:
+          "https://pandas.pydata.org/docs/getting_started/intro_tutorials/",
+        projectResource:
+          "Pandas Tutorials",
       },
+
       {
         id: "data-project-2",
-        title: "Sales Data Analysis Dashboard",
+        title:
+          "Sales Data Analysis Dashboard",
         difficulty: "Beginner",
         technologies: [
           "Python",
@@ -468,10 +592,16 @@ function Projects() {
         ],
         duration: "2 Weeks",
         portfolioValue: "High",
+        projectUrl:
+          "https://www.kaggle.com/learn/pandas",
+        projectResource:
+          "Kaggle Pandas",
       },
+
       {
         id: "data-project-3",
-        title: "Customer Churn Prediction",
+        title:
+          "Customer Churn Prediction",
         difficulty: "Intermediate",
         technologies: [
           "Python",
@@ -488,11 +618,18 @@ function Projects() {
           "Data Analysis",
         ],
         duration: "3-4 Weeks",
-        portfolioValue: "Very High",
+        portfolioValue:
+          "Very High",
+        projectUrl:
+          "https://scikit-learn.org/stable/getting_started.html",
+        projectResource:
+          "Scikit-learn Getting Started",
       },
+
       {
         id: "data-project-4",
-        title: "House Price Prediction",
+        title:
+          "House Price Prediction",
         difficulty: "Intermediate",
         technologies: [
           "Python",
@@ -510,10 +647,16 @@ function Projects() {
         ],
         duration: "2-3 Weeks",
         portfolioValue: "High",
+        projectUrl:
+          "https://scikit-learn.org/stable/auto_examples/linear_model/plot_ols.html",
+        projectResource:
+          "Scikit-learn Regression Example",
       },
+
       {
         id: "data-project-5",
-        title: "Real-Time Data Analytics Dashboard",
+        title:
+          "Real-Time Data Analytics Dashboard",
         difficulty: "Advanced",
         technologies: [
           "Python",
@@ -531,14 +674,20 @@ function Projects() {
           "Data Analysis",
         ],
         duration: "4-6 Weeks",
-        portfolioValue: "Very High",
+        portfolioValue:
+          "Very High",
+        projectUrl:
+          "https://plotly.com/python/",
+        projectResource:
+          "Plotly Python",
       },
     ],
 
     "Cybersecurity Analyst": [
       {
         id: "cyber-project-1",
-        title: "Password Strength Analyzer",
+        title:
+          "Password Strength Analyzer",
         difficulty: "Beginner",
         technologies: [
           "Python",
@@ -552,10 +701,16 @@ function Projects() {
         ],
         duration: "1 Week",
         portfolioValue: "Medium",
+        projectUrl:
+          "https://docs.python.org/3/library/re.html",
+        projectResource:
+          "Python Regular Expressions",
       },
+
       {
         id: "cyber-project-2",
-        title: "Network Monitoring Dashboard",
+        title:
+          "Network Monitoring Dashboard",
         difficulty: "Intermediate",
         technologies: [
           "Python",
@@ -571,10 +726,16 @@ function Projects() {
         ],
         duration: "2-3 Weeks",
         portfolioValue: "High",
+        projectUrl:
+          "https://docs.python.org/3/library/socket.html",
+        projectResource:
+          "Python Networking",
       },
+
       {
         id: "cyber-project-3",
-        title: "Secure Login System",
+        title:
+          "Secure Login System",
         difficulty: "Intermediate",
         technologies: [
           "Python",
@@ -592,10 +753,16 @@ function Projects() {
         ],
         duration: "2-3 Weeks",
         portfolioValue: "High",
+        projectUrl:
+          "https://flask.palletsprojects.com/en/stable/tutorial/",
+        projectResource:
+          "Flask Tutorial",
       },
+
       {
         id: "cyber-project-4",
-        title: "Security Log Analyzer",
+        title:
+          "Security Log Analyzer",
         difficulty: "Intermediate",
         technologies: [
           "Python",
@@ -611,10 +778,16 @@ function Projects() {
         ],
         duration: "2-3 Weeks",
         portfolioValue: "High",
+        projectUrl:
+          "https://docs.python.org/3/library/logging.html",
+        projectResource:
+          "Python Logging",
       },
+
       {
         id: "cyber-project-5",
-        title: "Vulnerability Assessment Lab",
+        title:
+          "Vulnerability Assessment Lab",
         difficulty: "Advanced",
         technologies: [
           "Linux",
@@ -631,13 +804,18 @@ function Projects() {
           "Network Security",
         ],
         duration: "4-6 Weeks",
-        portfolioValue: "Very High",
+        portfolioValue:
+          "Very High",
+        projectUrl:
+          "https://owasp.org/www-project-web-security-testing-guide/",
+        projectResource:
+          "OWASP Web Security Testing Guide",
       },
     ],
   };
 
   // =====================================================
-  // GET CAREER PROJECTS
+  // ALL PROJECTS FOR CAREER
   // =====================================================
 
   const allProjects =
@@ -645,26 +823,27 @@ function Projects() {
     projectData["Software Developer"];
 
   // =====================================================
-  // PROJECT STATUS
+  // STUDENT-WISE PROJECT STATUS
   // =====================================================
 
-  const [projectStatus, setProjectStatus] =
-    useState(() => {
-      try {
-        const saved =
-          localStorage.getItem("projectStatus");
+  const [
+    projectStatus,
+    setProjectStatus,
+  ] = useState(() => {
+    try {
+      return getStudentData(
+        "projectStatus",
+        {}
+      );
+    } catch (error) {
+      console.error(
+        "Error loading project status:",
+        error
+      );
 
-        return saved
-          ? JSON.parse(saved)
-          : {};
-      } catch (error) {
-        console.error(
-          "Project status error:",
-          error
-        );
-        return {};
-      }
-    });
+      return {};
+    }
+  });
 
   // =====================================================
   // SAVE PROJECT STATUS
@@ -672,13 +851,13 @@ function Projects() {
 
   useEffect(() => {
     try {
-      localStorage.setItem(
+      saveStudentData(
         "projectStatus",
-        JSON.stringify(projectStatus)
+        projectStatus
       );
     } catch (error) {
       console.error(
-        "Unable to save project status:",
+        "Error saving project status:",
         error
       );
     }
@@ -688,27 +867,60 @@ function Projects() {
   // CHANGE PROJECT STATUS
   // =====================================================
 
-  const changeProjectStatus = (projectId) => {
-    setProjectStatus((previous) => ({
-      ...previous,
-      [projectId]:
-        previous[projectId] === "Completed"
-          ? "Not Started"
-          : "Completed",
-    }));
+  const changeProjectStatus = (
+    projectId
+  ) => {
+    setProjectStatus(
+      (previous) => ({
+        ...previous,
+
+        [projectId]:
+          previous[projectId] ===
+          "Completed"
+            ? "Not Started"
+            : "Completed",
+      })
+    );
+
+    window.dispatchEvent(
+      new Event("projectUpdated")
+    );
+  };
+
+  // =====================================================
+  // OPEN PROJECT RESOURCE
+  // =====================================================
+
+  const openProject = (project) => {
+    if (!project.projectUrl) {
+      return;
+    }
+
+    window.open(
+      project.projectUrl,
+      "_blank",
+      "noopener,noreferrer"
+    );
   };
 
   // =====================================================
   // COMPLETED PROJECTS
   // =====================================================
 
-  const completedProjects = allProjects.filter(
-    (project) =>
-      projectStatus[project.id] === "Completed"
-  );
+  const completedProjects =
+    allProjects.filter(
+      (project) =>
+        projectStatus[
+          project.id
+        ] === "Completed"
+    );
 
   const completedCount =
     completedProjects.length;
+
+  // =====================================================
+  // PROJECT PERCENTAGE
+  // =====================================================
 
   const projectPercentage =
     allProjects.length > 0
@@ -720,19 +932,40 @@ function Projects() {
       : 0;
 
   // =====================================================
-  // PERSONALIZED PROJECT MATCHING
+  // NORMALIZE SKILL
   // =====================================================
 
-  const normalizeSkill = (skill) =>
+  const normalizeSkill = (
+    skill
+  ) =>
     String(skill || "")
       .toLowerCase()
-      .replace(/[^a-z0-9]/g, "");
+      .replace(
+        /[^a-z0-9]/g,
+        ""
+      );
 
-  const skillMatches = (projectSkill, userSkill) => {
-    const project = normalizeSkill(projectSkill);
-    const user = normalizeSkill(userSkill);
+  // =====================================================
+  // SKILL MATCHING
+  // =====================================================
 
-    if (!project || !user) return false;
+  const skillMatches = (
+    projectSkill,
+    userSkill
+  ) => {
+    const project =
+      normalizeSkill(
+        projectSkill
+      );
+
+    const user =
+      normalizeSkill(
+        userSkill
+      );
+
+    if (!project || !user) {
+      return false;
+    }
 
     if (
       project === user ||
@@ -747,23 +980,69 @@ function Projects() {
         "datastructuresandalgorithms",
         "datastructurealgorithms",
       ],
-      datastructuresandalgorithms: ["dsa"],
+
+      datastructuresandalgorithms: [
+        "dsa",
+      ],
+
       oop: [
         "objectorientedprogramming",
-        "objectorientedprogramming",
       ],
-      objectorientedprogramming: ["oop"],
-      ml: ["machinelearning"],
-      machinelearning: ["ml"],
-      ai: ["artificialintelligence"],
-      artificialintelligence: ["ai"],
-      node: ["nodejs"],
-      nodejs: ["node"],
-      api: ["restapi", "rest"],
-      restapi: ["api", "rest"],
-      database: ["sql", "mysql", "mongodb"],
-      sql: ["database", "mysql"],
-      mysql: ["sql", "database"],
+
+      objectorientedprogramming: [
+        "oop",
+      ],
+
+      ml: [
+        "machinelearning",
+      ],
+
+      machinelearning: [
+        "ml",
+      ],
+
+      ai: [
+        "artificialintelligence",
+      ],
+
+      artificialintelligence: [
+        "ai",
+      ],
+
+      node: [
+        "nodejs",
+      ],
+
+      nodejs: [
+        "node",
+      ],
+
+      api: [
+        "restapi",
+        "rest",
+      ],
+
+      restapi: [
+        "api",
+        "rest",
+      ],
+
+      database: [
+        "sql",
+        "mysql",
+        "mongodb",
+      ],
+
+      sql: [
+        "database",
+        "mysql",
+      ],
+
+      mysql: [
+        "sql",
+        "database",
+      ],
+
       projects: [
         "aiprojects",
         "softwareprojects",
@@ -774,24 +1053,54 @@ function Projects() {
     };
 
     return (
-      aliases[project]?.includes(user) ||
-      aliases[user]?.includes(project)
+      aliases[
+        project
+      ]?.includes(user) ||
+      aliases[
+        user
+      ]?.includes(project)
     );
   };
 
-  const getProjectMissingSkillCount = (project) => {
-    return project.skills.filter((projectSkill) =>
-      missingSkills.some((missingSkill) =>
-        skillMatches(projectSkill, missingSkill)
-      )
-    ).length;
-  };
+  // =====================================================
+  // PROJECT MISSING SKILL COUNT
+  // =====================================================
 
-  const personalizedProjects = [...allProjects].sort(
-    (a, b) =>
-      getProjectMissingSkillCount(b) -
-      getProjectMissingSkillCount(a)
-  );
+  const getProjectMissingSkillCount =
+    (project) => {
+      return project.skills.filter(
+        (projectSkill) =>
+          missingSkills.some(
+            (missingSkill) =>
+              skillMatches(
+                projectSkill,
+                missingSkill
+              )
+          )
+      ).length;
+    };
+
+  // =====================================================
+  // PERSONALIZED PROJECTS
+  // =====================================================
+
+  const personalizedProjects =
+    useMemo(() => {
+      return [
+        ...allProjects,
+      ].sort(
+        (a, b) =>
+          getProjectMissingSkillCount(
+            b
+          ) -
+          getProjectMissingSkillCount(
+            a
+          )
+      );
+    }, [
+      allProjects,
+      missingSkills,
+    ]);
 
   // =====================================================
   // SAVE PROJECT RECOMMENDATIONS
@@ -801,36 +1110,44 @@ function Projects() {
     const projectResult = {
       career,
       careerMatch,
-      projects: personalizedProjects,
+      projects:
+        personalizedProjects,
       allProjects,
       missingSkills,
       learnedSkills,
+
       completedProjects:
         completedProjects.map(
-          (project) => project.id
+          (project) =>
+            project.id
         ),
+
       completedCount,
       projectPercentage,
-      createdAt: new Date().toISOString(),
+
+      createdAt:
+        new Date().toISOString(),
     };
 
     try {
-      localStorage.setItem(
+      // Student-wise storage
+      saveStudentData(
         "projectRecommendations",
-        JSON.stringify(projectResult)
+        projectResult
       );
 
-      localStorage.setItem(
+      saveStudentData(
         "projects",
-        JSON.stringify(projectResult)
+        projectResult
       );
 
-      // Project recommendations are generated,
-      // so mark the module as completed.
-      completeModule(MODULE_KEYS.PROJECTS);
+      // Preserve progress system
+      completeModule(
+        MODULE_KEYS.PROJECTS
+      );
     } catch (error) {
       console.error(
-        "Project recommendation save error:",
+        "Error saving project recommendations:",
         error
       );
     }
@@ -850,12 +1167,19 @@ function Projects() {
   // DIFFICULTY STYLE
   // =====================================================
 
-  const getDifficultyStyle = (difficulty) => {
-    if (difficulty === "Beginner") {
+  const getDifficultyStyle = (
+    difficulty
+  ) => {
+    if (
+      difficulty === "Beginner"
+    ) {
       return styles.beginner;
     }
 
-    if (difficulty === "Intermediate") {
+    if (
+      difficulty ===
+      "Intermediate"
+    ) {
       return styles.intermediate;
     }
 
@@ -866,8 +1190,12 @@ function Projects() {
   // PORTFOLIO STYLE
   // =====================================================
 
-  const getPortfolioStyle = (value) => {
-    if (value === "Very High") {
+  const getPortfolioStyle = (
+    value
+  ) => {
+    if (
+      value === "Very High"
+    ) {
       return styles.portfolioVeryHigh;
     }
 
@@ -885,11 +1213,12 @@ function Projects() {
   return (
     <div style={styles.page}>
       <div style={styles.container}>
-
         {/* HEADER */}
 
         <div style={styles.header}>
-          <div style={styles.icon}>💻</div>
+          <div style={styles.icon}>
+            💻
+          </div>
 
           <h1 style={styles.title}>
             Project Recommendations
@@ -899,83 +1228,138 @@ function Projects() {
             Build real-world projects to
             develop practical skills and
             strengthen your portfolio for{" "}
-            <strong>{career}</strong>.
+            <strong>
+              {career}
+            </strong>
+            .
           </p>
         </div>
 
-        {/* TARGET CAREER */}
+        {/* CAREER */}
 
-        <div style={styles.careerCard}>
-          <div style={styles.targetIcon}>
+        <div
+          style={styles.careerCard}
+        >
+          <div
+            style={styles.targetIcon}
+          >
             🎯
           </div>
 
-          <p style={styles.smallTitle}>
+          <p
+            style={styles.smallTitle}
+          >
             Recommended Career
           </p>
 
-          <h1 style={styles.careerName}>
+          <h1
+            style={styles.careerName}
+          >
             {career}
           </h1>
 
           {careerMatch > 0 && (
-            <p style={styles.matchText}>
+            <p
+              style={styles.matchText}
+            >
               Career Match:{" "}
-              <strong>{careerMatch}%</strong>
+              <strong>
+                {careerMatch}%
+              </strong>
             </p>
           )}
         </div>
 
-        {/* SUMMARY */}
+        {/* STATS */}
 
-        <div style={styles.statsGrid}>
-          <div style={styles.statCard}>
-            <div style={styles.statIcon}>
+        <div
+          style={styles.statsGrid}
+        >
+          <div
+            style={styles.statCard}
+          >
+            <div
+              style={styles.statIcon}
+            >
               💻
             </div>
 
-            <h2>{allProjects.length}</h2>
+            <h2>
+              {allProjects.length}
+            </h2>
 
-            <p>Recommended Projects</p>
+            <p>
+              Recommended Projects
+            </p>
           </div>
 
-          <div style={styles.statCard}>
-            <div style={styles.statIcon}>
+          <div
+            style={styles.statCard}
+          >
+            <div
+              style={styles.statIcon}
+            >
               📚
             </div>
 
-            <h2>{missingSkills.length}</h2>
+            <h2>
+              {missingSkills.length}
+            </h2>
 
-            <p>Skills to Develop</p>
+            <p>
+              Skills to Develop
+            </p>
           </div>
 
-          <div style={styles.statCard}>
-            <div style={styles.statIcon}>
+          <div
+            style={styles.statCard}
+          >
+            <div
+              style={styles.statIcon}
+            >
               🏆
             </div>
 
-            <h2>{completedCount}</h2>
+            <h2>
+              {completedCount}
+            </h2>
 
-            <p>Projects Completed</p>
+            <p>
+              Projects Completed
+            </p>
           </div>
 
-          <div style={styles.statCard}>
-            <div style={styles.statIcon}>
+          <div
+            style={styles.statCard}
+          >
+            <div
+              style={styles.statIcon}
+            >
               📊
             </div>
 
-            <h2>{projectPercentage}%</h2>
+            <h2>
+              {projectPercentage}%
+            </h2>
 
-            <p>Project Progress</p>
+            <p>
+              Project Progress
+            </p>
           </div>
         </div>
 
         {/* PROJECT PROGRESS */}
 
         <div style={styles.section}>
-          <h2>📈 Project Progress</h2>
+          <h2>
+            📈 Project Progress
+          </h2>
 
-          <div style={styles.progressBackground}>
+          <div
+            style={
+              styles.progressBackground
+            }
+          >
             <div
               style={{
                 ...styles.progressFill,
@@ -984,108 +1368,168 @@ function Projects() {
             />
           </div>
 
-          <div style={styles.progressLabels}>
+          <div
+            style={
+              styles.progressLabels
+            }
+          >
             <span>
               Completed:{" "}
-              <strong>{completedCount}</strong>
+              <strong>
+                {completedCount}
+              </strong>
             </span>
 
             <span>
               Total:{" "}
-              <strong>{allProjects.length}</strong>
+              <strong>
+                {allProjects.length}
+              </strong>
             </span>
           </div>
         </div>
 
         {/* PERSONALIZATION */}
 
-        <div style={styles.personalizedBox}>
-          <div style={styles.personalizedIcon}>
+        <div
+          style={styles.personalizedBox}
+        >
+          <div
+            style={
+              styles.personalizedIcon
+            }
+          >
             🤖
           </div>
 
           <div>
-            <h2 style={styles.personalizedTitle}>
-              Personalized Project Selection
+            <h2
+              style={
+                styles.personalizedTitle
+              }
+            >
+              Personalized Project
+              Selection
             </h2>
 
-            <p style={styles.personalizedText}>
-              Projects are prioritized according
-              to the skills you still need to
-              develop for your recommended
+            <p
+              style={
+                styles.personalizedText
+              }
+            >
+              Projects are prioritized
+              according to the skills
+              you still need to develop
+              for your recommended
               career.
             </p>
           </div>
         </div>
 
-        {/* SKILL GAPS */}
+        {/* MISSING SKILLS */}
 
-        {missingSkills.length > 0 && (
-          <div style={styles.section}>
+        {missingSkills.length >
+          0 && (
+          <div
+            style={styles.section}
+          >
             <h2>
-              📚 Skills These Projects Will
-              Help You Develop
+              📚 Skills These Projects
+              Will Help You Develop
             </h2>
 
-            <div style={styles.skillList}>
-              {missingSkills.map((skill) => (
-                <span
-                  key={skill}
-                  style={styles.skillTag}
-                >
-                  📚 {skill}
-                </span>
-              ))}
+            <div
+              style={styles.skillList}
+            >
+              {missingSkills.map(
+                (skill) => (
+                  <span
+                    key={skill}
+                    style={
+                      styles.skillTag
+                    }
+                  >
+                    📚 {skill}
+                  </span>
+                )
+              )}
             </div>
           </div>
         )}
 
         {/* LEARNED SKILLS */}
 
-        {learnedSkills.length > 0 && (
-          <div style={styles.section}>
+        {learnedSkills.length >
+          0 && (
+          <div
+            style={styles.section}
+          >
             <h2>
               ✅ Skills You Already Have
             </h2>
 
-            <div style={styles.skillList}>
-              {learnedSkills.map((skill) => (
-                <span
-                  key={skill}
-                  style={styles.learnedSkillTag}
-                >
-                  ✓ {skill}
-                </span>
-              ))}
+            <div
+              style={styles.skillList}
+            >
+              {learnedSkills.map(
+                (skill) => (
+                  <span
+                    key={skill}
+                    style={
+                      styles.learnedSkillTag
+                    }
+                  >
+                    ✓ {skill}
+                  </span>
+                )
+              )}
             </div>
           </div>
         )}
 
-        {/* PROJECT LIST */}
+        {/* PROJECTS */}
 
-        <div style={styles.section}>
-          <h2>🚀 Recommended Projects</h2>
+        <div
+          style={styles.section}
+        >
+          <h2>
+            🚀 Recommended Projects
+          </h2>
 
-          <p style={styles.sectionText}>
-            Projects are ordered so that
-            projects matching your skill gaps
-            appear first. Start with beginner
-            projects and gradually move toward
-            advanced projects.
+          <p
+            style={styles.sectionText}
+          >
+            Projects are ordered
+            according to your skill
+            gaps. Use the project
+            resource button to start
+            learning and building the
+            project.
           </p>
 
-          <div style={styles.projectGrid}>
+          <div
+            style={styles.projectGrid}
+          >
             {personalizedProjects.map(
-              (project, index) => {
+              (
+                project,
+                index
+              ) => {
                 const isCompleted =
-                  projectStatus[project.id] ===
+                  projectStatus[
+                    project.id
+                  ] ===
                   "Completed";
 
                 const matchingSkills =
                   project.skills.filter(
-                    (projectSkill) =>
+                    (
+                      projectSkill
+                    ) =>
                       missingSkills.some(
-                        (missingSkill) =>
+                        (
+                          missingSkill
+                        ) =>
                           skillMatches(
                             projectSkill,
                             missingSkill
@@ -1098,16 +1542,21 @@ function Projects() {
                     key={project.id}
                     style={{
                       ...styles.projectCard,
+
                       ...(isCompleted
                         ? styles.completedProject
                         : {}),
                     }}
                   >
-                    {/* PROJECT TOP */}
-
-                    <div style={styles.projectTop}>
+                    <div
+                      style={
+                        styles.projectTop
+                      }
+                    >
                       <div
-                        style={styles.projectNumber}
+                        style={
+                          styles.projectNumber
+                        }
                       >
                         {index + 1}
                       </div>
@@ -1117,38 +1566,42 @@ function Projects() {
                           project.difficulty
                         )}
                       >
-                        {project.difficulty}
+                        {
+                          project.difficulty
+                        }
                       </span>
                     </div>
 
-                    {/* TITLE */}
-
                     <h2
-                      style={styles.projectTitle}
+                      style={
+                        styles.projectTitle
+                      }
                     >
                       {project.title}
                     </h2>
-
-                    {/* DESCRIPTION */}
 
                     <p
                       style={
                         styles.projectDescription
                       }
                     >
-                      {project.description}
+                      {
+                        project.description
+                      }
                     </p>
 
-                    {/* DURATION */}
-
-                    <div style={styles.duration}>
+                    <div
+                      style={
+                        styles.duration
+                      }
+                    >
                       ⏱️ Duration:{" "}
                       <strong>
-                        {project.duration}
+                        {
+                          project.duration
+                        }
                       </strong>
                     </div>
-
-                    {/* PORTFOLIO VALUE */}
 
                     <div
                       style={
@@ -1156,7 +1609,8 @@ function Projects() {
                       }
                     >
                       <span>
-                        💼 Portfolio Value
+                        💼 Portfolio
+                        Value
                       </span>
 
                       <span
@@ -1164,13 +1618,14 @@ function Projects() {
                           project.portfolioValue
                         )}
                       >
-                        {project.portfolioValue}
+                        {
+                          project.portfolioValue
+                        }
                       </span>
                     </div>
 
-                    {/* PERSONALIZED MATCH */}
-
-                    {matchingSkills.length > 0 && (
+                    {matchingSkills.length >
+                      0 && (
                       <div
                         style={
                           styles.matchBox
@@ -1185,38 +1640,52 @@ function Projects() {
                       </div>
                     )}
 
-                    {/* TECHNOLOGIES */}
-
                     <h4
-                      style={styles.subHeading}
+                      style={
+                        styles.subHeading
+                      }
                     >
                       🛠️ Technologies
                     </h4>
 
-                    <div style={styles.techList}>
+                    <div
+                      style={
+                        styles.techList
+                      }
+                    >
                       {project.technologies.map(
-                        (technology) => (
+                        (
+                          technology
+                        ) => (
                           <span
-                            key={technology}
+                            key={
+                              technology
+                            }
                             style={
                               styles.techTag
                             }
                           >
-                            {technology}
+                            {
+                              technology
+                            }
                           </span>
                         )
                       )}
                     </div>
 
-                    {/* SKILLS */}
-
                     <h4
-                      style={styles.subHeading}
+                      style={
+                        styles.subHeading
+                      }
                     >
                       🎯 Skills Practiced
                     </h4>
 
-                    <div style={styles.techList}>
+                    <div
+                      style={
+                        styles.techList
+                      }
+                    >
                       {project.skills.map(
                         (skill) => (
                           <span
@@ -1229,6 +1698,51 @@ function Projects() {
                           </span>
                         )
                       )}
+                    </div>
+
+                    {/* RESOURCE */}
+
+                    <div
+                      style={
+                        styles.resourceBox
+                      }
+                    >
+                      <div
+                        style={
+                          styles.resourceTitle
+                        }
+                      >
+                        📂 Project
+                        Resource
+                      </div>
+
+                      <div
+                        style={
+                          styles.resourceName
+                        }
+                      >
+                        {
+                          project.projectResource
+                        }
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          openProject(
+                            project
+                          )
+                        }
+                        style={
+                          styles.resourceButton
+                        }
+                        disabled={
+                          !project.projectUrl
+                        }
+                      >
+                        🚀 Open Project
+                        Resource
+                      </button>
                     </div>
 
                     {/* STATUS */}
@@ -1245,7 +1759,7 @@ function Projects() {
                         : "🔒 Not Started"}
                     </div>
 
-                    {/* BUTTON */}
+                    {/* STATUS BUTTON */}
 
                     <button
                       type="button"
@@ -1273,30 +1787,42 @@ function Projects() {
 
         {/* PORTFOLIO TIP */}
 
-        <div style={styles.tipBox}>
-          <div style={styles.tipIcon}>💡</div>
+        <div
+          style={styles.tipBox}
+        >
+          <div style={styles.tipIcon}>
+            💡
+          </div>
 
           <div>
-            <h2 style={styles.tipTitle}>
+            <h2
+              style={styles.tipTitle}
+            >
               Portfolio Tip
             </h2>
 
-            <p style={styles.tipText}>
-              Do not just copy projects from
-              tutorials. Understand the concepts,
-              add your own features, upload the
-              project to GitHub and explain it
+            <p
+              style={styles.tipText}
+            >
+              Do not just copy projects
+              from tutorials. Understand
+              the concepts, add your own
+              features, upload the project
+              to GitHub and explain it
               clearly in your resume and
               interviews.
             </p>
           </div>
         </div>
 
-        {/* COMPLETION */}
+        {/* COMPLETED */}
 
-        <div style={styles.completedBox}>
+        <div
+          style={styles.completedBox}
+        >
           <strong>
-            💻 Project Recommendations Generated
+            💻 Project Recommendations
+            Generated
           </strong>
 
           <p>
@@ -1308,15 +1834,20 @@ function Projects() {
 
         {/* NEXT */}
 
-        <div style={styles.nextSection}>
+        <div
+          style={styles.nextSection}
+        >
           <button
             type="button"
             onClick={() =>
               navigate("/readiness")
             }
-            style={styles.nextButton}
+            style={
+              styles.nextButton
+            }
           >
-            🎯 Check Career Readiness →
+            🎯 Check Career
+            Readiness →
           </button>
         </div>
       </div>
@@ -1332,8 +1863,10 @@ const styles = {
   page: {
     minHeight: "100vh",
     background: "#f4f7fb",
-    padding: "40px 20px 60px",
-    fontFamily: "Arial, sans-serif",
+    padding:
+      "40px 20px 60px",
+    fontFamily:
+      "Arial, sans-serif",
   },
 
   container: {
@@ -1343,7 +1876,8 @@ const styles = {
 
   header: {
     background: "#ffffff",
-    padding: "35px 25px",
+    padding:
+      "35px 25px",
     borderRadius: "16px",
     textAlign: "center",
     boxShadow:
@@ -1356,13 +1890,15 @@ const styles = {
   },
 
   title: {
-    margin: "0 0 10px",
+    margin:
+      "0 0 10px",
     color: "#1e293b",
     fontSize: "32px",
   },
 
   subtitle: {
-    margin: "0 auto",
+    margin:
+      "0 auto",
     maxWidth: "750px",
     color: "#64748b",
     fontSize: "17px",
@@ -1374,7 +1910,8 @@ const styles = {
     padding: "30px",
     background: "#eff6ff",
     borderRadius: "15px",
-    border: "2px solid #2563eb",
+    border:
+      "2px solid #2563eb",
     textAlign: "center",
   },
 
@@ -1383,13 +1920,15 @@ const styles = {
   },
 
   smallTitle: {
-    margin: "8px 0",
+    margin:
+      "8px 0",
     color: "#475569",
     fontSize: "16px",
   },
 
   careerName: {
-    margin: "5px 0",
+    margin:
+      "5px 0",
     color: "#2563eb",
     fontSize: "30px",
   },
@@ -1409,7 +1948,8 @@ const styles = {
 
   statCard: {
     background: "#ffffff",
-    padding: "25px 15px",
+    padding:
+      "25px 15px",
     borderRadius: "12px",
     textAlign: "center",
     boxShadow:
@@ -1438,11 +1978,13 @@ const styles = {
     marginTop: "30px",
     padding: "24px",
     background: "#eef2ff",
-    border: "1px solid #c7d2fe",
+    border:
+      "1px solid #c7d2fe",
     borderRadius: "14px",
     display: "flex",
     gap: "18px",
-    alignItems: "flex-start",
+    alignItems:
+      "flex-start",
   },
 
   personalizedIcon: {
@@ -1450,7 +1992,8 @@ const styles = {
   },
 
   personalizedTitle: {
-    margin: "0 0 8px",
+    margin:
+      "0 0 8px",
     color: "#3730a3",
   },
 
@@ -1473,12 +2016,14 @@ const styles = {
     height: "100%",
     background: "#2563eb",
     borderRadius: "20px",
-    transition: "width 0.5s ease",
+    transition:
+      "width 0.5s ease",
   },
 
   progressLabels: {
     display: "flex",
-    justifyContent: "space-between",
+    justifyContent:
+      "space-between",
     marginTop: "12px",
     color: "#64748b",
     fontSize: "14px",
@@ -1492,7 +2037,8 @@ const styles = {
   },
 
   skillTag: {
-    padding: "10px 15px",
+    padding:
+      "10px 15px",
     background: "#fef2f2",
     color: "#b91c1c",
     borderRadius: "20px",
@@ -1500,7 +2046,8 @@ const styles = {
   },
 
   learnedSkillTag: {
-    padding: "10px 15px",
+    padding:
+      "10px 15px",
     background: "#dcfce7",
     color: "#166534",
     borderRadius: "20px",
@@ -1519,20 +2066,24 @@ const styles = {
     background: "#f8fafc",
     padding: "22px",
     borderRadius: "14px",
-    border: "1px solid #e5e7eb",
+    border:
+      "1px solid #e5e7eb",
     boxShadow:
       "0 3px 10px rgba(0,0,0,0.05)",
   },
 
   completedProject: {
-    border: "2px solid #16a34a",
+    border:
+      "2px solid #16a34a",
     background: "#f0fdf4",
   },
 
   projectTop: {
     display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
+    justifyContent:
+      "space-between",
+    alignItems:
+      "center",
     gap: "10px",
   },
 
@@ -1543,8 +2094,10 @@ const styles = {
     background: "#2563eb",
     color: "#ffffff",
     display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems:
+      "center",
+    justifyContent:
+      "center",
     fontWeight: "bold",
     fontSize: "17px",
   },
@@ -1552,7 +2105,8 @@ const styles = {
   beginner: {
     background: "#dcfce7",
     color: "#166534",
-    padding: "7px 12px",
+    padding:
+      "7px 12px",
     borderRadius: "20px",
     fontSize: "13px",
     fontWeight: "bold",
@@ -1561,7 +2115,8 @@ const styles = {
   intermediate: {
     background: "#fef3c7",
     color: "#92400e",
-    padding: "7px 12px",
+    padding:
+      "7px 12px",
     borderRadius: "20px",
     fontSize: "13px",
     fontWeight: "bold",
@@ -1570,7 +2125,8 @@ const styles = {
   advanced: {
     background: "#fee2e2",
     color: "#991b1b",
-    padding: "7px 12px",
+    padding:
+      "7px 12px",
     borderRadius: "20px",
     fontSize: "13px",
     fontWeight: "bold",
@@ -1603,8 +2159,10 @@ const styles = {
     background: "#f8fafc",
     borderRadius: "8px",
     display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
+    justifyContent:
+      "space-between",
+    alignItems:
+      "center",
     gap: "10px",
     fontSize: "13px",
     color: "#475569",
@@ -1614,7 +2172,8 @@ const styles = {
   portfolioVeryHigh: {
     background: "#dcfce7",
     color: "#166534",
-    padding: "5px 9px",
+    padding:
+      "5px 9px",
     borderRadius: "15px",
     fontSize: "12px",
     fontWeight: "bold",
@@ -1623,7 +2182,8 @@ const styles = {
   portfolioHigh: {
     background: "#dbeafe",
     color: "#1d4ed8",
-    padding: "5px 9px",
+    padding:
+      "5px 9px",
     borderRadius: "15px",
     fontSize: "12px",
     fontWeight: "bold",
@@ -1632,7 +2192,8 @@ const styles = {
   portfolioMedium: {
     background: "#fef3c7",
     color: "#92400e",
-    padding: "5px 9px",
+    padding:
+      "5px 9px",
     borderRadius: "15px",
     fontSize: "12px",
     fontWeight: "bold",
@@ -1661,7 +2222,8 @@ const styles = {
   },
 
   techTag: {
-    padding: "7px 10px",
+    padding:
+      "7px 10px",
     background: "#e0e7ff",
     color: "#3730a3",
     borderRadius: "7px",
@@ -1670,11 +2232,46 @@ const styles = {
   },
 
   skillPracticeTag: {
-    padding: "7px 10px",
+    padding:
+      "7px 10px",
     background: "#f1f5f9",
     color: "#475569",
     borderRadius: "7px",
     fontSize: "12px",
+  },
+
+  resourceBox: {
+    marginTop: "20px",
+    padding: "16px",
+    background: "#eef2ff",
+    border:
+      "1px solid #c7d2fe",
+    borderRadius: "10px",
+  },
+
+  resourceTitle: {
+    color: "#3730a3",
+    fontSize: "14px",
+    fontWeight: "700",
+  },
+
+  resourceName: {
+    color: "#475569",
+    fontSize: "13px",
+    marginTop: "5px",
+    marginBottom: "12px",
+  },
+
+  resourceButton: {
+    width: "100%",
+    padding: "11px",
+    background: "#4f46e5",
+    color: "#ffffff",
+    border: "none",
+    borderRadius: "8px",
+    fontSize: "14px",
+    fontWeight: "bold",
+    cursor: "pointer",
   },
 
   statusNotStarted: {
@@ -1729,11 +2326,13 @@ const styles = {
     marginTop: "30px",
     padding: "25px",
     background: "#fffbeb",
-    border: "1px solid #fde68a",
+    border:
+      "1px solid #fde68a",
     borderRadius: "14px",
     display: "flex",
     gap: "18px",
-    alignItems: "flex-start",
+    alignItems:
+      "flex-start",
   },
 
   tipIcon: {
@@ -1741,7 +2340,8 @@ const styles = {
   },
 
   tipTitle: {
-    margin: "0 0 8px",
+    margin:
+      "0 0 8px",
     color: "#92400e",
   },
 
@@ -1767,7 +2367,8 @@ const styles = {
   },
 
   nextButton: {
-    padding: "15px 32px",
+    padding:
+      "15px 32px",
     background: "#16a34a",
     color: "#ffffff",
     border: "none",

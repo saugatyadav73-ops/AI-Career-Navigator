@@ -2,7 +2,9 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { completeModule, MODULE_KEYS } from "../utils/progress";
 
-const API_URL = "http://localhost:5000";
+const API_URL =
+  import.meta.env.VITE_API_URL ||
+  "http://localhost:5000";
 
 const getStorageData = (key) => {
   try {

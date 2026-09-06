@@ -1,4 +1,3 @@
-
 const express = require("express");
 const cors = require("cors");
 const OpenAI = require("openai");
@@ -7,16 +6,8 @@ require("dotenv").config();
 
 const app = express();
 
-// =====================================================
-// MIDDLEWARE
-// =====================================================
-
 app.use(cors());
 app.use(express.json());
-
-// =====================================================
-// RESUME UPLOAD
-// =====================================================
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -24,10 +15,6 @@ const upload = multer({
     fileSize: 10 * 1024 * 1024,
   },
 });
-
-// =====================================================
-// OPENAI CONFIGURATION
-// =====================================================
 
 const AI_MODEL = "gpt-5.6-luna";
 
@@ -40,21 +27,14 @@ if (process.env.OPENAI_API_KEY) {
 
   console.log("OpenAI API configured.");
 } else {
-  console.warn(
-    "WARNING: OPENAI_API_KEY is not configured in .env"
-  );
+  console.warn("WARNING: OPENAI_API_KEY is not configured in .env");
 }
-
-// =====================================================
-// HELPER — CHECK OPENAI
-// =====================================================
 
 function checkOpenAI(res) {
   if (!openai) {
     res.status(500).json({
       success: false,
-      message:
-        "OpenAI API is not configured. Please check your .env file.",
+      message: "OpenAI API is not configured.",
     });
 
     return false;
@@ -63,185 +43,103 @@ function checkOpenAI(res) {
   return true;
 }
 
-// =====================================================
-// HELPER — CLEAN AI JSON
-// =====================================================
-
 function cleanAIJson(text) {
-  if (!text) {
-    throw new Error("AI returned an empty response.");
+  try {
+    return JSON.parse(text);
+  } catch (error) {
+    try {
+      const cleaned = text
+        .replace(/```json/gi, "")
+        .replace(/```/g, "")
+        .trim();
+
+      return JSON.parse(cleaned);
+    } catch (secondError) {
+      const start = text.indexOf("{");
+      const end = text.lastIndexOf("}");
+
+      if (start !== -1 && end !== -1 && end > start) {
+        try {
+          return JSON.parse(text.slice(start, end + 1));
+        } catch (thirdError) {
+          return null;
+        }
+      }
+
+      return null;
+    }
   }
-
-  let cleaned = text.trim();
-
-  // Remove markdown code fences if AI returns them
-  cleaned = cleaned.replace(/^```json\s*/i, "");
-  cleaned = cleaned.replace(/^```\s*/i, "");
-  cleaned = cleaned.replace(/\s*```$/i, "");
-
-  return JSON.parse(cleaned.trim());
 }
-
-// =====================================================
-// TEST ROUTE
-// =====================================================
 
 app.get("/", (req, res) => {
   res.json({
     success: true,
-    message: "AI Career Navigator Backend is running!",
+    message: "AI Career Navigator Backend is running.",
   });
 });
 
-// =====================================================
-// INTEREST ASSESSMENT QUESTIONS
-// =====================================================
-
 app.get("/api/interest-questions", (req, res) => {
-  try {
-    const questions = [
+  res.json({
+    success: true,
+    questions: [
       {
         id: 1,
         question:
-          "Which type of activity do you enjoy the most?",
+          "Which activity do you enjoy the most?",
         options: [
-          "Building software applications",
-          "Designing websites and user interfaces",
-          "Protecting systems and networks",
-          "Working with AI and machine learning",
+          "Building software",
+          "Analyzing data",
+          "Designing websites",
+          "Finding security problems",
         ],
       },
-
       {
         id: 2,
         question:
-          "What would you most like to work on?",
+          "Which type of problem do you prefer?",
         options: [
-          "Programming and application development",
-          "Websites and interactive interfaces",
-          "Cybersecurity and system protection",
-          "Artificial intelligence and data",
+          "Logical programming problems",
+          "Data and statistics problems",
+          "Creative design problems",
+          "Security and investigation problems",
         ],
       },
-
       {
         id: 3,
         question:
-          "Which problem sounds most interesting to you?",
+          "Which technology interests you most?",
         options: [
-          "Creating a useful software solution",
-          "Creating a modern and responsive website",
-          "Finding and preventing security threats",
-          "Teaching a computer to make intelligent decisions",
+          "Artificial Intelligence",
+          "Databases and Analytics",
+          "Web Development",
+          "Cybersecurity",
         ],
       },
-
       {
         id: 4,
         question:
-          "Which technical area interests you most?",
+          "What would you like to build?",
         options: [
-          "Programming and algorithms",
-          "HTML, CSS, JavaScript and web development",
-          "Networks, Linux and cybersecurity",
-          "Python, machine learning and AI",
+          "AI applications",
+          "Data analysis systems",
+          "Web applications",
+          "Security systems",
         ],
       },
-
       {
         id: 5,
         question:
-          "What kind of project would you prefer?",
+          "Which skill would you like to improve?",
         options: [
-          "A Java or Python software application",
-          "A full-stack web application",
-          "A security monitoring system",
-          "An AI-powered application",
+          "Machine Learning",
+          "Data Analysis",
+          "Frontend and Backend Development",
+          "Network Security",
         ],
       },
-
-      {
-        id: 6,
-        question:
-          "Which activity would you enjoy learning?",
-        options: [
-          "Data structures and algorithms",
-          "Frontend and backend development",
-          "Ethical hacking and network security",
-          "Machine learning and data analysis",
-        ],
-      },
-
-      {
-        id: 7,
-        question:
-          "What type of technology excites you most?",
-        options: [
-          "Software engineering",
-          "Web technologies",
-          "Cybersecurity technologies",
-          "Artificial intelligence",
-        ],
-      },
-
-      {
-        id: 8,
-        question:
-          "Which career environment sounds best to you?",
-        options: [
-          "Developing software products",
-          "Building websites and web platforms",
-          "Protecting organizations from cyber attacks",
-          "Developing intelligent AI systems",
-        ],
-      },
-
-      {
-        id: 9,
-        question:
-          "What would you like to become better at?",
-        options: [
-          "Programming and problem solving",
-          "Web design and development",
-          "Security analysis and networking",
-          "AI and machine learning",
-        ],
-      },
-
-      {
-        id: 10,
-        question:
-          "Which long-term career goal interests you most?",
-        options: [
-          "Software Developer",
-          "Web Developer",
-          "Cybersecurity Analyst",
-          "AI / ML Engineer",
-        ],
-      },
-    ];
-
-    res.json({
-      success: true,
-      questions,
-    });
-  } catch (error) {
-    console.error(
-      "Interest Questions Error:",
-      error
-    );
-
-    res.status(500).json({
-      success: false,
-      message:
-        "Failed to load interest assessment questions.",
-    });
-  }
+    ],
+  });
 });
-
-// =====================================================
-// AI CAREER ANALYSIS
-// =====================================================
 
 app.post("/api/career-analysis", async (req, res) => {
   try {
@@ -249,60 +147,41 @@ app.post("/api/career-analysis", async (req, res) => {
       return;
     }
 
-    const {
-      profile,
-      skillAssessment,
-      interestAssessment,
-      skillGap,
-      roadmap,
-      projects,
-      readiness,
-      resume,
-    } = req.body;
+    const data = req.body || {};
 
     const prompt = `
-You are an AI Career Navigator.
+You are an expert AI career counselor.
 
-Analyze the following student information and provide
-a personalized career recommendation.
+Analyze the following student's information and provide a personalized career analysis.
 
-STUDENT PROFILE:
-${JSON.stringify(profile, null, 2)}
+STUDENT DATA:
+${JSON.stringify(data, null, 2)}
 
-SKILL ASSESSMENT:
-${JSON.stringify(skillAssessment, null, 2)}
+Provide valid JSON only.
 
-INTEREST ASSESSMENT:
-${JSON.stringify(interestAssessment, null, 2)}
+Return this structure:
 
-SKILL GAP:
-${JSON.stringify(skillGap, null, 2)}
-
-ROADMAP:
-${JSON.stringify(roadmap, null, 2)}
-
-PROJECTS:
-${JSON.stringify(projects, null, 2)}
-
-CAREER READINESS:
-${JSON.stringify(readiness, null, 2)}
-
-RESUME:
-${JSON.stringify(resume, null, 2)}
-
-Return the result in the following format:
-
-Recommended Career:
-Career Match Percentage:
-Skill Level:
-Why this career is suitable:
-Current Strengths:
-Missing Skills:
-Recommended Learning:
-Recommended Projects:
-Career Advice:
-
-Keep the answer practical and student-friendly.
+{
+  "recommendedCareer": "Career name",
+  "careerMatch": 85,
+  "summary": "Short personalized analysis",
+  "strengths": [
+    "Strength 1",
+    "Strength 2",
+    "Strength 3"
+  ],
+  "skillsToImprove": [
+    "Skill 1",
+    "Skill 2",
+    "Skill 3"
+  ],
+  "reason": "Why this career is suitable",
+  "nextSteps": [
+    "Step 1",
+    "Step 2",
+    "Step 3"
+  ]
+}
 `;
 
     const response = await openai.responses.create({
@@ -310,27 +189,30 @@ Keep the answer practical and student-friendly.
       input: prompt,
     });
 
-    res.json({
+    const aiText = response.output_text || "";
+    const result = cleanAIJson(aiText);
+
+    if (!result) {
+      return res.status(500).json({
+        success: false,
+        message: "AI returned invalid career analysis.",
+      });
+    }
+
+    return res.json({
       success: true,
-      result: response.output_text,
+      analysis: result,
     });
   } catch (error) {
-    console.error(
-      "AI Career Analysis Error:",
-      error
-    );
+    console.error("Career Analysis Error:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: "AI Career Analysis failed.",
+      message: "Failed to generate career analysis.",
       error: error.message,
     });
   }
 });
-
-// =====================================================
-// AI RESUME ANALYSIS
-// =====================================================
 
 app.post(
   "/api/resume/analyze",
@@ -341,47 +223,16 @@ app.post(
         return;
       }
 
-      // -----------------------------------------------
-      // CHECK FILE
-      // -----------------------------------------------
-
       if (!req.file) {
         return res.status(400).json({
           success: false,
-          message: "Please upload a resume.",
+          message: "Resume file is required.",
         });
       }
-
-      // -----------------------------------------------
-      // CHECK FILE TYPE
-      // -----------------------------------------------
-
-      const allowedTypes = [
-        "application/pdf",
-        "application/msword",
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      ];
-
-      if (!allowedTypes.includes(req.file.mimetype)) {
-        return res.status(400).json({
-          success: false,
-          message:
-            "Only PDF, DOC and DOCX files are supported.",
-        });
-      }
-
-      console.log(
-        "Resume received:",
-        req.file.originalname
-      );
-
-      // -----------------------------------------------
-      // UPLOAD FILE TO OPENAI
-      // -----------------------------------------------
 
       const uploadedFile = await openai.files.create({
-        file: await OpenAI.toFile(
-          req.file.buffer,
+        file: new File(
+          [req.file.buffer],
           req.file.originalname,
           {
             type: req.file.mimetype,
@@ -390,148 +241,275 @@ app.post(
         purpose: "user_data",
       });
 
-      console.log(
-        "OpenAI file uploaded:",
-        uploadedFile.id
-      );
-
-      // -----------------------------------------------
-      // AI PROMPT
-      // -----------------------------------------------
-
-      const prompt = `
-You are an expert AI Resume Analyst and Career Advisor.
-
-Analyze the uploaded student's resume carefully.
-
-Evaluate:
-
-1. Overall Resume Score from 0 to 100
-2. Resume Quality
-3. ATS friendliness
-4. Technical skills
-5. Soft skills
-6. Education
-7. Projects
-8. Experience
-9. Certifications
-10. Resume structure
-11. Career relevance
-12. Missing important information
-13. Strengths
-14. Weaknesses
-15. Improvement suggestions
-
-The student is likely preparing for an entry-level
-technology/software career.
-
-Return ONLY valid JSON.
-
-Use exactly this structure:
-
-{
-  "resumeScore": 0,
-  "atsScore": 0,
-  "summary": "",
-  "careerMatch": "",
-  "strengths": [],
-  "weaknesses": [],
-  "technicalSkills": [],
-  "softSkills": [],
-  "missingSkills": [],
-  "improvements": [],
-  "recommendedSections": []
-}
-
-Important:
-- resumeScore must be a number from 0 to 100.
-- atsScore must be a number from 0 to 100.
-- All arrays must contain strings.
-- Do not use markdown.
-- Do not add explanations outside JSON.
-`;
-
-      // -----------------------------------------------
-      // OPENAI ANALYSIS
-      // -----------------------------------------------
-
       const response = await openai.responses.create({
         model: AI_MODEL,
-
         input: [
           {
             role: "user",
             content: [
               {
-                type: "input_text",
-                text: prompt,
-              },
-              {
                 type: "input_file",
                 file_id: uploadedFile.id,
+              },
+              {
+                type: "input_text",
+                text: `
+Analyze this resume for a CSE student.
+
+Return valid JSON only:
+
+{
+  "overallScore": 0,
+  "summary": "",
+  "strengths": [],
+  "weaknesses": [],
+  "missingSkills": [],
+  "suggestions": []
+}
+`,
               },
             ],
           },
         ],
       });
 
-      const aiText = response.output_text;
+      const aiText = response.output_text || "";
+      const result = cleanAIJson(aiText);
 
-      console.log(
-        "AI Resume Analysis:",
-        aiText
-      );
-
-      // -----------------------------------------------
-      // PARSE JSON
-      // -----------------------------------------------
-
-      let analysis;
-
-      try {
-        analysis = cleanAIJson(aiText);
-      } catch (parseError) {
-        console.error(
-          "Resume JSON parsing failed:",
-          parseError
-        );
-
+      if (!result) {
         return res.status(500).json({
           success: false,
-          message:
-            "AI returned an invalid analysis format.",
-          rawResult: aiText,
+          message: "AI returned invalid resume analysis.",
         });
       }
 
-      // -----------------------------------------------
-      // RESPONSE
-      // -----------------------------------------------
-
-      res.json({
+      return res.json({
         success: true,
-        resumeName: req.file.originalname,
-        analysis,
+        analysis: result,
       });
     } catch (error) {
-      console.error(
-        "AI Resume Analysis Error:",
-        error
-      );
+      console.error("Resume Analysis Error:", error);
 
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
-        message:
-          "AI Resume Analysis failed.",
+        message: "Failed to analyze resume.",
         error: error.message,
       });
     }
   }
 );
 
-// =====================================================
-// AI MOCK INTERVIEW — GENERATE QUESTION
-// =====================================================
+app.post("/api/skill-gap/questions", async (req, res) => {
+  try {
+    if (!checkOpenAI(res)) {
+      return;
+    }
+
+    const {
+      skill,
+      count = 10,
+      difficulty = "beginner",
+      completed = 0,
+    } = req.body || {};
+
+    if (!skill || typeof skill !== "string" || !skill.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Skill is required.",
+      });
+    }
+
+    const alreadyCompleted = Math.max(
+      0,
+      Math.min(
+        Number.parseInt(completed, 10) || 0,
+        100
+      )
+    );
+
+    const requestedCount = Math.max(
+      1,
+      Math.min(
+        Number.parseInt(count, 10) || 10,
+        10
+      )
+    );
+
+    const remainingQuestions = 100 - alreadyCompleted;
+
+    if (remainingQuestions <= 0) {
+      return res.json({
+        success: true,
+        skill: skill.trim(),
+        difficulty,
+        questions: [],
+        count: 0,
+        completed: alreadyCompleted,
+        maximumQuestions: 100,
+        message:
+          "You have completed the maximum 100 questions for this course.",
+      });
+    }
+
+    const finalCount = Math.min(
+      requestedCount,
+      remainingQuestions
+    );
+
+    const prompt = `
+You are an expert technology instructor and AI question generator for a student learning platform.
+
+Generate exactly ${finalCount} multiple-choice questions for the following skill:
+
+SKILL:
+${skill.trim()}
+
+DIFFICULTY:
+${String(difficulty).trim()}
+
+STUDENT COURSE PROGRESS:
+${alreadyCompleted} questions already completed.
+
+RULES:
+
+1. Generate exactly ${finalCount} questions.
+2. Each question must have exactly 4 unique options.
+3. Only one option must be correct.
+4. The correctAnswer value must exactly match one option.
+5. Questions must be technically accurate and suitable for a CSE student.
+6. Match the selected difficulty.
+7. Do not generate duplicate questions.
+8. Provide a short explanation for every answer.
+9. Return only valid JSON.
+10. Do not use markdown or code fences.
+11. Do not add anything outside the JSON object.
+
+Return exactly this structure:
+
+{
+  "questions": [
+    {
+      "question": "Question text",
+      "options": [
+        "Option A",
+        "Option B",
+        "Option C",
+        "Option D"
+      ],
+      "correctAnswer": "Exactly one option from the options array",
+      "explanation": "Short explanation."
+    }
+  ]
+}
+`;
+
+    const response = await openai.responses.create({
+      model: AI_MODEL,
+      input: prompt,
+    });
+
+    const aiText = response.output_text || "";
+    const questionData = cleanAIJson(aiText);
+
+    if (
+      !questionData ||
+      !Array.isArray(questionData.questions)
+    ) {
+      return res.status(500).json({
+        success: false,
+        message:
+          "AI did not return a valid questions array.",
+      });
+    }
+
+    const validQuestions = questionData.questions
+      .filter((item) => {
+        if (!item || typeof item !== "object") {
+          return false;
+        }
+
+        if (
+          typeof item.question !== "string" ||
+          !item.question.trim()
+        ) {
+          return false;
+        }
+
+        if (
+          !Array.isArray(item.options) ||
+          item.options.length !== 4
+        ) {
+          return false;
+        }
+
+        const options = item.options.map((option) =>
+          String(option).trim()
+        );
+
+        if (
+          options.some((option) => !option) ||
+          new Set(options).size !== 4
+        ) {
+          return false;
+        }
+
+        if (
+          typeof item.correctAnswer !== "string" ||
+          !item.correctAnswer.trim()
+        ) {
+          return false;
+        }
+
+        return options.includes(
+          item.correctAnswer.trim()
+        );
+      })
+      .slice(0, finalCount)
+      .map((item, index) => ({
+        id: index + 1,
+        question: item.question.trim(),
+        options: item.options.map((option) =>
+          String(option).trim()
+        ),
+        correctAnswer:
+          item.correctAnswer.trim(),
+        explanation:
+          typeof item.explanation === "string"
+            ? item.explanation.trim()
+            : "",
+      }));
+
+    if (validQuestions.length !== finalCount) {
+      return res.status(500).json({
+        success: false,
+        message:
+          "AI failed to generate the requested number of valid questions.",
+      });
+    }
+
+    return res.json({
+      success: true,
+      skill: skill.trim(),
+      difficulty,
+      questions: validQuestions,
+      count: validQuestions.length,
+      completed: alreadyCompleted,
+      maximumQuestions: 100,
+    });
+  } catch (error) {
+    console.error(
+      "AI Skill Gap Questions Error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        "Failed to generate AI skill-gap questions.",
+      error: error.message,
+    });
+  }
+});
 
 app.post(
   "/api/mock-interview/question",
@@ -542,64 +520,31 @@ app.post(
       }
 
       const {
-        career,
-        interviewType = "technical",
-        difficulty = "medium",
+        career = "Software Developer",
+        difficulty = "beginner",
         previousQuestions = [],
-        skills = {},
-        readiness = {},
-      } = req.body;
-
-      if (!career) {
-        return res.status(400).json({
-          success: false,
-          message: "Career is required.",
-        });
-      }
+      } = req.body || {};
 
       const prompt = `
-You are a professional AI interviewer for an
-entry-level technology job.
+You are an AI technical interviewer.
 
-Generate ONE interview question.
+Generate one interview question for:
 
 CAREER:
 ${career}
 
-INTERVIEW TYPE:
-${interviewType}
-
 DIFFICULTY:
 ${difficulty}
 
-STUDENT SKILLS:
-${JSON.stringify(skills, null, 2)}
+Avoid repeating these previous questions:
+${JSON.stringify(previousQuestions)}
 
-CAREER READINESS:
-${JSON.stringify(readiness, null, 2)}
-
-PREVIOUS QUESTIONS:
-${JSON.stringify(previousQuestions, null, 2)}
-
-IMPORTANT:
-- Generate exactly ONE question.
-- Do NOT repeat a previous question.
-- For technical interviews, ask a realistic technical
-  or problem-solving question.
-- For HR interviews, ask a realistic behavioral,
-  communication, motivation, or teamwork question.
-- The question should be appropriate for the selected
-  difficulty.
-- Do not provide the answer.
-- Do not provide multiple-choice options.
-- Make it feel like a real interview.
-
-Return ONLY valid JSON:
+Return valid JSON only:
 
 {
-  "question": "",
-  "topic": "",
-  "expectedPoints": []
+  "question": "Interview question",
+  "category": "Technical",
+  "difficulty": "${difficulty}"
 }
 `;
 
@@ -608,49 +553,36 @@ Return ONLY valid JSON:
         input: prompt,
       });
 
-      let questionData;
+      const aiText = response.output_text || "";
+      const result = cleanAIJson(aiText);
 
-      try {
-        questionData = cleanAIJson(
-          response.output_text
-        );
-      } catch (error) {
-        console.error(
-          "Question JSON parsing failed:",
-          error
-        );
-
+      if (!result) {
         return res.status(500).json({
           success: false,
           message:
-            "AI returned an invalid question format.",
-          rawResult: response.output_text,
+            "AI returned invalid interview question.",
         });
       }
 
-      res.json({
+      return res.json({
         success: true,
-        question: questionData,
+        question: result,
       });
     } catch (error) {
       console.error(
-        "AI Mock Interview Question Error:",
+        "Mock Interview Question Error:",
         error
       );
 
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message:
-          "Failed to generate AI interview question.",
+          "Failed to generate mock interview question.",
         error: error.message,
       });
     }
   }
 );
-
-// =====================================================
-// AI MOCK INTERVIEW — EVALUATE ANSWER
-// =====================================================
 
 app.post(
   "/api/mock-interview/evaluate",
@@ -661,81 +593,43 @@ app.post(
       }
 
       const {
-        career,
-        interviewType = "technical",
-        difficulty = "medium",
         question,
         answer,
-        expectedPoints = [],
-      } = req.body;
+        career,
+      } = req.body || {};
 
-      if (!career || !question || !answer) {
+      if (!question || !answer) {
         return res.status(400).json({
           success: false,
           message:
-            "Career, question and answer are required.",
+            "Question and answer are required.",
         });
       }
 
       const prompt = `
-You are an expert AI technical interviewer.
-
-Evaluate a student's interview answer.
+You are an expert technical interviewer.
 
 CAREER:
-${career}
-
-INTERVIEW TYPE:
-${interviewType}
-
-DIFFICULTY:
-${difficulty}
+${career || "Software Developer"}
 
 QUESTION:
 ${question}
 
-EXPECTED POINTS:
-${JSON.stringify(expectedPoints, null, 2)}
-
 STUDENT ANSWER:
 ${answer}
 
-Evaluate the answer based on:
+Evaluate the answer.
 
-1. Technical correctness
-2. Understanding of the concept
-3. Completeness
-4. Clarity
-5. Problem-solving ability
-6. Communication quality
-
-Do not judge grammar too harshly because the student
-may not be a native English speaker.
-
-Give a fair score suitable for an entry-level student.
-
-Return ONLY valid JSON:
+Return valid JSON only:
 
 {
   "score": 0,
-  "correctness": 0,
-  "clarity": 0,
-  "completeness": 0,
+  "rating": "Good",
+  "feedback": "Detailed but concise feedback",
   "strengths": [],
-  "weaknesses": [],
-  "feedback": "",
-  "idealAnswer": ""
+  "improvements": [],
+  "idealAnswer": "Example of a better answer"
 }
-
-Rules:
-- All scores must be numbers from 0 to 100.
-- strengths must be an array of strings.
-- weaknesses must be an array of strings.
-- feedback must be concise and practical.
-- idealAnswer should explain what a strong answer
-  would contain.
-- Do not use markdown.
-- Do not add anything outside JSON.
 `;
 
       const response = await openai.responses.create({
@@ -743,49 +637,36 @@ Rules:
         input: prompt,
       });
 
-      let evaluation;
+      const aiText = response.output_text || "";
+      const result = cleanAIJson(aiText);
 
-      try {
-        evaluation = cleanAIJson(
-          response.output_text
-        );
-      } catch (error) {
-        console.error(
-          "Evaluation JSON parsing failed:",
-          error
-        );
-
+      if (!result) {
         return res.status(500).json({
           success: false,
           message:
-            "AI returned an invalid evaluation format.",
-          rawResult: response.output_text,
+            "AI returned invalid evaluation.",
         });
       }
 
-      res.json({
+      return res.json({
         success: true,
-        evaluation,
+        evaluation: result,
       });
     } catch (error) {
       console.error(
-        "AI Mock Interview Evaluation Error:",
+        "Mock Interview Evaluation Error:",
         error
       );
 
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message:
-          "Failed to evaluate interview answer.",
+          "Failed to evaluate mock interview answer.",
         error: error.message,
       });
     }
   }
 );
-
-// =====================================================
-// AI MOCK INTERVIEW — FINAL REPORT
-// =====================================================
 
 app.post(
   "/api/mock-interview/report",
@@ -795,67 +676,28 @@ app.post(
         return;
       }
 
-      const {
-        career,
-        interviewType = "technical",
-        difficulty = "medium",
-        evaluations = [],
-      } = req.body;
-
-      if (!career) {
-        return res.status(400).json({
-          success: false,
-          message: "Career is required.",
-        });
-      }
+      const data = req.body || {};
 
       const prompt = `
-You are an expert career coach.
+You are an expert career interview coach.
 
-Create a final AI mock interview report for a student.
+Create a final mock interview performance report.
 
-CAREER:
-${career}
+DATA:
+${JSON.stringify(data, null, 2)}
 
-INTERVIEW TYPE:
-${interviewType}
-
-DIFFICULTY:
-${difficulty}
-
-QUESTION EVALUATIONS:
-${JSON.stringify(evaluations, null, 2)}
-
-Analyze the complete interview performance.
-
-Return ONLY valid JSON:
+Return valid JSON only:
 
 {
   "overallScore": 0,
-  "technicalKnowledge": 0,
-  "communication": 0,
-  "problemSolving": 0,
+  "summary": "",
+  "technicalScore": 0,
+  "communicationScore": 0,
+  "problemSolvingScore": 0,
   "strengths": [],
   "weaknesses": [],
-  "recommendations": [],
-  "finalFeedback": "",
-  "readinessLevel": ""
+  "recommendations": []
 }
-
-Rules:
-- Scores must be numbers from 0 to 100.
-- strengths must be an array.
-- weaknesses must be an array.
-- recommendations must be an array.
-- readinessLevel should be one of:
-  "Needs Improvement",
-  "Beginner",
-  "Developing",
-  "Job Ready",
-  "Strong Candidate".
-- finalFeedback must be practical and student-friendly.
-- Do not use markdown.
-- Do not add anything outside JSON.
 `;
 
       const response = await openai.responses.create({
@@ -863,49 +705,36 @@ Rules:
         input: prompt,
       });
 
-      let report;
+      const aiText = response.output_text || "";
+      const result = cleanAIJson(aiText);
 
-      try {
-        report = cleanAIJson(
-          response.output_text
-        );
-      } catch (error) {
-        console.error(
-          "Report JSON parsing failed:",
-          error
-        );
-
+      if (!result) {
         return res.status(500).json({
           success: false,
           message:
-            "AI returned an invalid report format.",
-          rawResult: response.output_text,
+            "AI returned invalid interview report.",
         });
       }
 
-      res.json({
+      return res.json({
         success: true,
-        report,
+        report: result,
       });
     } catch (error) {
       console.error(
-        "AI Mock Interview Report Error:",
+        "Mock Interview Report Error:",
         error
       );
 
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message:
-          "Failed to generate final interview report.",
+          "Failed to generate mock interview report.",
         error: error.message,
       });
     }
   }
 );
-
-// =====================================================
-// 404 HANDLER
-// =====================================================
 
 app.use((req, res) => {
   res.status(404).json({
@@ -913,10 +742,6 @@ app.use((req, res) => {
     message: `Route not found: ${req.method} ${req.originalUrl}`,
   });
 });
-
-// =====================================================
-// GLOBAL ERROR HANDLER
-// =====================================================
 
 app.use((error, req, res, next) => {
   console.error("Global Server Error:", error);
@@ -928,15 +753,8 @@ app.use((error, req, res, next) => {
   });
 });
 
-// =====================================================
-// SERVER
-// =====================================================
-
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(
-    `Backend server running on http://localhost:${PORT}`
-  );
+  console.log(`Server running on port ${PORT}`);
 });
-

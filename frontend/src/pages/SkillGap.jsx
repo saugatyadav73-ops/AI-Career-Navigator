@@ -1,6 +1,7 @@
 import React, {
   useEffect,
   useMemo,
+  useState,
 } from "react";
 
 import { useNavigate } from "react-router-dom";
@@ -13,9 +14,42 @@ import {
 function SkillGap() {
   const navigate = useNavigate();
 
-  // =====================================================
-  // LOCAL STORAGE HELPER
-  // =====================================================
+  const [selectedSkill, setSelectedSkill] =
+    useState(null);
+
+  const [questions, setQuestions] =
+    useState([]);
+
+  const [currentQuestion, setCurrentQuestion] =
+    useState(0);
+
+  const [selectedAnswer, setSelectedAnswer] =
+    useState("");
+
+  const [showAnswer, setShowAnswer] =
+    useState(false);
+
+  const [questionScore, setQuestionScore] =
+    useState(0);
+
+  const [loadingQuestions, setLoadingQuestions] =
+    useState(false);
+
+  const [questionError, setQuestionError] =
+    useState("");
+
+  const [courseProgress, setCourseProgress] =
+    useState(() => {
+      try {
+        return JSON.parse(
+          localStorage.getItem(
+            "skillGapCourseProgress"
+          ) || "{}"
+        );
+      } catch {
+        return {};
+      }
+    });
 
   const getData = (key) => {
     try {
@@ -37,25 +71,13 @@ function SkillGap() {
     }
   };
 
-  // =====================================================
-  // READ STUDENT PROFILE
-  // =====================================================
-
   const profile = useMemo(() => {
     return getData("studentProfile");
   }, []);
 
-  // =====================================================
-  // READ SKILL ASSESSMENT
-  // =====================================================
-
   const assessment = useMemo(() => {
     return getData("skillAssessment");
   }, []);
-
-  // =====================================================
-  // READ CAREER RECOMMENDATION
-  // =====================================================
 
   const careerRecommendation =
     useMemo(() => {
@@ -63,10 +85,6 @@ function SkillGap() {
         "careerRecommendation"
       );
     }, []);
-
-  // =====================================================
-  // READ AI CAREER ANALYSIS
-  // =====================================================
 
   const aiCareerAnalysis =
     useMemo(() => {
@@ -76,14 +94,14 @@ function SkillGap() {
             "aiCareerAnalysis"
           ) || ""
         );
-      } catch (error) {
+      } catch {
         return "";
       }
     }, []);
 
-  // =====================================================
-  // PROFILE SKILLS
-  // =====================================================
+  const API_BASE_URL =
+    import.meta.env.VITE_API_URL ||
+    "http://localhost:5000";
 
   const skills = useMemo(() => {
     const profileSkills =
@@ -117,10 +135,6 @@ function SkillGap() {
     return [];
   }, [profile]);
 
-  // =====================================================
-  // SKILL ASSESSMENT
-  // =====================================================
-
   const score = Number(
     assessment?.score || 0
   );
@@ -139,18 +153,6 @@ function SkillGap() {
         )
       : 0;
 
-  // =====================================================
-  // GET RECOMMENDED CAREER
-  //
-  // Careers.jsx saves:
-  // {
-  //   career: "...",
-  //   matchPercentage: ...
-  // }
-  //
-  // We also support the old format.
-  // =====================================================
-
   const recommendedCareer =
     careerRecommendation?.career ||
     careerRecommendation?.recommendedCareer ||
@@ -163,10 +165,6 @@ function SkillGap() {
         ?.careerMatch ||
       0
   );
-
-  // =====================================================
-  // REQUIRED SKILLS BY CAREER
-  // =====================================================
 
   const careerSkills = {
     "AI / ML Engineer": [
@@ -231,10 +229,6 @@ function SkillGap() {
     ],
   };
 
-  // =====================================================
-  // GET REQUIRED SKILLS
-  // =====================================================
-
   const requiredSkills =
     useMemo(() => {
       return (
@@ -247,10 +241,6 @@ function SkillGap() {
       );
     }, [recommendedCareer]);
 
-  // =====================================================
-  // NORMALIZE SKILL
-  // =====================================================
-
   const normalizeSkill = (value) => {
     return String(value || "")
       .toLowerCase()
@@ -258,10 +248,6 @@ function SkillGap() {
       .replace(/\s+/g, " ")
       .trim();
   };
-
-  // =====================================================
-  // CHECK WHETHER STUDENT HAS A SKILL
-  // =====================================================
 
   const hasSkill = (requiredSkill) => {
     const required =
@@ -276,12 +262,10 @@ function SkillGap() {
             userSkill
           );
 
-        // Exact match
         if (user === required) {
           return true;
         }
 
-        // Required skill aliases
         if (
           required ===
           "data structures & algorithms"
@@ -407,7 +391,9 @@ function SkillGap() {
             user.includes(
               "visualization"
             ) ||
-            user.includes("visualisation") ||
+            user.includes(
+              "visualisation"
+            ) ||
             user.includes("power bi") ||
             user.includes("tableau")
           );
@@ -475,10 +461,6 @@ function SkillGap() {
     );
   };
 
-  // =====================================================
-  // CALCULATE SKILL RESULTS
-  // =====================================================
-
   const skillResults =
     useMemo(() => {
       return requiredSkills.map(
@@ -493,10 +475,6 @@ function SkillGap() {
       skills,
     ]);
 
-  // =====================================================
-  // LEARNED SKILLS
-  // =====================================================
-
   const learnedSkills =
     useMemo(() => {
       return skillResults.filter(
@@ -504,20 +482,12 @@ function SkillGap() {
       );
     }, [skillResults]);
 
-  // =====================================================
-  // MISSING SKILLS
-  // =====================================================
-
   const missingSkills =
     useMemo(() => {
       return skillResults.filter(
         (item) => !item.hasSkill
       );
     }, [skillResults]);
-
-  // =====================================================
-  // SKILL PERCENTAGE
-  // =====================================================
 
   const skillPercentage =
     requiredSkills.length > 0
@@ -528,25 +498,76 @@ function SkillGap() {
         )
       : 0;
 
-  // =====================================================
-  // SKILL GAP PERCENTAGE
-  // =====================================================
-
   const gapPercentage =
     100 - skillPercentage;
-
-  // =====================================================
-  // CAREER READINESS
-  // =====================================================
 
   const readiness = Math.round(
     skillPercentage * 0.7 +
       assessmentPercentage * 0.3
   );
 
-  // =====================================================
-  // SAVE SKILL GAP RESULT
-  // =====================================================
+  const courseData = {
+    "C++": {
+      title: "C++ Fundamentals",
+      description:
+        "Learn C++ programming from basics to object-oriented programming and problem solving.",
+      url: "https://www.learncpp.com/",
+    },
+
+    "Data Structures & Algorithms": {
+      title:
+        "Data Structures & Algorithms",
+      description:
+        "Learn arrays, linked lists, stacks, queues, trees, graphs, sorting, searching and algorithms.",
+      url: "https://visualgo.net/en",
+    },
+
+    "Object-Oriented Programming": {
+      title:
+        "Object-Oriented Programming",
+      description:
+        "Learn classes, objects, inheritance, polymorphism, abstraction and encapsulation.",
+      url: "https://dev.java/learn/",
+    },
+
+    Database: {
+      title:
+        "Database Fundamentals",
+      description:
+        "Learn database concepts, tables, relationships, queries and database design.",
+      url: "https://www.postgresql.org/docs/current/tutorial.html",
+    },
+
+    SQL: {
+      title: "SQL Fundamentals",
+      description:
+        "Practice SELECT, INSERT, UPDATE, DELETE, JOIN, GROUP BY and advanced SQL queries.",
+      url: "https://www.w3schools.com/sql/",
+    },
+
+    Git: {
+      title: "Git & GitHub",
+      description:
+        "Learn version control, repositories, commits, branches, merging and collaboration.",
+      url: "https://git-scm.com/doc",
+    },
+
+    "Problem Solving": {
+      title:
+        "Problem Solving & Coding Practice",
+      description:
+        "Improve logical thinking and programming problem-solving skills.",
+      url: "https://www.hackerrank.com/domains/algorithms",
+    },
+
+    "Software Projects": {
+      title:
+        "Software Project Development",
+      description:
+        "Learn how to plan, build, test and document real-world software projects.",
+      url: "https://roadmap.sh/projects",
+    },
+  };
 
   useEffect(() => {
     const result = {
@@ -587,8 +608,6 @@ function SkillGap() {
       JSON.stringify(result)
     );
 
-    // Skill Gap is considered completed
-    // after the analysis has been generated.
     if (MODULE_KEYS?.SKILL_GAP) {
       completeModule(
         MODULE_KEYS.SKILL_GAP
@@ -607,26 +626,293 @@ function SkillGap() {
     aiCareerAnalysis,
   ]);
 
-  // =====================================================
-  // NEXT PAGE
-  // =====================================================
+  const getCourseProgress = (skill) => {
+    return Number(
+      courseProgress?.[skill]
+        ?.completedQuestions || 0
+    );
+  };
+
+  const getCourseScore = (skill) => {
+    return Number(
+      courseProgress?.[skill]
+        ?.score || 0
+    );
+  };
+
+  const openCourse = (skill) => {
+    const course =
+      courseData[skill];
+
+    if (!course) {
+      return;
+    }
+
+    window.open(
+      course.url,
+      "_blank",
+      "noopener,noreferrer"
+    );
+  };
+
+  const startAIQuestions = async (
+    skill
+  ) => {
+    const completed =
+      getCourseProgress(skill);
+
+    if (completed >= 100) {
+      setQuestionError(
+        "This course already has 100 questions completed."
+      );
+      setSelectedSkill(skill);
+      return;
+    }
+
+    setSelectedSkill(skill);
+    setQuestions([]);
+    setCurrentQuestion(0);
+    setSelectedAnswer("");
+    setShowAnswer(false);
+    setQuestionScore(
+      getCourseScore(skill)
+    );
+    setQuestionError("");
+    setLoadingQuestions(true);
+
+    try {
+      const response =
+        await fetch(
+          `${API_BASE_URL}/api/skill-gap/questions`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+            body: JSON.stringify({
+              skill,
+              count: Math.min(
+                10,
+                100 - completed
+              ),
+              difficulty:
+                "beginner",
+            }),
+          }
+        );
+
+      const data =
+        await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data?.message ||
+            "Unable to generate questions."
+        );
+      }
+
+      const generatedQuestions =
+        Array.isArray(
+          data?.questions
+        )
+          ? data.questions
+          : Array.isArray(data)
+          ? data
+          : [];
+
+      const limitedQuestions =
+        generatedQuestions
+          .slice(
+            0,
+            Math.min(
+              10,
+              100 - completed
+            )
+          );
+
+      if (
+        limitedQuestions.length === 0
+      ) {
+        throw new Error(
+          "AI did not return any questions."
+        );
+      }
+
+      setQuestions(
+        limitedQuestions
+      );
+    } catch (error) {
+      setQuestionError(
+        error.message ||
+          "Failed to load AI questions."
+      );
+    } finally {
+      setLoadingQuestions(false);
+    }
+  };
+
+  const getQuestionOptions = (
+    question
+  ) => {
+    if (
+      Array.isArray(
+        question?.options
+      )
+    ) {
+      return question.options;
+    }
+
+    if (
+      Array.isArray(
+        question?.choices
+      )
+    ) {
+      return question.choices;
+    }
+
+    return [];
+  };
+
+  const getCorrectAnswer = (
+    question
+  ) => {
+    return (
+      question?.correctAnswer ??
+      question?.answer ??
+      question?.correct ??
+      ""
+    );
+  };
+
+  const saveCourseProgress = (
+    skill,
+    completedQuestions,
+    scoreValue
+  ) => {
+    const nextProgress = {
+      ...courseProgress,
+      [skill]: {
+        completedQuestions:
+          Math.min(
+            100,
+            completedQuestions
+          ),
+        score: scoreValue,
+        completed:
+          completedQuestions >=
+          100,
+        updatedAt:
+          new Date().toISOString(),
+      },
+    };
+
+    setCourseProgress(
+      nextProgress
+    );
+
+    localStorage.setItem(
+      "skillGapCourseProgress",
+      JSON.stringify(
+        nextProgress
+      )
+    );
+  };
+
+  const submitAnswer = () => {
+    if (
+      !selectedAnswer ||
+      showAnswer
+    ) {
+      return;
+    }
+
+    const question =
+      questions[currentQuestion];
+
+    const correctAnswer =
+      String(
+        getCorrectAnswer(
+          question
+        )
+      )
+        .trim()
+        .toLowerCase();
+
+    const userAnswer =
+      String(selectedAnswer)
+        .trim()
+        .toLowerCase();
+
+    const isCorrect =
+      userAnswer ===
+      correctAnswer;
+
+    const newScore =
+      questionScore +
+      (isCorrect ? 1 : 0);
+
+    setQuestionScore(
+      newScore
+    );
+
+    setShowAnswer(true);
+  };
+
+  const nextQuestion = () => {
+    const completedBefore =
+      getCourseProgress(
+        selectedSkill
+      );
+
+    const completedNow =
+      Math.min(
+        100,
+        completedBefore +
+          currentQuestion +
+          1
+      );
+
+    saveCourseProgress(
+      selectedSkill,
+      completedNow,
+      questionScore
+    );
+
+    if (
+      currentQuestion <
+      questions.length - 1
+    ) {
+      setCurrentQuestion(
+        currentQuestion + 1
+      );
+      setSelectedAnswer("");
+      setShowAnswer(false);
+      return;
+    }
+
+    setQuestions([]);
+    setCurrentQuestion(0);
+    setSelectedAnswer("");
+    setShowAnswer(false);
+  };
+
+  const closeQuestions = () => {
+    setSelectedSkill(null);
+    setQuestions([]);
+    setCurrentQuestion(0);
+    setSelectedAnswer("");
+    setShowAnswer(false);
+    setQuestionError("");
+  };
 
   const goToRoadmap = () => {
     navigate("/roadmap");
   };
 
-  // =====================================================
-  // UI
-  // =====================================================
-
   return (
     <div style={styles.page}>
       <div style={styles.container}>
-
-        {/* ============================================
-            HEADER
-        ============================================ */}
-
         <div style={styles.header}>
           <div style={styles.headerIcon}>
             📊
@@ -642,10 +928,6 @@ function SkillGap() {
             develop for your recommended career.
           </p>
         </div>
-
-        {/* ============================================
-            TARGET CAREER
-        ============================================ */}
 
         <div style={styles.careerCard}>
           <p style={styles.smallTitle}>
@@ -666,14 +948,7 @@ function SkillGap() {
           )}
         </div>
 
-        {/* ============================================
-            STAT CARDS
-        ============================================ */}
-
         <div style={styles.statsGrid}>
-
-          {/* Skill Assessment */}
-
           <div style={styles.statCard}>
             <div style={styles.statIcon}>
               🧠
@@ -691,8 +966,6 @@ function SkillGap() {
               {score} / {total}
             </p>
           </div>
-
-          {/* Skills Covered */}
 
           <div style={styles.statCard}>
             <div style={styles.statIcon}>
@@ -713,8 +986,6 @@ function SkillGap() {
             </p>
           </div>
 
-          {/* Missing Skills */}
-
           <div style={styles.statCard}>
             <div style={styles.statIcon}>
               📚
@@ -733,8 +1004,6 @@ function SkillGap() {
             </p>
           </div>
 
-          {/* Career Readiness */}
-
           <div style={styles.statCard}>
             <div style={styles.statIcon}>
               🚀
@@ -752,12 +1021,7 @@ function SkillGap() {
               Current readiness
             </p>
           </div>
-
         </div>
-
-        {/* ============================================
-            SKILL PROGRESS
-        ============================================ */}
 
         <div style={styles.section}>
           <h2>
@@ -789,10 +1053,6 @@ function SkillGap() {
             </span>
           </div>
         </div>
-
-        {/* ============================================
-            SKILLS YOU HAVE
-        ============================================ */}
 
         <div style={styles.section}>
           <h2>
@@ -836,10 +1096,6 @@ function SkillGap() {
           )}
         </div>
 
-        {/* ============================================
-            MISSING SKILLS
-        ============================================ */}
-
         <div style={styles.section}>
           <h2>
             ❌ Skills You Need to Learn
@@ -847,40 +1103,177 @@ function SkillGap() {
 
           {missingSkills.length > 0 ? (
             missingSkills.map(
-              (item, index) => (
-                <div
-                  key={item.skill}
-                  style={
-                    styles.missingSkill
-                  }
-                >
+              (item, index) => {
+                const course =
+                  courseData[
+                    item.skill
+                  ];
+
+                const completed =
+                  getCourseProgress(
+                    item.skill
+                  );
+
+                const courseScore =
+                  getCourseScore(
+                    item.skill
+                  );
+
+                return (
                   <div
+                    key={item.skill}
                     style={
-                      styles.missingLeft
+                      styles.skillCourseCard
                     }
                   >
-                    <span
+                    <div
                       style={
-                        styles.numberCircle
+                        styles.missingTop
                       }
                     >
-                      {index + 1}
-                    </span>
+                      <div
+                        style={
+                          styles.missingLeft
+                        }
+                      >
+                        <span
+                          style={
+                            styles.numberCircle
+                          }
+                        >
+                          {index + 1}
+                        </span>
 
-                    <strong>
-                      {item.skill}
-                    </strong>
+                        <div>
+                          <strong
+                            style={
+                              styles.skillName
+                            }
+                          >
+                            {item.skill}
+                          </strong>
+
+                          <div
+                            style={
+                              styles.missingBadge
+                            }
+                          >
+                            Missing
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {course && (
+                      <div
+                        style={
+                          styles.courseBox
+                        }
+                      >
+                        <div
+                          style={
+                            styles.courseInfo
+                          }
+                        >
+                          <h3
+                            style={
+                              styles.courseTitle
+                            }
+                          >
+                            📚 {course.title}
+                          </h3>
+
+                          <p
+                            style={
+                              styles.courseDescription
+                            }
+                          >
+                            {
+                              course.description
+                            }
+                          </p>
+
+                          <div
+                            style={
+                              styles.courseProgressText
+                            }
+                          >
+                            AI Questions:{" "}
+                            <strong>
+                              {completed}/100
+                            </strong>
+
+                            {" • "}
+
+                            Score:{" "}
+                            <strong>
+                              {courseScore}
+                            </strong>
+                          </div>
+
+                          <div
+                            style={
+                              styles.courseProgressBackground
+                            }
+                          >
+                            <div
+                              style={{
+                                ...styles.courseProgressFill,
+                                width: `${completed}%`,
+                              }}
+                            />
+                          </div>
+                        </div>
+
+                        <div
+                          style={
+                            styles.courseButtons
+                          }
+                        >
+                          <button
+                            type="button"
+                            onClick={() =>
+                              openCourse(
+                                item.skill
+                              )
+                            }
+                            style={
+                              styles.courseButton
+                            }
+                          >
+                            📖 Open Course
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              startAIQuestions(
+                                item.skill
+                              )
+                            }
+                            style={
+                              styles.aiButton
+                            }
+                          >
+                            🤖 Practice AI Questions
+                          </button>
+                        </div>
+
+                        {completed >=
+                          100 && (
+                          <div
+                            style={
+                              styles.courseComplete
+                            }
+                          >
+                            🎉 Course Completed
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
-
-                  <span
-                    style={
-                      styles.missingBadge
-                    }
-                  >
-                    Missing
-                  </span>
-                </div>
-              )
+                );
+              }
             )
           ) : (
             <div
@@ -891,10 +1284,6 @@ function SkillGap() {
             </div>
           )}
         </div>
-
-        {/* ============================================
-            LEARNING PRIORITIES
-        ============================================ */}
 
         <div style={styles.section}>
           <h2>
@@ -907,16 +1296,20 @@ function SkillGap() {
                 styles.learningList
               }
             >
-              {missingSkills
-                .slice(0, 6)
-                .map((item) => (
-                  <li key={item.skill}>
+              {missingSkills.map(
+                (item) => (
+                  <li
+                    key={item.skill}
+                  >
                     Learn{" "}
                     <strong>
                       {item.skill}
-                    </strong>
+                    </strong>{" "}
+                    and complete its
+                    AI question practice.
                   </li>
-                ))}
+                )
+              )}
             </ol>
           ) : (
             <p>
@@ -926,10 +1319,6 @@ function SkillGap() {
             </p>
           )}
         </div>
-
-        {/* ============================================
-            ANALYSIS SUMMARY
-        ============================================ */}
 
         <div style={styles.summaryCard}>
           <h2>
@@ -969,23 +1358,14 @@ function SkillGap() {
               learning{" "}
               <strong>
                 {missingSkills[0].skill}
-              </strong>
-              .
+              </strong>.
             </p>
           )}
         </div>
 
-        {/* ============================================
-            COMPLETION
-        ============================================ */}
-
         <div style={styles.completedBox}>
           ✅ Skill Gap Analysis Completed
         </div>
-
-        {/* ============================================
-            NEXT STEP
-        ============================================ */}
 
         <div style={styles.nextSection}>
           <button
@@ -996,15 +1376,292 @@ function SkillGap() {
             🗺️ Create Learning Roadmap →
           </button>
         </div>
-
       </div>
+
+      {selectedSkill && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modal}>
+            <div
+              style={
+                styles.modalHeader
+              }
+            >
+              <div>
+                <h2
+                  style={
+                    styles.modalTitle
+                  }
+                >
+                  🤖 AI Question Practice
+                </h2>
+
+                <p
+                  style={
+                    styles.modalSkill
+                  }
+                >
+                  {selectedSkill}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={
+                  closeQuestions
+                }
+                style={
+                  styles.closeButton
+                }
+              >
+                ✕
+              </button>
+            </div>
+
+            {loadingQuestions && (
+              <div
+                style={
+                  styles.loadingBox
+                }
+              >
+                🤖 AI is generating your
+                questions...
+              </div>
+            )}
+
+            {questionError && (
+              <div
+                style={
+                  styles.errorBox
+                }
+              >
+                ❌ {questionError}
+              </div>
+            )}
+
+            {!loadingQuestions &&
+              !questionError &&
+              questions.length > 0 && (
+                <div>
+                  <div
+                    style={
+                      styles.questionProgress
+                    }
+                  >
+                    Question{" "}
+                    {currentQuestion + 1}{" "}
+                    of{" "}
+                    {questions.length}
+                  </div>
+
+                  <h3
+                    style={
+                      styles.questionText
+                    }
+                  >
+                    {questions[
+                      currentQuestion
+                    ]?.question ||
+                      questions[
+                        currentQuestion
+                      ]?.text}
+                  </h3>
+
+                  <div>
+                    {getQuestionOptions(
+                      questions[
+                        currentQuestion
+                      ]
+                    ).map(
+                      (
+                        option,
+                        index
+                      ) => {
+                        const optionText =
+                          typeof option ===
+                          "object"
+                            ? option.text ||
+                              option.label ||
+                              option.value ||
+                              ""
+                            : option;
+
+                        const isCorrect =
+                          String(
+                            optionText
+                          )
+                            .trim()
+                            .toLowerCase() ===
+                          String(
+                            getCorrectAnswer(
+                              questions[
+                                currentQuestion
+                              ]
+                            )
+                          )
+                            .trim()
+                            .toLowerCase();
+
+                        return (
+                          <button
+                            type="button"
+                            key={index}
+                            onClick={() =>
+                              setSelectedAnswer(
+                                optionText
+                              )
+                            }
+                            disabled={
+                              showAnswer
+                            }
+                            style={{
+                              ...styles.optionButton,
+                              ...(selectedAnswer ===
+                              optionText
+                                ? styles.selectedOption
+                                : {}),
+                              ...(showAnswer &&
+                              isCorrect
+                                ? styles.correctOption
+                                : {}),
+                            }}
+                          >
+                            <span>
+                              {String.fromCharCode(
+                                65 +
+                                  index
+                              )}
+                            </span>
+
+                            {optionText}
+                          </button>
+                        );
+                      }
+                    )}
+                  </div>
+
+                  {!showAnswer ? (
+                    <button
+                      type="button"
+                      onClick={
+                        submitAnswer
+                      }
+                      disabled={
+                        !selectedAnswer
+                      }
+                      style={{
+                        ...styles.submitButton,
+                        opacity:
+                          selectedAnswer
+                            ? 1
+                            : 0.5,
+                      }}
+                    >
+                      Submit Answer
+                    </button>
+                  ) : (
+                    <div>
+                      <div
+                        style={
+                          styles.answerBox
+                        }
+                      >
+                        {String(
+                          selectedAnswer
+                        )
+                          .trim()
+                          .toLowerCase() ===
+                        String(
+                          getCorrectAnswer(
+                            questions[
+                              currentQuestion
+                            ]
+                          )
+                        )
+                          .trim()
+                          .toLowerCase()
+                          ? "✅ Correct Answer!"
+                          : `❌ Correct Answer: ${getCorrectAnswer(
+                              questions[
+                                currentQuestion
+                              ]
+                            )}`}
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={
+                          nextQuestion
+                        }
+                        style={
+                          styles.nextQuestionButton
+                        }
+                      >
+                        {currentQuestion <
+                        questions.length -
+                          1
+                          ? "Next Question →"
+                          : "Finish Practice ✓"}
+                      </button>
+                    </div>
+                  )}
+
+                  <div
+                    style={
+                      styles.scoreBox
+                    }
+                  >
+                    Current Score:{" "}
+                    <strong>
+                      {questionScore}
+                    </strong>
+                  </div>
+                </div>
+              )}
+
+            {!loadingQuestions &&
+              !questionError &&
+              questions.length === 0 && (
+                <div
+                  style={
+                    styles.finishedBox
+                  }
+                >
+                  <div
+                    style={
+                      styles.finishedIcon
+                    }
+                  >
+                    🎉
+                  </div>
+
+                  <h3>
+                    Practice Session Finished
+                  </h3>
+
+                  <p>
+                    Your progress has been
+                    saved automatically.
+                  </p>
+
+                  <button
+                    type="button"
+                    onClick={
+                      closeQuestions
+                    }
+                    style={
+                      styles.nextQuestionButton
+                    }
+                  >
+                    Close
+                  </button>
+                </div>
+              )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
-
-// =====================================================
-// STYLES
-// =====================================================
 
 const styles = {
   page: {
@@ -1170,18 +1827,20 @@ const styles = {
     fontWeight: "bold",
   },
 
-  missingSkill: {
+  skillCourseCard: {
+    marginTop: "15px",
+    padding: "18px",
+    background: "#fef2f2",
+    borderRadius: "10px",
+    border:
+      "1px solid #fecaca",
+  },
+
+  missingTop: {
     display: "flex",
     justifyContent:
       "space-between",
     alignItems: "center",
-    gap: "15px",
-    padding: "15px",
-    marginTop: "10px",
-    background: "#fef2f2",
-    borderRadius: "8px",
-    border:
-      "1px solid #fecaca",
   },
 
   missingLeft: {
@@ -1191,8 +1850,9 @@ const styles = {
   },
 
   numberCircle: {
-    width: "30px",
-    height: "30px",
+    width: "32px",
+    height: "32px",
+    minWidth: "32px",
     borderRadius: "50%",
     background: "#dc2626",
     color: "#ffffff",
@@ -1203,10 +1863,104 @@ const styles = {
     fontWeight: "bold",
   },
 
+  skillName: {
+    color: "#1e293b",
+    fontSize: "17px",
+  },
+
   missingBadge: {
     color: "#dc2626",
     fontWeight: "bold",
     fontSize: "13px",
+    marginTop: "4px",
+  },
+
+  courseBox: {
+    marginTop: "15px",
+    padding: "18px",
+    background: "#ffffff",
+    borderRadius: "10px",
+    border:
+      "1px solid #e2e8f0",
+  },
+
+  courseInfo: {
+    width: "100%",
+  },
+
+  courseTitle: {
+    margin:
+      "0 0 8px",
+    color: "#2563eb",
+    fontSize: "19px",
+  },
+
+  courseDescription: {
+    margin:
+      "0 0 12px",
+    color: "#64748b",
+    lineHeight: "1.5",
+  },
+
+  courseProgressText: {
+    color: "#475569",
+    fontSize: "14px",
+  },
+
+  courseProgressBackground: {
+    marginTop: "8px",
+    width: "100%",
+    height: "9px",
+    background: "#e5e7eb",
+    borderRadius: "10px",
+    overflow: "hidden",
+  },
+
+  courseProgressFill: {
+    height: "100%",
+    background: "#16a34a",
+    borderRadius: "10px",
+    transition:
+      "width 0.4s ease",
+  },
+
+  courseButtons: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "10px",
+    marginTop: "15px",
+  },
+
+  courseButton: {
+    padding:
+      "11px 18px",
+    background: "#2563eb",
+    color: "#ffffff",
+    border: "none",
+    borderRadius: "7px",
+    fontWeight: "bold",
+    cursor: "pointer",
+  },
+
+  aiButton: {
+    padding:
+      "11px 18px",
+    background: "#7c3aed",
+    color: "#ffffff",
+    border: "none",
+    borderRadius: "7px",
+    fontWeight: "bold",
+    cursor: "pointer",
+  },
+
+  courseComplete: {
+    marginTop: "12px",
+    padding: "10px",
+    background: "#dcfce7",
+    color: "#166534",
+    borderRadius: "7px",
+    textAlign: "center",
+    fontWeight: "bold",
   },
 
   learningList: {
@@ -1264,6 +2018,170 @@ const styles = {
     fontSize: "16px",
     fontWeight: "bold",
     cursor: "pointer",
+  },
+
+  modalOverlay: {
+    position: "fixed",
+    inset: 0,
+    background:
+      "rgba(15,23,42,0.65)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "20px",
+    zIndex: 9999,
+  },
+
+  modal: {
+    width: "100%",
+    maxWidth: "700px",
+    maxHeight: "90vh",
+    overflowY: "auto",
+    background: "#ffffff",
+    borderRadius: "16px",
+    padding: "25px",
+    boxShadow:
+      "0 20px 50px rgba(0,0,0,0.25)",
+  },
+
+  modalHeader: {
+    display: "flex",
+    justifyContent:
+      "space-between",
+    alignItems: "flex-start",
+    borderBottom:
+      "1px solid #e2e8f0",
+    paddingBottom: "15px",
+    marginBottom: "20px",
+  },
+
+  modalTitle: {
+    margin: 0,
+    color: "#1e293b",
+  },
+
+  modalSkill: {
+    margin:
+      "6px 0 0",
+    color: "#7c3aed",
+    fontWeight: "bold",
+  },
+
+  closeButton: {
+    width: "35px",
+    height: "35px",
+    borderRadius: "50%",
+    border: "none",
+    background: "#f1f5f9",
+    cursor: "pointer",
+    fontSize: "18px",
+  },
+
+  loadingBox: {
+    padding: "35px",
+    textAlign: "center",
+    color: "#7c3aed",
+    fontWeight: "bold",
+    fontSize: "17px",
+  },
+
+  errorBox: {
+    padding: "15px",
+    background: "#fef2f2",
+    color: "#b91c1c",
+    border:
+      "1px solid #fecaca",
+    borderRadius: "8px",
+    marginBottom: "15px",
+  },
+
+  questionProgress: {
+    color: "#64748b",
+    fontWeight: "bold",
+    marginBottom: "15px",
+  },
+
+  questionText: {
+    color: "#1e293b",
+    lineHeight: "1.5",
+    fontSize: "20px",
+    marginBottom: "20px",
+  },
+
+  optionButton: {
+    width: "100%",
+    textAlign: "left",
+    padding: "14px",
+    marginBottom: "10px",
+    border:
+      "1px solid #cbd5e1",
+    background: "#ffffff",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontSize: "15px",
+    display: "flex",
+    gap: "12px",
+    alignItems: "center",
+  },
+
+  selectedOption: {
+    border:
+      "2px solid #7c3aed",
+    background: "#f5f3ff",
+  },
+
+  correctOption: {
+    border:
+      "2px solid #16a34a",
+    background: "#dcfce7",
+  },
+
+  submitButton: {
+    width: "100%",
+    marginTop: "10px",
+    padding: "14px",
+    background: "#7c3aed",
+    color: "#ffffff",
+    border: "none",
+    borderRadius: "8px",
+    fontWeight: "bold",
+    cursor: "pointer",
+  },
+
+  answerBox: {
+    marginTop: "15px",
+    padding: "14px",
+    background: "#f8fafc",
+    borderRadius: "8px",
+    color: "#334155",
+    fontWeight: "bold",
+  },
+
+  nextQuestionButton: {
+    width: "100%",
+    marginTop: "15px",
+    padding: "14px",
+    background: "#16a34a",
+    color: "#ffffff",
+    border: "none",
+    borderRadius: "8px",
+    fontWeight: "bold",
+    cursor: "pointer",
+  },
+
+  scoreBox: {
+    marginTop: "15px",
+    textAlign: "center",
+    color: "#64748b",
+  },
+
+  finishedBox: {
+    textAlign: "center",
+    padding: "30px 10px",
+  },
+
+  finishedIcon: {
+    fontSize: "50px",
   },
 };
 

@@ -25,9 +25,17 @@ const AI_MODEL =
   process.env.AI_MODEL ||
   "gpt-4o-mini";
 
-const JWT_SECRET =
-  process.env.JWT_SECRET ||
-  "development_only_change_this_secret";
+   if (
+     !process.env.JWT_SECRET ||
+     !String(process.env.JWT_SECRET).trim()
+   ) {
+     process.env.JWT_SECRET = require("crypto")
+       .randomBytes(48)
+       .toString("hex");
+     console.warn("WARNING: JWT_SECRET not set. Using a temporary random secret.");
+   }
+
+   const JWT_SECRET = process.env.JWT_SECRET;
 
 const MAX_RESUME_SIZE =
   10 * 1024 * 1024;

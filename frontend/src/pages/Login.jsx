@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import GoogleButton from "../components/GoogleButton";
 
 function Login() {
   const navigate = useNavigate();
@@ -176,6 +177,18 @@ function Login() {
               : "Login"}
           </button>
         </form>
+
+        <p style={{ marginTop: "12px", textAlign: "center" }}>
+          <span
+            className="link"
+            onClick={() => navigate("/forgot-password")}
+            style={{ cursor: "pointer", fontWeight: "600" }}
+          >
+            Forgot password?
+          </span>
+        </p>
+
+        <GoogleButton />
 
         <p
           style={{

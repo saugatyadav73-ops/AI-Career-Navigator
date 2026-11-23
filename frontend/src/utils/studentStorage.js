@@ -1,3 +1,5 @@
+import { queueSync, queueRemove } from "./serverSync";
+
 export const getCurrentStudent = () => {
   try {
     const student = localStorage.getItem("student");
@@ -38,6 +40,8 @@ export const saveStudentData = (key, data) => {
       JSON.stringify(data)
     );
 
+    queueSync(key, data); // server copy (async, best effort)
+
     return true;
   } catch (error) {
     console.error("Save student data error:", error);
@@ -66,6 +70,8 @@ export const removeStudentData = (key) => {
     const studentKey = getStudentKey(key);
 
     localStorage.removeItem(studentKey);
+
+    queueRemove(key);
 
     return true;
   } catch (error) {

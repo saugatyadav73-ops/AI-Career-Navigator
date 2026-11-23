@@ -626,6 +626,11 @@ AI Career Navigator`,
 // =====================================================
 // FEATURE ROUTER (10 AI features + offline fallbacks for legacy AI endpoints)
 // =====================================================
+// =====================================================
+// 130-ITEM CHECKLIST FEATURE LAYER (additive: security, auth gaps, learning, career, portfolio, jobs, analytics, community, admin, ops)
+// =====================================================
+require("./modules")(app);
+
 app.use(require("./routes/features"));
 
 // =====================================================

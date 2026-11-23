@@ -8,3 +8,6 @@ backend/*.db
 backend/*.db-shm
 backend/*.db-wal
 backend/logs/*.log
+
+backend/backups/
+backend/logs/

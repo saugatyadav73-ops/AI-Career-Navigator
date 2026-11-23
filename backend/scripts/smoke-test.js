@@ -1,12 +1,22 @@
-/* Smoke test: starts the server on a random port and calls every feature endpoint.
+﻿/* Smoke test: starts the server on a random port and calls every feature endpoint.
    Usage: npm test   (works with or without AI keys) */
 const { spawn } = require("child_process");
+const fs = require("fs");
+const os = require("os");
 const path = require("path");
 const PORT = 5600 + Math.floor(Math.random() * 300);
 const base = `http://localhost:${PORT}`;
+const dbDir = fs.mkdtempSync(path.join(os.tmpdir(), "cn-smoke-"));
 const profile = { name: "Asha", skills: ["Python", "SQL", "Git"], interests: ["AI", "data analysis"], education: "B.Tech CSE", projects: [{ title: "Sales Dashboard", description: "SQL reports", tech: ["SQL", "Python"] }] };
 const post = (p, b) => fetch(base + p, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(b) }).then(async (r) => ({ status: r.status, body: await r.json() }));
+const authState = { token: null, email: `smoke-${Date.now()}@example.test` };
+const authPost = (p, b) => fetch(base + p, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(b) }).then(async (r) => ({ status: r.status, body: await r.json() }));
+const authGet = (p) => fetch(base + p, { headers: { Authorization: `Bearer ${authState.token}` } }).then(async (r) => ({ status: r.status, body: await r.json() }));
+
 const tests = [
+  ["register", () => authPost("/api/auth/register", { name: "Smoke User", email: authState.email, password: "SmokePass123!" }), (b) => { authState.token = b.token; return Boolean(b.token || b.requiresVerification === true); }],
+  ["login", () => authPost("/api/auth/login", { email: authState.email, password: "SmokePass123!" }), (b) => { authState.token = b.token || authState.token; return Boolean(b.token || b.requiresVerification === true); }],
+  ["protected AI logs", () => authGet("/api/ai/logs?limit=5"), (b) => b.success && Array.isArray(b.logs)],
   ["GET /api/health", () => fetch(base + "/api/health").then(async (r) => ({ status: r.status, body: await r.json() })), (b) => b.status === "healthy"],
   ["mentor", () => post("/api/mentor/chat", { message: "How do I start in AI?", profile }), (b) => b.answer?.reply],
   ["resume analyze-text", () => post("/api/resume/analyze-text", { resumeText: "Asha Rao asha@x.com 9876543210 github.com/asha\nEducation B.Tech CSE\nSkills Python SQL Git\nProjects Built a sales dashboard with SQL and Python improving reporting speed by 30%. Developed a classifier.", targetRole: "Data Analyst" }), (b) => b.analysis?.overallScore >= 0],
@@ -26,7 +36,7 @@ const tests = [
   ["feedback", () => post("/api/feedback", { feature: "smoke", rating: 5, comment: "ok" }), (b) => b.success],
 ];
 (async () => {
-  const srv = spawn("node", ["server.js"], { cwd: path.join(__dirname, ".."), env: { ...process.env, PORT: String(PORT) }, stdio: "ignore" });
+  const srv = spawn("node", ["server.js"], { cwd: path.join(__dirname, ".."), env: { ...process.env, PORT: String(PORT), SMTP_HOST: "", SMTP_USER: "", SMTP_PASS: "", SMTP_FROM: "", DB_PATH: path.join(dbDir, "career_navigator.db") }, stdio: "ignore" });
   await new Promise((r) => setTimeout(r, 1500));
   let failed = 0;
   for (const [name, run, ok] of tests) {
@@ -38,6 +48,8 @@ const tests = [
     } catch (e) { failed++; console.log(`FAIL  ${name}  ${e.message}`); }
   }
   srv.kill();
+  try { fs.rmSync(dbDir, { recursive: true, force: true }); } catch { /* ignore */ }
   console.log(failed ? `\n${failed} test(s) failed` : "\nAll tests passed");
   process.exit(failed ? 1 : 0);
 })();
+

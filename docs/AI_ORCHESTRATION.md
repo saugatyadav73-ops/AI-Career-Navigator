@@ -34,7 +34,7 @@ Placeholder keys (`YOUR_…_HERE`) are treated as "not configured".
 Each attempt records task, provider, model, status, latency, prompt hash/size, 1000-char previews, error and student id. Inspect with `GET /api/ai/logs` (JWT required) or `tail -f backend/logs/ai-orchestration.log`. Prompts contain student data: treat logs as sensitive and rotate them.
 
 ## Verified behaviour
-Tested with a stubbed network layer: OpenAI → HTTP 401 (not retried) → automatic failover to Gemini → success; both attempts present in `ai_logs`. With no keys configured, career analysis, interview questions and answer evaluation are served by the rule-based engine; skill-gap questions and reports return `503`.
+Tested with a stubbed network layer: OpenAI → HTTP 401 (not retried) → automatic failover to Gemini → success; both attempts present in `ai_logs`. With no keys configured, the supported AI features are served by the deterministic rule-based engine/question bank. The response identifies `engine: "rules"` so reviewers can distinguish fallback output from live LLM output.
 
 
 ## Task names written to `ai_logs`

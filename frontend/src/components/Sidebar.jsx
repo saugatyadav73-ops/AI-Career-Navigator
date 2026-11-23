@@ -1,4 +1,5 @@
 import { NavLink, useNavigate } from "react-router-dom";
+import { useRole } from "../utils/hooks";
 
 // =====================================================
 // SIDEBAR MENU ITEMS
@@ -69,6 +70,57 @@ const menuItems = [
     path: "/ai-tools",
     icon: "🤖",
   },
+  {
+    name: "Career Lab",
+    path: "/career-lab",
+    icon: "🧪",
+  },
+  {
+    name: "Practice & Tests",
+    path: "/practice",
+    icon: "📝",
+  },
+  {
+    name: "Learning Planner",
+    path: "/planner",
+    icon: "📅",
+  },
+  {
+    name: "Portfolio Hub",
+    path: "/portfolio",
+    icon: "🗂️",
+  },
+  {
+    name: "Jobs & Placement",
+    path: "/jobs",
+    icon: "🏢",
+  },
+  {
+    name: "Voice Interview",
+    path: "/voice-interview",
+    icon: "🎙️",
+  },
+  {
+    name: "Insights & Reports",
+    path: "/insights",
+    icon: "📈",
+  },
+  {
+    name: "Community & XP",
+    path: "/community",
+    icon: "🏆",
+  },
+  {
+    name: "Settings",
+    path: "/settings",
+    icon: "⚙️",
+  },
+  {
+    name: "Faculty / Admin",
+    path: "/admin",
+    icon: "🛡️",
+    staffOnly: true,
+  },
 ];
 
 // =====================================================
@@ -125,6 +177,9 @@ function Sidebar() {
   const navigate = useNavigate();
 
   const student = getCurrentStudent();
+
+  // faculty/admin menu entry is shown only to staff accounts
+  const role = useRole();
 
   const studentName =
     student?.name ||
@@ -207,7 +262,7 @@ function Sidebar() {
           MAIN MENU
         </p>
 
-        {menuItems.map((item) => (
+        {menuItems.filter((item) => !item.staffOnly || role === "faculty" || role === "admin").map((item) => (
           <NavLink
             key={item.path}
             to={item.path}

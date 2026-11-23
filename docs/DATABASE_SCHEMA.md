@@ -5,6 +5,8 @@ Engine: **SQLite** (`better-sqlite3`), file `backend/career_navigator.db`, creat
 ```
 students 1 ──< ai_logs      (student_id, nullable, ON DELETE SET NULL)
 students 1 ──< feedback     (student_id, nullable, ON DELETE SET NULL)
+
+Foreign-key enforcement is enabled by `backend/database.js` with `PRAGMA foreign_keys = ON`.
 ```
 
 ## students
@@ -49,3 +51,8 @@ One row per AI-provider attempt (see [AI_ORCHESTRATION.md](AI_ORCHESTRATION.md))
 | created_at | DATETIME | |
 
 > Per-student learning progress (skill assessment, roadmap, resume results) is currently stored client-side in `localStorage` keyed per student (`frontend/src/utils/studentStorage.js`). Moving these to server tables is listed under *Next steps* in the README.
+
+## Tables added by the 130-item build (all `CREATE TABLE IF NOT EXISTS`; existing tables untouched)
+`students` gained columns: `role`, `is_active`, `google_id`, `avatar_url`, `last_login_at`, `last_active_at`, `reset_code_hash`, `reset_expires_at`, `reset_sent_at`, `password_changed_at`.
+
+New tables (all reference `students(id)` with `ON DELETE CASCADE` unless noted): `student_docs` (one JSON document per student per key: profile, settings, weekly plan, portfolio, synced browser data), `student_history` (append-only assessments, interviews, twin snapshots, reports), `certificates`, `hub_projects`, `job_applications`, `saved_jobs`, `daily_goals`, `notifications`, `xp_events`, `student_badges`, `discussions`, `discussion_replies`, `team_posts`, `team_requests`, `hackathons`, `workspaces`, `workspace_members`, `workspace_tasks`, `workspace_messages`, `courses`, `custom_questions`, `audit_logs`. Full definitions: `backend/modules/schema.js`.

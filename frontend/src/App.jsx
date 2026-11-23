@@ -23,6 +23,18 @@ import JobPreparation from "./pages/JobPreparation";
 import MockInterview from "./pages/MockInterview";
 import Interests from "./pages/Interests";
 import AITools from "./pages/AITools";
+import ForgotPassword from "./pages/ForgotPassword";
+import Settings from "./pages/Settings";
+import Practice from "./pages/Practice";
+import CareerLab from "./pages/CareerLab";
+import Planner from "./pages/Planner";
+import PortfolioHub from "./pages/PortfolioHub";
+import PublicPortfolio from "./pages/PublicPortfolio";
+import Jobs from "./pages/Jobs";
+import Insights from "./pages/Insights";
+import Community from "./pages/Community";
+import VoiceInterview from "./pages/VoiceInterview";
+import Admin from "./pages/Admin";
 
 // =====================================================
 // HOME
@@ -340,6 +352,24 @@ function App() {
         {/* =====================================================
             UNKNOWN ROUTES
         ===================================================== */}
+
+        {/* =====================================================
+            CHECKLIST FEATURE PAGES (130-item master checklist)
+        ===================================================== */}
+
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ForgotPassword />} />
+        <Route path="/p/:slug" element={<PublicPortfolio />} />
+        <Route path="/career-lab" element={<Layout><CareerLab /></Layout>} />
+        <Route path="/practice" element={<Layout><Practice /></Layout>} />
+        <Route path="/planner" element={<Layout><Planner /></Layout>} />
+        <Route path="/portfolio" element={<Layout><PortfolioHub /></Layout>} />
+        <Route path="/jobs" element={<Layout><Jobs /></Layout>} />
+        <Route path="/insights" element={<Layout><Insights /></Layout>} />
+        <Route path="/community" element={<Layout><Community /></Layout>} />
+        <Route path="/voice-interview" element={<Layout><VoiceInterview /></Layout>} />
+        <Route path="/settings" element={<Layout><Settings /></Layout>} />
+        <Route path="/admin" element={<Layout><Admin /></Layout>} />
 
         <Route
           path="*"
